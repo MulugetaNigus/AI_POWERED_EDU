@@ -221,7 +221,7 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3 mb-4">
                 <div className="relative">
                   {
-                    userProfile?.profile !== null
+                    userProfile?.profile == null
                       ?
                       <img
                         src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&q=80"
