@@ -60,7 +60,6 @@ export default function SignIn() {
           const credential = GoogleAuthProvider.credentialFromResult(result);
           const token = credential?.accessToken;
           console.log(token);
-          navigate('/');
           // The signed-in user info.
           const user = result.user;
           // Save the user login data into local storage
@@ -70,6 +69,8 @@ export default function SignIn() {
             profile: user.photoURL
             // Add any other user data you want to store
           }));
+          localStorage.setItem("auth" , "t");
+          navigate('/');
           // IdP data available using getAdditionalUserInfo(result)
           // ...
         }).catch((error) => {

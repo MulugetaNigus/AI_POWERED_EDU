@@ -1,13 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { Send, ChevronDown, ChevronRight, LogOut, Loader2, Volume2, Copy, RefreshCw, ImageIcon } from 'lucide-react';
+import {
+  Send,
+  ChevronDown,
+  ChevronRight,
+  LogOut,
+  Loader2,
+  Volume2,
+  Copy,
+  RefreshCw,
+  ImageIcon,
+  FileText,
+  Clock,
+} from 'lucide-react';
+
 import axios from 'axios';
 import ImageUpload from '../components/ImageUpload';
+import PDFChat from '../components/PDFChat';
+import ChatHistory from '../components/ChatHistory';
 import MarkdownDisplay from '../components/MarkdownDisplay';
 import { auth } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 
+interface ChatHistory {
+  grade: number;
+  subject: string;
+  messages: Array<{
+    text: string;
+    isAI: boolean;
+    timestamp: string;
+  }>;
+}
 
 const grades = [
   {
@@ -59,21 +83,41 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [showPDFChat, setShowPDFChat] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [userProfile, setuserProfile] = useState<{ email: string; uid: string; profile: string } | null>();
   const navigate = useNavigate();
+
+  // handle to get the user info
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setuserProfile(JSON.parse(userData));
+    }
+    console.log(userData);
+  }, [])
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && selectedCourse) {
       const userMessage = `${input}`;
       setMessages([...messages, { text: userMessage, isAI: false }]);
+      // Update chat history
+      updateChatHistory(selectedCourse.grade, selectedCourse.course, {
+        text: input,
+        isAI: false,
+        timestamp: new Date().toISOString()
+      });
       setInput('');
       setIsLoading(true);
       setReinput(input);
 
       try {
+        // https://ai-bzxnznku1-mullers-projects.vercel.app
         const response = await axios.post('http://127.0.0.1:8000/ask', {
-          user_quation: input
+          // const response = await axios.post('https://ai-bzxnznku1-mullers-projects.vercel.app/ask', {
+          user_quation: input,
+          file_path: ""
         });
 
         console.log(response.data.response);
@@ -98,6 +142,46 @@ export default function Dashboard() {
     }
   };
 
+  const updateChatHistory = (
+    grade: number,
+    subject: string,
+    message: { text: string; isAI: boolean; timestamp: string }
+  ) => {
+    setChatHistory((prev) => {
+      const existingChat = prev.find(
+        (chat) => chat.grade === grade && chat.subject === subject
+      );
+
+      if (existingChat) {
+        return prev.map((chat) =>
+          chat.grade === grade && chat.subject === subject
+            ? { ...chat, messages: [...chat.messages, message] }
+            : chat
+        );
+      } else {
+        return [
+          ...prev,
+          {
+            grade,
+            subject,
+            messages: [message],
+          },
+        ];
+      }
+    });
+  };
+
+  const handlePDFMessage = (message: string) => {
+    setMessages((prev) => [...prev, message]);
+    if (selectedCourse) {
+      updateChatHistory(selectedCourse.grade, selectedCourse.course, {
+        text: message.text,
+        isAI: message.isAI,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  };
+
   const handleCourseSelect = (grade: number, course: string) => {
     setSelectedCourse({ grade, course });
     setMessages([
@@ -110,7 +194,8 @@ export default function Dashboard() {
     const user_confirmation = window.confirm("are you shure you want to logout?")
     if (user_confirmation) {
       try {
-        signOut(auth).then(() => {
+        signOut(auth).then( async () => {
+          localStorage.setItem("auth", "f");
           navigate("/signin");
         }).catch((error) => {
           console.log(error);
@@ -148,15 +233,6 @@ export default function Dashboard() {
     ]);
     setShowImageUpload(false);
   };
-
-  // handle to get the user info
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setuserProfile(JSON.parse(userData));
-    }
-    console.log(userData);
-  }, [])
 
   return (
     <>
@@ -212,7 +288,16 @@ export default function Dashboard() {
                     )}
                   </div>
                 ))}
-                {/* implment extra feature here */}
+                {/* Add PDF Chat button */}
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setShowPDFChat(true)}
+                    className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Chat with PDF</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -221,7 +306,7 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3 mb-4">
                 <div className="relative">
                   {
-                    userProfile?.profile == null
+                    userProfile?.profile !== null
                       ?
                       <img
                         src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&q=80"
@@ -290,6 +375,8 @@ export default function Dashboard() {
                     >
                       <MarkdownDisplay markdownText={message.text} />
                     </div>
+
+                    {/* response from the  */}
                     {message.isAI && (
                       <div className="flex items-center space-x-2 mt-2">
                         <button
@@ -317,8 +404,13 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
+                  {/* <div className="w-80 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
+                    <ChatHistory history={chatHistory} />
+                  </div> */}
                 </div>
               ))}
+
+              {/* loading state for the AI */}
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
@@ -386,6 +478,14 @@ export default function Dashboard() {
               </div>
             </form>
           </div>
+
+          {/* chat window */}
+          {showPDFChat && (
+            <PDFChat
+              onClose={() => setShowPDFChat(false)}
+              onMessageSent={handlePDFMessage}
+            />
+          )}
         </div>
       </div>
     </>

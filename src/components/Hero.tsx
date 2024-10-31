@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
-import Modal from './Modal'; // Import the Modal component
+import Modal from './Modal';
+
+import img from '../Assets/99a6302b-5f45-466a-85e0-998ea41ec58d.png'
 
 export default function Hero() {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -68,7 +70,7 @@ export default function Hero() {
                 transition={{ delay: 0.8, duration: 0.8 }}
                 className="block mt-10 text-xl md:text-2xl text-gray-600 dark:text-gray-300"
               >
-               <span className='text-3xl'>🔥</span> AI-Powered Learning
+                <span className='text-3xl'>🔥</span> AI-Powered Learning
               </motion.span>
             </h1>
 
@@ -122,15 +124,16 @@ export default function Hero() {
               }}
             >
               <img
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
+                // src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
+                src={img}
                 alt="Students learning"
-                className="rounded-xl shadow-2xl"
+                className="rounded-xl"
               />
             </motion.div>
 
             {/* Decorative elements */}
             <motion.div
-              className="absolute -top-4 -right-4 w-24 h-24 bg-blue-200 dark:bg-blue-900 rounded-full opacity-50"
+              className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-200 dark:bg-blue-900 rounded-full opacity-50"
               animate={{
                 scale: [1, 1.2, 1],
                 rotate: [0, 90, 0]
@@ -142,7 +145,7 @@ export default function Hero() {
               }}
             />
             <motion.div
-              className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-200 dark:bg-purple-900 rounded-full opacity-50"
+              className="absolute -bottom-4 -left-4 w-32 h-32 bg-red-400 dark:bg-purple-900 rounded-full opacity-50"
               animate={{
                 scale: [1, 1.3, 1],
                 rotate: [0, -90, 0]
