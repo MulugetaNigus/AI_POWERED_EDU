@@ -14,6 +14,8 @@ export default function SignUp() {
   const [password, setpassword] = useState("")
   const [Loading, setLoading] = useState(false)
   const [theme, settheme] = useState(true)
+  const [showPassword, setshowPassword] = useState(false)
+
 
   // for the navigation purpose
   const navigate = useNavigate();
@@ -56,7 +58,7 @@ export default function SignUp() {
           // The signed-in user info.
           const user = result.user;
           console.log(user);
-          navigate("/")
+          navigate("/signin")
           // IdP data available using getAdditionalUserInfo(result)
           // ...
         }).catch((error) => {
@@ -141,13 +143,17 @@ export default function SignUp() {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="Create a password"
                     onChange={(e) => setpassword(e.target.value)}
                     value={password}
                   />
+                </div>
+                <div className='flex mt-4 gap-2 items-center justify-start'>
+                  <input type="checkbox" className='h-4 w-4 bg-gray-200' onClick={() => setshowPassword(!showPassword)} />
+                  <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>show password</p>
                 </div>
               </div>
             </div>

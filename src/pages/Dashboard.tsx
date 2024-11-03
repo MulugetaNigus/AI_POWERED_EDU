@@ -1,13 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { Send, ChevronDown, ChevronRight, LogOut, Loader2, Volume2, Copy, RefreshCw, ImageIcon } from 'lucide-react';
+import {
+  Send,
+  ChevronDown,
+  ChevronRight,
+  LogOut,
+  Loader2,
+  Volume2,
+  Copy,
+  RefreshCw,
+  ImageIcon,
+  FileText,
+  Clock,
+  Rocket,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+
 import axios from 'axios';
 import ImageUpload from '../components/ImageUpload';
+import PDFChat from '../components/PDFChat';
+import ChatHistory from '../components/ChatHistory';
 import MarkdownDisplay from '../components/MarkdownDisplay';
 import { auth } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 
+interface ChatHistory {
+  grade: number;
+  subject: string;
+  messages: Array<{
+    text: string;
+    isAI: boolean;
+    timestamp: string;
+  }>;
+}
 
 const grades = [
   {
@@ -59,21 +86,47 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [showPDFChat, setShowPDFChat] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [userProfile, setuserProfile] = useState<{ email: string; uid: string; profile: string } | null>();
+  const [isBlurred, setIsBlurred] = useState(true);
   const navigate = useNavigate();
+
+  // handle to get the user info
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setuserProfile(JSON.parse(userData));
+    }
+    console.log(userData);
+  }, [])
+
+  // handle the blue effect
+  const toggleBlur = () => {
+    setIsBlurred(prev => !prev); // Toggle the blur state
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && selectedCourse) {
       const userMessage = `${input}`;
       setMessages([...messages, { text: userMessage, isAI: false }]);
+      // Update chat history
+      updateChatHistory(selectedCourse.grade, selectedCourse.course, {
+        text: input,
+        isAI: false,
+        timestamp: new Date().toISOString()
+      });
       setInput('');
       setIsLoading(true);
       setReinput(input);
 
       try {
+        // https://ai-bzxnznku1-mullers-projects.vercel.app
         const response = await axios.post('http://127.0.0.1:8000/ask', {
-          user_quation: input
+          // const response = await axios.post('https://ai-bzxnznku1-mullers-projects.vercel.app/ask', {
+          user_quation: input,
+          file_path: ""
         });
 
         console.log(response.data.response);
@@ -98,6 +151,46 @@ export default function Dashboard() {
     }
   };
 
+  const updateChatHistory = (
+    grade: number,
+    subject: string,
+    message: { text: string; isAI: boolean; timestamp: string }
+  ) => {
+    setChatHistory((prev) => {
+      const existingChat = prev.find(
+        (chat) => chat.grade === grade && chat.subject === subject
+      );
+
+      if (existingChat) {
+        return prev.map((chat) =>
+          chat.grade === grade && chat.subject === subject
+            ? { ...chat, messages: [...chat.messages, message] }
+            : chat
+        );
+      } else {
+        return [
+          ...prev,
+          {
+            grade,
+            subject,
+            messages: [message],
+          },
+        ];
+      }
+    });
+  };
+
+  const handlePDFMessage = (message: string) => {
+    setMessages((prev) => [...prev, message]);
+    if (selectedCourse) {
+      updateChatHistory(selectedCourse.grade, selectedCourse.course, {
+        text: message.text,
+        isAI: message.isAI,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  };
+
   const handleCourseSelect = (grade: number, course: string) => {
     setSelectedCourse({ grade, course });
     setMessages([
@@ -110,7 +203,8 @@ export default function Dashboard() {
     const user_confirmation = window.confirm("are you shure you want to logout?")
     if (user_confirmation) {
       try {
-        signOut(auth).then(() => {
+        signOut(auth).then(async () => {
+          localStorage.removeItem('token');
           navigate("/signin");
         }).catch((error) => {
           console.log(error);
@@ -148,15 +242,6 @@ export default function Dashboard() {
     ]);
     setShowImageUpload(false);
   };
-
-  // handle to get the user info
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setuserProfile(JSON.parse(userData));
-    }
-    console.log(userData);
-  }, [])
 
   return (
     <>
@@ -212,7 +297,14 @@ export default function Dashboard() {
                     )}
                   </div>
                 ))}
-                {/* implment extra feature here */}
+                <br />
+                <hr />
+                <br />
+                {/* take a quize and progress page link */}
+                <Link to="/quize-and-progress" className="flex items-center justify-start w-full h-12 bg-blue-600 text-white rounded-lg p-4 border-1 border-blue-600 dark:border-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 dark:hover:bg-blue-500">
+                  <p>Take a quize</p>
+                  <Rocket className='ml-3 w-5 h-5' />
+                </Link>
               </div>
             </div>
 
@@ -238,12 +330,20 @@ export default function Dashboard() {
                   {/* <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div> */}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <h2 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {userProfile?.email}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {userProfile?.uid}
-                  </p>
+                  </h2>
+                  <div className="flex items-center justify-between">
+                    <p className={`text-xs ${isBlurred ? 'blur-sm' : ''} text-gray-500 dark:text-gray-400 truncate`}>
+                      {userProfile?.uid}
+                    </p>
+                    <button onClick={toggleBlur} className="ml-2">
+                      {isBlurred ? (
+                        <Eye className="h-5 w-5 text-gray-600 dark:text-gray-400" />) : (
+                        <EyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -290,6 +390,8 @@ export default function Dashboard() {
                     >
                       <MarkdownDisplay markdownText={message.text} />
                     </div>
+
+                    {/* response from the  */}
                     {message.isAI && (
                       <div className="flex items-center space-x-2 mt-2">
                         <button
@@ -317,8 +419,13 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
+                  {/* <div className="w-80 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
+                    <ChatHistory history={chatHistory} />
+                  </div> */}
                 </div>
               ))}
+
+              {/* loading state for the AI */}
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
@@ -332,6 +439,14 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+
+            {/* chat window */}
+            {showPDFChat && (
+              <PDFChat
+                onClose={() => setShowPDFChat(false)}
+                onMessageSent={handlePDFMessage}
+              />
+            )}
 
             {/* Image Upload Area */}
             {showImageUpload && (
@@ -350,10 +465,18 @@ export default function Dashboard() {
               className="border-t border-gray-200 dark:border-gray-700 p-4"
             >
               <div className="flex space-x-4">
+                <div className="p-4 border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setShowPDFChat(true)}
+                    className="w-full flex items-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                  >
+                    <FileText className="h-5 w-5" />
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowImageUpload(!showImageUpload)}
-                  className="px-3 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="px-3 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                   title="Upload image"
                 >
                   <ImageIcon className="h-5 w-5" />

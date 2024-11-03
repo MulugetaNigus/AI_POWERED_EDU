@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/Home';
@@ -6,9 +6,10 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 // import MarkdownDisplay from './components/MarkdownDisplay';
+import ProtectedRoute from './components/ProtectedRoute';
+import Apps from './quize_progress/Apps';
 
 // Sample markdown text
-
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
 
 This is an excellent summary of Flutter and its key features, benefits, and components. It's well-structured and covers a wide range of topics, making it a valuable resource for anyone looking to learn Flutter.
@@ -51,21 +52,30 @@ Here's a breakdown of the main points, along with some additional insights:
 
 Flutter is a powerful and rapidly evolving framework that offers a streamlined, efficient, and performant way to build beautiful and engaging mobile apps. It's a great choice for developers looking to create cross-platform applications with a modern and reactive approach.`;
 
+
 function App() {
-  return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Routes>
-        </div>
-      </ThemeProvider>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <ThemeProvider>
+                <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/signin" element={<SignIn />} />
+                        <Route path="/signup" element={<SignUp />} />
+                        <Route path='/quize-and-progress' element={<Apps />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <Dashboard />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
+                </div>
+            </ThemeProvider>
+        </BrowserRouter>
+    );
 }
 
 export default App;
