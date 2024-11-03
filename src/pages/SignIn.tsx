@@ -66,8 +66,13 @@ export default function SignIn() {
         .then( async (result) => {
           // This gives you a Google Access Token. You can use it to access the Google API.
           const credential = GoogleAuthProvider.credentialFromResult(result);
+<<<<<<< HEAD
           const tokens = credential?.accessToken;
           console.log(tokens);
+=======
+          const token = credential?.accessToken;
+          console.log(token);
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
           // The signed-in user info.
           const user = result.user;
           // Save the user login data into local storage
@@ -77,11 +82,15 @@ export default function SignIn() {
             profile: user.photoURL
             // Add any other user data you want to store
           }));
+<<<<<<< HEAD
           // Get the JWT token
           const token = await user.getIdToken();
 
           // Store the token in local storage
           localStorage.setItem('token', token);
+=======
+          localStorage.setItem("auth" , "t");
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
           navigate('/');
           // IdP data available using getAdditionalUserInfo(result)
           // ...

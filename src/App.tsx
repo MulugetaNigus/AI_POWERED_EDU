@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
@@ -79,3 +80,5 @@ function App() {
 }
 
 export default App;
+=======
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb

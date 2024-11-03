@@ -11,9 +11,12 @@ import {
   ImageIcon,
   FileText,
   Clock,
+<<<<<<< HEAD
   Rocket,
   Eye,
   EyeOff
+=======
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
 } from 'lucide-react';
 
 import axios from 'axios';
@@ -101,11 +104,14 @@ export default function Dashboard() {
     console.log(userData);
   }, [])
 
+<<<<<<< HEAD
   // handle the blue effect
   const toggleBlur = () => {
     setIsBlurred(prev => !prev); // Toggle the blur state
   };
 
+=======
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && selectedCourse) {
@@ -203,8 +209,13 @@ export default function Dashboard() {
     const user_confirmation = window.confirm("are you shure you want to logout?")
     if (user_confirmation) {
       try {
+<<<<<<< HEAD
         signOut(auth).then(async () => {
           localStorage.removeItem('token');
+=======
+        signOut(auth).then( async () => {
+          localStorage.setItem("auth", "f");
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
           navigate("/signin");
         }).catch((error) => {
           console.log(error);
@@ -297,6 +308,7 @@ export default function Dashboard() {
                     )}
                   </div>
                 ))}
+<<<<<<< HEAD
                 <br />
                 <hr />
                 <br />
@@ -305,6 +317,18 @@ export default function Dashboard() {
                   <p>Take a quize</p>
                   <Rocket className='ml-3 w-5 h-5' />
                 </Link>
+=======
+                {/* Add PDF Chat button */}
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setShowPDFChat(true)}
+                    className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Chat with PDF</span>
+                  </button>
+                </div>
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
               </div>
             </div>
 
@@ -313,7 +337,7 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3 mb-4">
                 <div className="relative">
                   {
-                    userProfile?.profile == null
+                    userProfile?.profile !== null
                       ?
                       <img
                         src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&q=80"
@@ -509,6 +533,14 @@ export default function Dashboard() {
               </div>
             </form>
           </div>
+
+          {/* chat window */}
+          {showPDFChat && (
+            <PDFChat
+              onClose={() => setShowPDFChat(false)}
+              onMessageSent={handlePDFMessage}
+            />
+          )}
         </div>
       </div>
     </>

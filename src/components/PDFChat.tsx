@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { FileText, Loader2, Send, X, SendIcon } from 'lucide-react';
 import axios from 'axios';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
+=======
+import { FileText, Loader2, Send, X } from 'lucide-react';
+import axios from 'axios';
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
 
 
 interface PDFChatProps {
@@ -19,6 +24,7 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [showIcons, setShowIcons] = useState(false);
 
+<<<<<<< HEAD
 
     // Initialize GoogleGenerativeAI with your API_KEY.
     const genAI = new GoogleGenerativeAI("sk_39c3dcc0856cd8a692a7174a49376cfeb41b5b9dea2b2124");
@@ -75,6 +81,82 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 py-10">
             <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl">
 
+=======
+    // get the file path from the users file
+    const handleGetFile = (e: any) => {
+        console.log(e.target.files[0].name)
+        setSelectedFile(e.target.files[0].name)
+    }
+
+    const handleSend = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (input.trim()) {
+            setInput('');
+            setIsLoading(true);
+            setReinput(input);
+
+            try {
+                // https://ai-bzxnznku1-mullers-projects.vercel.app
+                const response = await axios.post('http://127.0.0.1:8000/ask', {
+                    // const response = await axios.post('https://ai-bzxnznku1-mullers-projects.vercel.app/ask', {
+                    user_quation: input,
+                    file_path: selectedFile
+                });
+
+                console.log(response.data.response);
+                const res = await response.data.response;
+                // const answer = res.text();
+                onMessageSent({ text: res, isAI: true });
+                if (!showIcons) {
+                    setShowIcons(true);
+                }
+            } catch (error) {
+                console.error("Error sending message:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            setIsLoading(false);
+        }
+    };
+
+    const handleChat = async (selectedFile) => {
+        alert(selectedFile)
+    }
+
+    // const handleSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     if (!pdfContent || !question.trim()) return;
+
+    //     const userQuestion = question;
+    //     setQuestion('');
+    //     onMessageSent({ text: userQuestion, isAI: false });
+    //     setIsLoading(true);
+
+    //     try {
+    //         const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    //         const prompt = `Based on the following text from a PDF document, please answer this question: "${userQuestion}"\n\nDocument content: ${pdfContent}`;
+
+    //         const result = await model.generateContent(prompt);
+    //         const response = await result.response;
+    //         const answer = response.text();
+
+    //         onMessageSent({ text: answer, isAI: true });
+    //     } catch (error) {
+    //         console.error('Error getting AI response:', error);
+    //         onMessageSent({
+    //             text: 'Sorry, I encountered an error while processing your question. Please try again.',
+    //             isAI: true
+    //         });
+    //     }
+
+    //     setIsLoading(false);
+    // };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl m-4">
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Chat with PDF</h3>
                     <button
@@ -108,6 +190,7 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
                             <span>{selectedFile}</span>
                         </div>
                     )}
+<<<<<<< HEAD
                 </div>
                 {/* lets chat btn */}
                 <button
@@ -115,6 +198,36 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
                     Process It <SendIcon className='ml-2 w-5 h-8' />
                     {/* <Loader2 className="h-6 w-8 animate-spin" /> */}
                 </button>
+=======
+
+                    {/* <form */}
+                        {/* // onSubmit={handleSubmit}  */}
+                        {/* className="mt-4"> */}
+                        <div className="flex space-x-2">
+                            {/* <input
+                                type="text"
+                                value={question}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                placeholder="Ask a question about the PDF content..."
+                                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                disabled={!pdfContent || isLoading}
+                            /> */}
+                            <button
+                                type="submit"
+                                disabled={!selectedFile}
+                                className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mt-5"
+                                onClick={ () => handleChat(selectedFile)}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    <h3>Lets Chat</h3>
+                                )}
+                            </button>
+                        </div>
+                    {/* </form> */}
+                </div>
+>>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
             </div>
         </div>
     );
