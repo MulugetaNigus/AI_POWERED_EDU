@@ -14,7 +14,7 @@ export async function analyzePDFContent(content: string) {
   try {
     const prompt = `
       Analyze this educational content and create:
-      1. A set of 10 multiple choice questions with explanations
+      1. A set of 5 multiple choice questions with explanations
       2. Key topics covered
       3. Areas for improvement based on content complexity
       

@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { FileText, Loader2, Send, X, SendIcon } from 'lucide-react';
 import axios from 'axios';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-=======
-import { FileText, Loader2, Send, X } from 'lucide-react';
-import axios from 'axios';
->>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
 
 
 interface PDFChatProps {
@@ -24,7 +19,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [showIcons, setShowIcons] = useState(false);
 
-<<<<<<< HEAD
 
     // Initialize GoogleGenerativeAI with your API_KEY.
     const genAI = new GoogleGenerativeAI("sk_39c3dcc0856cd8a692a7174a49376cfeb41b5b9dea2b2124");
@@ -77,17 +71,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
         }
     }
 
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 py-10">
-            <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl">
-
-=======
-    // get the file path from the users file
-    const handleGetFile = (e: any) => {
-        console.log(e.target.files[0].name)
-        setSelectedFile(e.target.files[0].name)
-    }
-
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
         if (input.trim()) {
@@ -119,10 +102,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
             setIsLoading(false);
         }
     };
-
-    const handleChat = async (selectedFile) => {
-        alert(selectedFile)
-    }
 
     // const handleSubmit = async (e: React.FormEvent) => {
     //     e.preventDefault();
@@ -156,7 +135,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl m-4">
->>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Chat with PDF</h3>
                     <button
@@ -190,7 +168,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
                             <span>{selectedFile}</span>
                         </div>
                     )}
-<<<<<<< HEAD
                 </div>
                 {/* lets chat btn */}
                 <button
@@ -198,7 +175,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
                     Process It <SendIcon className='ml-2 w-5 h-8' />
                     {/* <Loader2 className="h-6 w-8 animate-spin" /> */}
                 </button>
-=======
 
                     {/* <form */}
                         {/* // onSubmit={handleSubmit}  */}
@@ -227,8 +203,6 @@ export default function PDFChat({ onClose, onMessageSent }: PDFChatProps) {
                         </div>
                     {/* </form> */}
                 </div>
->>>>>>> def8d41e043aa3cbfae728626b7065e7fa64b9cb
             </div>
-        </div>
     );
 }
