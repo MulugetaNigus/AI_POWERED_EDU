@@ -48,7 +48,7 @@ export default function Header() {
             <ThemeToggle />
             {
               localStorage.getItem('token') ? (
-                <p onClick={ () => handleLogOut() } className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                <p onClick={ () => handleLogOut() } className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
                   <LogOut className="h-4 w-4 mr-2" />
                   SignOut
                 </p>
