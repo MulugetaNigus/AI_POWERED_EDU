@@ -14,7 +14,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold text-white mb-4">EthioLearn</h3>
+            <h3 className="text-xl font-bold text-white mb-4">ExtreamX</h3>
             <p className="text-gray-400">
               Empowering Ethiopian students to achieve academic excellence through AI-powered learning.
             </p>

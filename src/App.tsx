@@ -5,7 +5,6 @@ import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
-// import MarkdownDisplay from './components/MarkdownDisplay';
 import ProtectedRoute from './components/ProtectedRoute';
 import Apps from './quize_progress/Apps';
 

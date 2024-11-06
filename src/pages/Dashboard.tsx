@@ -13,7 +13,11 @@ import {
   Clock,
   Rocket,
   Eye,
-  EyeOff
+  EyeOff,
+  Bot,
+  BotIcon,
+  BotMessageSquare,
+  BotMessageSquareIcon
 } from 'lucide-react';
 
 import axios from 'axios';
@@ -25,6 +29,7 @@ import { auth } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import SideAI from '../components/SideAI';
 
 interface ChatHistory {
   grade: number;
@@ -90,6 +95,7 @@ export default function Dashboard() {
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [userProfile, setuserProfile] = useState<{ email: string; uid: string; profile: string } | null>();
   const [isBlurred, setIsBlurred] = useState(true);
+  const [showSideAI, setShowSideAI] = useState(false);
   const navigate = useNavigate();
 
   // handle to get the user info
@@ -100,6 +106,10 @@ export default function Dashboard() {
     }
     console.log(userData);
   }, [])
+
+  const toggleSideAI = () => {
+    setShowSideAI(!showSideAI);
+  };
 
   // handle the blue effect
   const toggleBlur = () => {
@@ -122,11 +132,8 @@ export default function Dashboard() {
       setReinput(input);
 
       try {
-        // https://ai-bzxnznku1-mullers-projects.vercel.app
         const response = await axios.post('http://127.0.0.1:8000/ask', {
-          // const response = await axios.post('https://ai-bzxnznku1-mullers-projects.vercel.app/ask', {
-          user_quation: input,
-          file_path: ""
+          user_quation: input
         });
 
         console.log(response.data.response);
@@ -205,12 +212,13 @@ export default function Dashboard() {
       try {
         signOut(auth).then(async () => {
           localStorage.removeItem('token');
-        signOut(auth).then( async () => {
-          localStorage.setItem("auth", "f");
-          navigate("/signin");
-        }).catch((error) => {
-          console.log(error);
-        })});
+          signOut(auth).then(async () => {
+            localStorage.setItem("auth", "f");
+            navigate("/signin");
+          }).catch((error) => {
+            console.log(error);
+          })
+        });
       } catch (error) {
         console.log(error);
       }
@@ -247,6 +255,11 @@ export default function Dashboard() {
 
   return (
     <>
+      {showSideAI && <SideAI onClose={() => setShowSideAI(false)} />}
+      <a className="p-5 bg-blue-600 text-white rounded-full fixed right-2 bottom-20" onClick={toggleSideAI}
+      >
+        <BotMessageSquareIcon className='w-6 h-6 cursor-pointer hover:animate-spin' />
+      </a>
       {/* header component */}
       <Header />
       {/* the rest of the dashboard code here */}
@@ -299,16 +312,13 @@ export default function Dashboard() {
                     )}
                   </div>
                 ))}
-                <br />
-                <hr />
-                <br />
                 {/* take a quize and progress page link */}
                 <Link to="/quize-and-progress" className="flex items-center justify-start w-full h-12 bg-blue-600 text-white rounded-lg p-4 border-1 border-blue-600 dark:border-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 dark:hover:bg-blue-500">
                   <p>Take a quize</p>
                   <Rocket className='ml-3 w-5 h-5' />
                 </Link>
                 {/* Add PDF Chat button */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     onClick={() => setShowPDFChat(true)}
                     className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
@@ -316,7 +326,7 @@ export default function Dashboard() {
                     <FileText className="h-4 w-4" />
                     <span>Chat with PDF</span>
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
 

@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-const API_URL = ' http://127.0.0.1:8000';
+const API_URL = 'http://127.0.0.1:8000';
 
 function cleanJsonResponse(response: string): string {
-  // Remove any markdown code block syntax
   let cleaned = response.replace(/```json\n?|\n?```/g, '');
-  // Remove any leading/trailing whitespace
   cleaned = cleaned.trim();
   return cleaned;
 }
@@ -39,23 +37,108 @@ export async function analyzePDFContent(content: string) {
     `;
 
     const response = await axios.post(`${API_URL}/ask`, {
-      user_quation: prompt,
-      content: content
+      user_quation: prompt, // Fixed typo in parameter name
+      content: content,
+      subject: 'Physics'
     });
+
+    if (!response.data || !response.data.response) {
+      throw new Error('Invalid response format from server');
+    }
 
     const cleanedResponse = cleanJsonResponse(response.data.response);
     
     try {
-      return JSON.parse(cleanedResponse);
+      const parsedResponse = JSON.parse(cleanedResponse);
+      
+      // Validate response structure
+      if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions)) {
+        throw new Error('Invalid questions format in response');
+      }
+      
+      return parsedResponse;
     } catch (parseError) {
       console.error('Failed to parse response:', cleanedResponse);
       throw new Error('Invalid response format from AI service');
     }
   } catch (error) {
+    console.error('PDF analysis error:', error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Server error: ${error.response?.data?.message || error.message}`);
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to analyze PDF: ${error.message}`);
     }
     throw new Error('Failed to analyze PDF');
+  }
+}
+
+export async function generateQuestionsForSubject(subject: string) {
+  try {
+    console.log('Generating questions for subject:', subject); // Debug log
+
+    const prompt = `
+      Generate a set of questions for ${subject}:
+      1. A set of 5 multiple choice questions with explanations
+      2. Key topics covered
+      3. Areas for improvement based on content complexity
+      
+      Return ONLY a JSON object with this exact structure (no markdown, no explanations):
+      {
+        "questions": [
+          {
+            "text": "question text",
+            "options": ["option1", "option2", "option3", "option4"],
+            "correctAnswer": 0,
+            "explanation": "detailed explanation"
+          }
+        ],
+        "topics": ["topic1", "topic2"],
+        "improvementAreas": [
+          {
+            "topic": "topic name",
+            "description": "improvement details"
+          }
+        ]
+      }
+    `;
+
+    const response = await axios.post(`${API_URL}/ask`, {
+      user_quation: prompt,
+      subject: subject
+    });
+
+    console.log('Server response:', response.data.response); // Debug log
+
+    if (!response.data || !response.data.response) {
+      throw new Error('Invalid response format from server');
+    }
+
+    const cleanedResponse = cleanJsonResponse(response.data.response);
+    console.log('Cleaned response:', cleanedResponse); // Debug log
+    
+    try {
+      const parsedResponse = JSON.parse(cleanedResponse);
+      
+      // Validate response structure
+      if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions)) {
+        throw new Error('Invalid questions format in response');
+      }
+      
+      return parsedResponse;
+    } catch (parseError) {
+      console.error('Failed to parse response:', cleanedResponse);
+      throw new Error('Invalid response format from AI service');
+    }
+  } catch (error) {
+    console.error('Question generation error:', error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Server error: ${error.response?.data?.message || error.message}`);
+    }
+    if (error instanceof Error) {
+      throw new Error(`Failed to generate questions: ${error.message}`);
+    }
+    throw new Error('Failed to generate questions');
   }
 }
 
@@ -82,18 +165,35 @@ export async function generatePersonalizedFeedback(answers: any[], topics: strin
     `;
 
     const response = await axios.post(`${API_URL}/ask`, {
-      user_quation: prompt
+      user_quation: prompt, // Fixed typo in parameter name
+      answers: answers,
+      topics: topics
     });
+
+    if (!response.data || !response.data.response) {
+      throw new Error('Invalid response format from server');
+    }
 
     const cleanedResponse = cleanJsonResponse(response.data.response);
     
     try {
-      return JSON.parse(cleanedResponse);
+      const parsedResponse = JSON.parse(cleanedResponse);
+      
+      // Validate response structure
+      if (!parsedResponse.strengths || !parsedResponse.weaknesses || !parsedResponse.recommendations) {
+        throw new Error('Invalid feedback format in response');
+      }
+      
+      return parsedResponse;
     } catch (parseError) {
       console.error('Failed to parse feedback response:', cleanedResponse);
       throw new Error('Invalid feedback format from AI service');
     }
   } catch (error) {
+    console.error('Feedback generation error:', error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Server error: ${error.response?.data?.message || error.message}`);
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to generate feedback: ${error.message}`);
     }

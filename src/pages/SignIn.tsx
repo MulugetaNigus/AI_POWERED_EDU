@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2, BookOpen, MoonIcon } from 'lucide-react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { auth } from '../config/firebaseConfig';
 import { provider } from '../config/firebaseConfig';
 import { FcGoogle } from "react-icons/fc";
@@ -15,6 +15,8 @@ export default function SignIn() {
   const [Loading, setLoading] = useState(false)
   const [theme, settheme] = useState(true)
   const [showPassword, setshowPassword] = useState(false)
+  const [LoadingForGoogle, setLoadingForGoogle] = useState(false);
+
 
   // for the navigation purpose
   const navigate = useNavigate();
@@ -59,11 +61,28 @@ export default function SignIn() {
     }, 3000);
   };
 
+  // filter the firebase error
+  const handleFirebaseError = (ErrorCode: string) => {
+    let ErrorType = "";
+    switch (ErrorCode) {
+      case "auth/internal-error":
+        ErrorType = "Failed, check your internet connection and try again !"
+        break;
+      default:
+        ErrorType = "Something went wrong, try again !"
+        break;
+    }
+
+    // return the types of the error cames in switch case 
+    return ErrorType;
+  }
+
   // sign in with google popups
   const handleToSignInWithGoogle = async () => {
+    setLoadingForGoogle(true);
     try {
       signInWithPopup(auth, provider)
-        .then( async (result) => {
+        .then(async (result) => {
           // This gives you a Google Access Token. You can use it to access the Google API.
           const credential = GoogleAuthProvider.credentialFromResult(result);
           const tokens = credential?.accessToken;
@@ -82,14 +101,17 @@ export default function SignIn() {
 
           // Store the token in local storage
           localStorage.setItem('token', token);
-          localStorage.setItem("auth" , "t");
+          localStorage.setItem("auth", "t");
+          setLoadingForGoogle(false);
           navigate('/');
           // IdP data available using getAdditionalUserInfo(result)
           // ...
         }).catch((error) => {
           // Handle Errors here.
           // const errorCode = error.code;
+          setLoadingForGoogle(false);
           console.log(error.message);
+          alert(handleFirebaseError(error.code));
           // The email of the user's account used.
           // const email = error.customData.email;
           // The AuthCredential type that was used.
@@ -97,6 +119,7 @@ export default function SignIn() {
           // ...
         });
     } catch (error) {
+      setLoadingForGoogle(false);
       console.log(error);
     }
   }
@@ -111,7 +134,7 @@ export default function SignIn() {
           <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-500" />
           <span className="text-xl font-bold text-gray-800 dark:text-white"
             style={{ color: theme ? "white" : "grey" }}
-          >EthioLearn</span>
+          >ExtreamX</span>
         </Link>
         <button onClick={() => settheme(!theme)}>
           <MoonIcon className="h-6 w-6 text-blue-600 dark:text-blue-500" />
@@ -199,8 +222,15 @@ export default function SignIn() {
           <button className='flex items-center text-md justify-center gap-4 text-center w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-gray-600 bg-white hover:bg-gray-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
             onClick={() => handleToSignInWithGoogle()}
           >
-            <span className='text-2xl'><FcGoogle /></span>
-            Sign In with google
+            {
+              LoadingForGoogle ?
+                <Loader2 className='w-6 h-6 animate-spin' />
+                :
+                <>
+                  <span className='text-2xl'><FcGoogle /></span>
+                  <span>Sign In with google</span>
+                </>
+            }
           </button>
         </div>
       </div>

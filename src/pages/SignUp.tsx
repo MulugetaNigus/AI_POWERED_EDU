@@ -15,6 +15,7 @@ export default function SignUp() {
   const [Loading, setLoading] = useState(false)
   const [theme, settheme] = useState(true)
   const [showPassword, setshowPassword] = useState(false)
+  const [LoadingForGoogle, setLoadingForGoogle] = useState(false);
 
 
   // for the navigation purpose
@@ -46,8 +47,25 @@ export default function SignUp() {
     }, 3000);
   };
 
+  // filter the firebase error
+  const handleFirebaseError = (ErrorCode: string) => {
+    let ErrorType = "";
+    switch (ErrorCode) {
+      case "auth/internal-error":
+        ErrorType = "Failed, check your internet connection and try again !"
+        break;
+      default:
+        ErrorType = "Something went wrong, try again !"
+        break;
+    }
+
+    // return the types of the error cames in switch case 
+    return ErrorType;
+  }
+
   // handle to signup with google
   const handleToSignUpWithGoogle = async () => {
+    setLoadingForGoogle(true);
     try {
       signInWithPopup(auth, provider)
         .then((result) => {
@@ -58,13 +76,16 @@ export default function SignUp() {
           // The signed-in user info.
           const user = result.user;
           console.log(user);
+          setLoadingForGoogle(false);
           navigate("/signin")
           // IdP data available using getAdditionalUserInfo(result)
           // ...
         }).catch((error) => {
+          setLoadingForGoogle(false);
           // Handle Errors here.
           // const errorCode = error.code;
-          console.log(error.message);
+          console.log(error.code);
+          alert(handleFirebaseError(error.code));
           // The email of the user's account used.
           console.log(error.customData.email);
           // The AuthCredential type that was used.
@@ -73,6 +94,8 @@ export default function SignUp() {
           // ...
         });
     } catch (error) {
+      setLoadingForGoogle(false);
+      alert(error);
       console.log(error)
     }
   }
@@ -85,7 +108,7 @@ export default function SignUp() {
       >
         <Link to="/" className="flex items-center space-x-2">
           <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-500" />
-          <span className="text-xl font-bold" style={{ color: theme ? "white" : "grey" }}>EthioLearn</span>
+          <span className="text-xl font-bold" style={{ color: theme ? "white" : "grey" }}>ExtreamX</span>
         </Link>
         <button onClick={() => settheme(!theme)}>
           <MoonIcon className="h-6 w-6 text-blue-600 dark:text-blue-500" />
@@ -190,8 +213,15 @@ export default function SignUp() {
           <button className='flex items-center text-md justify-center gap-4 text-center w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-gray-600 bg-white hover:bg-gray-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
             onClick={() => handleToSignUpWithGoogle()}
           >
-            <span className='text-2xl'><FcGoogle /></span>
-            Sign Up with google
+            {
+              LoadingForGoogle ?
+                <Loader2 className='w-6 h-6 animate-spin' />
+                :
+                <>
+                  <span className='text-2xl'><FcGoogle /></span>
+                  <span>Sign Up with google</span>
+                </>
+            }
           </button>
         </div >
       </div >

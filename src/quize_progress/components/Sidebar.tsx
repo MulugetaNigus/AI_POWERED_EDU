@@ -77,7 +77,7 @@ export default function Sidebar({
                   {gradeData.subjects.map((subject) => (
                     <button
                       key={subject}
-                      onClick={() => onSubjectSelect(subject)}
+                      onClick={() => { onSubjectSelect(subject); console.log(subject + " " + gradeData.grade) }}
                       className={`w-full flex items-center gap-2 p-2 text-sm transition-colors ${
                         selectedSubject === subject
                           ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900'

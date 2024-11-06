@@ -34,7 +34,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-500" />
-            <span className="text-xl font-bold text-gray-800 dark:text-white">EthioLearn</span>
+            <span className="text-2xl font-bold text-gray-800 dark:text-white">ExtreamX</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
@@ -48,7 +48,7 @@ export default function Header() {
             <ThemeToggle />
             {
               localStorage.getItem('token') ? (
-                <p onClick={ () => handleLogOut() } className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                <p onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
                   <LogOut className="h-4 w-4 mr-2" />
                   SignOut
                 </p>

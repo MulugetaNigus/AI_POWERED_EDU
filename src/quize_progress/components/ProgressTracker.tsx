@@ -8,55 +8,64 @@ import {
   TrendingUp, AlertCircle 
 } from 'lucide-react';
 import ReviewModal from './ReviewModal';
+import { useProgressStore } from './store/progressStore';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-const progressData = [
-  { subject: 'Physics', completed: 75, total: 100 },
-  { subject: 'Mathematics', completed: 60, total: 100 },
-  { subject: 'English', completed: 90, total: 100 },
-  { subject: 'Biology', completed: 45, total: 100 },
-];
-
-const weaknessData = [
-  { topic: 'Mechanics', score: 65 },
-  { topic: 'Thermodynamics', score: 45 },
-  { topic: 'Optics', score: 80 },
-  { topic: 'Electricity', score: 70 },
-];
-
 export default function ProgressTracker() {
-  const [selectedTopic, setSelectedTopic] = useState<{ topic: string; score: number } | null>(null);
+  const { 
+    quizResults, 
+    getOverallProgress, 
+    getCompletedQuizzes, 
+    studyStreak,
+    getAreasToImprove,
+    improvementAreas
+  } = useProgressStore();
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   
-  const pieData = progressData.map(item => ({
-    name: item.subject,
-    value: (item.completed / item.total) * 100
+  const pieData = Object.entries(quizResults).map(([subject, result]) => ({
+    name: subject,
+    value: (result.score / result.totalQuestions) * 100
   }));
+
+  const barData = Object.entries(quizResults).map(([topic, result]) => ({
+    topic,
+    score: (result.score / result.totalQuestions) * 100
+  }));
+
+  // Get topics that need improvement (score < 70%)
+  const topicsToImprove = Object.entries(quizResults)
+    .filter(([_, result]) => (result.score / result.totalQuestions) < 0.7)
+    .map(([topic, result]) => ({
+      topic,
+      score: (result.score / result.totalQuestions) * 100,
+      feedback: result.feedback
+    }));
 
   return (
     <div className="p-6 space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Overall Progress"
-          value="72%"
+          value={`${getOverallProgress()}%`}
           icon={<TrendingUp className="w-6 h-6" />}
           color="text-blue-600 dark:text-blue-400"
         />
         <StatCard
           title="Completed Quizzes"
-          value="24/30"
+          value={getCompletedQuizzes()}
           icon={<Trophy className="w-6 h-6" />}
           color="text-green-600 dark:text-green-400"
         />
         <StatCard
           title="Study Streak"
-          value="7 days"
+          value={`${studyStreak} days`}
           icon={<Target className="w-6 h-6" />}
           color="text-yellow-600 dark:text-yellow-400"
         />
         <StatCard
           title="Areas to Improve"
-          value="3"
+          value={getAreasToImprove().toString()}
           icon={<AlertCircle className="w-6 h-6" />}
           color="text-red-600 dark:text-red-400"
         />
@@ -94,7 +103,7 @@ export default function ProgressTracker() {
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weaknessData}>
+              <BarChart data={barData}>
                 <XAxis dataKey="topic" />
                 <YAxis />
                 <Tooltip />
@@ -110,41 +119,58 @@ export default function ProgressTracker() {
           Recommended Focus Areas
         </h3>
         <div className="space-y-4">
-          {weaknessData
-            .sort((a, b) => a.score - b.score)
-            .slice(0, 2)
-            .map((topic, index) => (
-              <div
-                key={topic.topic}
-                className="p-4 border dark:border-gray-700 rounded-lg flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <div>
-                    <h4 className="font-medium text-gray-800 dark:text-white">
-                      {topic.topic}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Current score: {topic.score}%
-                    </p>
-                  </div>
+          {improvementAreas.map((area, index) => (
+            <div
+              key={index}
+              className="p-4 border dark:border-gray-700 rounded-lg flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <h4 className="font-medium text-gray-800 dark:text-white">
+                    {area.topic}
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {area.description}
+                  </p>
                 </div>
-                <button 
-                  onClick={() => setSelectedTopic(topic)}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Review
-                </button>
               </div>
-            ))}
+            </div>
+          ))}
+          {topicsToImprove.map((topic) => (
+            <div
+              key={topic.topic}
+              className="p-4 border dark:border-gray-700 rounded-lg flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <h4 className="font-medium text-gray-800 dark:text-white">
+                    {topic.topic}
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Current score: {topic.score.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedTopic(topic.topic)}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Review
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 
-      {selectedTopic && (
+      {selectedTopic && quizResults[selectedTopic]?.feedback && (
         <ReviewModal
           isOpen={!!selectedTopic}
           onClose={() => setSelectedTopic(null)}
+          feedback={quizResults[selectedTopic].feedback!}
           topic={selectedTopic}
+          score={(quizResults[selectedTopic].score / quizResults[selectedTopic].totalQuestions) * 100}
         />
       )}
     </div>
