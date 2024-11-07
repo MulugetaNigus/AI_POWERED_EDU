@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, BookOpen } from 'lucide-react';
+import { CheckCircle2, XCircle, BookOpen, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useProgressStore } from './store/progressStore';
 import { generatePersonalizedFeedback, generateQuestionsForSubject } from './lib/gemini';
 import PDFUploader from './PDFUploader';
 import LoadingQuiz from './LoadingQuiz';
+import ChapterModal from './ChapterModal';
 
 interface QuizProps {
   subject: string;
@@ -19,8 +20,11 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [showChapterModal, setShowChapterModal] = useState(false);
 
-  const startQuiz = async () => {
+  const startQuiz = async (startChapter: number, endChapter: number) => {
     if (!subject) {
       setError('Please select a subject first');
       return;
@@ -28,29 +32,36 @@ export default function Quiz({ subject, grade }: QuizProps) {
 
     setIsLoading(true);
     setError(null);
+    setIsRetrying(false);
 
     try {
-      console.log('Starting quiz for subject:', subject);
-      const result = await generateQuestionsForSubject(subject);
-      
-      if (!result || !result.questions || !Array.isArray(result.questions) || result.questions.length === 0) {
-        throw new Error('No questions received from the server');
-      }
-
-      console.log('Received questions:', result.questions.length);
+      const result = await generateQuestionsForSubject(subject, startChapter, endChapter);
       updateQuestions(result.questions);
-      updateTopics(result.topics || []);
-      if (result.improvementAreas) {
-        updateImprovementAreas(result.improvementAreas);
-      }
+      updateTopics(result.topics);
+      updateImprovementAreas(result.improvementAreas);
       setHasStarted(true);
+      setRetryCount(0);
+      setError(null);
+      setShowChapterModal(false);
     } catch (err) {
-      console.error('Error starting quiz:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load questions');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to start quiz';
+      setError(errorMessage);
       setHasStarted(false);
     } finally {
       setIsLoading(false);
+      setIsRetrying(false);
     }
+  };
+
+  const handleRetry = async () => {
+    if (retryCount >= 3) {
+      setError('Maximum retry attempts reached. Please try again later.');
+      return;
+    }
+
+    setRetryCount(prev => prev + 1);
+    setIsRetrying(true);
+    setShowChapterModal(true);
   };
 
   const handleAnswer = async (index: number) => {
@@ -67,8 +78,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
         const score = newAnswers.filter(a => a.correct).length;
         addQuizResult(subject, score, questions.length, personalizedFeedback);
       } catch (error) {
-        console.error('Error generating feedback:', error);
-        // Continue without feedback if there's an error
+        console.error('Failed to generate feedback:', error);
       }
     }
   };
@@ -76,7 +86,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const handleNext = () => {
     setSelectedAnswer(null);
     setShowExplanation(false);
-    setCurrentQuestion((prev) => Math.min(prev + 1, questions.length - 1));
+    setCurrentQuestion(prev => Math.min(prev + 1, questions.length - 1));
   };
 
   if (isLoading) {
@@ -85,20 +95,35 @@ export default function Quiz({ subject, grade }: QuizProps) {
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-        <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-          <XCircle className="w-5 h-5" />
-          <p>{error}</p>
+      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <div className="flex flex-col items-center text-center space-y-4">
+          <AlertTriangle className="w-12 h-12 text-amber-500" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Oops! Something went wrong
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          </div>
+          {retryCount < 3 && (
+            <button
+              onClick={handleRetry}
+              disabled={isRetrying}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {isRetrying ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4" />
+                  Try Again
+                </>
+              )}
+            </button>
+          )}
         </div>
-        <button
-          onClick={() => {
-            setError(null);
-            setHasStarted(false);
-          }}
-          className="mt-4 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-        >
-          Try Again
-        </button>
       </div>
     );
   }
@@ -115,12 +140,20 @@ export default function Quiz({ subject, grade }: QuizProps) {
             Test your knowledge in {subject} for {grade}
           </p>
           <button
-            onClick={startQuiz}
+            onClick={() => setShowChapterModal(true)}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Start Quiz
           </button>
         </div>
+
+        <ChapterModal
+          isOpen={showChapterModal}
+          onClose={() => setShowChapterModal(false)}
+          onStartQuiz={startQuiz}
+          subject={subject}
+          grade={grade}
+        />
       </div>
     );
   }
@@ -198,18 +231,6 @@ export default function Quiz({ subject, grade }: QuizProps) {
           Next Question
         </button>
       )}
-      {/* simulate feedback content generated by the server only by loaidng and generated msg*/}
-      {showExplanation && currentQuestion === questions.length - 1 && (
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-blue-800 dark:text-blue-200">
-            Your score is {answers.filter(a => a.correct).length} out of {questions.length}
-          </p>
-          {/* and here enhanced area feedback generated text with success icon */}
-          <p className="text-blue-800 dark:text-blue-200">
-            Generated
-          </p>
-        </div>
-        )}
     </div>
   );
 }
