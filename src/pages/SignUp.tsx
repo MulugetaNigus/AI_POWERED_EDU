@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Loader2, BookOpen, MoonIcon, CloudLightning } from 'lucide-react';
+import { Book, Mail, Lock, Loader2, BookOpen, MoonIcon, CloudLightning } from 'lucide-react';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { provider } from '../config/firebaseConfig';
 import { auth } from '../config/firebaseConfig';
@@ -9,7 +9,7 @@ import { FcGoogle } from "react-icons/fc";
 export default function SignUp() {
 
   // local states to hold the email and password
-  const [username, setusername] = useState("")
+  const [grade, setgrade] = useState("")
   const [email, setemail] = useState("")
   const [password, setpassword] = useState("")
   const [Loading, setLoading] = useState(false)
@@ -130,21 +130,6 @@ export default function SignUp() {
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              {/* <div>
-                <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
-                <div className="mt-1 relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    id="name"
-                    type="text"
-                    required
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Enter your full name"
-                    onChange={(e) => setusername(e.target.value)}
-                    value={username}
-                  />
-                </div>
-              </div> */}
               <div>
                 <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                 <div className="mt-1 relative">
@@ -179,6 +164,20 @@ export default function SignUp() {
                   <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>show password</p>
                 </div>
               </div>
+              {/* <div>
+                <label htmlFor="grade" className="text-sm font-medium text-gray-700 dark:text-gray-300">I'm apply as a grade: {grade}</label>
+                <div className="mt-1 relative">
+                  <Book className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <select id='grade' className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    onChange={(e) => setgrade(e.target.value)}
+                    value={grade}
+                  >
+                    <option value="grade6" selected >Grade 6</option>
+                    <option value="grade8">Grade 8</option>
+                    <option value="grade12">Grade 12</option>
+                  </select>
+                </div>
+              </div> */}
             </div>
 
             {Loading ? (

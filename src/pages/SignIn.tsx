@@ -47,7 +47,7 @@ export default function SignIn() {
             // Store the token in local storage
             localStorage.setItem('token', token);
 
-            navigate('/');
+            navigate('/on-boarding');
           })
           .catch((error) => {
             // const errorCode = error.code;
@@ -103,7 +103,7 @@ export default function SignIn() {
           localStorage.setItem('token', token);
           localStorage.setItem("auth", "t");
           setLoadingForGoogle(false);
-          navigate('/');
+          navigate('/on-boarding');
           // IdP data available using getAdditionalUserInfo(result)
           // ...
         }).catch((error) => {

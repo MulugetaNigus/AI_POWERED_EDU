@@ -7,6 +7,7 @@ import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Apps from './quize_progress/Apps';
+import OnboardingFlow from './onboarding/OnboardingFlow';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -58,10 +59,19 @@ function App() {
             <ThemeProvider>
                 <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
                     <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Route path="/" element={
+                            <ProtectedRoute>
+                                <Home />
+                            </ProtectedRoute>
+                        } />
                         <Route path="/signin" element={<SignIn />} />
                         <Route path="/signup" element={<SignUp />} />
-                        <Route path='/quize-and-progress' element={<Apps />} />
+                        <Route path='/quize-and-progress' element={
+                            <ProtectedRoute>
+                                <Apps />
+                            </ProtectedRoute>
+                        } />
+                        <Route path='/on-boarding' element={<OnboardingFlow />} />
                         <Route
                             path="/dashboard"
                             element={

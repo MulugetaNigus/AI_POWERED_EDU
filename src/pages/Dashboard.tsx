@@ -133,7 +133,8 @@ export default function Dashboard() {
 
       try {
         const response = await axios.post('http://127.0.0.1:8000/ask', {
-          user_quation: input
+          user_quation: input,
+          // subject: "Physics"
         });
 
         console.log(response.data.response);
@@ -296,8 +297,11 @@ export default function Dashboard() {
                           <button
                             key={course.name}
                             onClick={() =>
-                              handleCourseSelect(grade.level, course.name)
+                            {
+                              handleCourseSelect(grade.level, course.name);
+                              console.log(course.name)
                             }
+                          }
                             className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${selectedCourse?.grade === grade.level &&
                               selectedCourse?.course === course.name
                               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -390,7 +394,7 @@ export default function Dashboard() {
             {selectedCourse && (
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Grade {selectedCourse.grade} - {selectedCourse.course}
+                  {selectedCourse.course}
                 </h2>
               </div>
             )}

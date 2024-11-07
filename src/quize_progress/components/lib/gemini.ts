@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const API_URL = 'http://127.0.0.1:8000';
 
 function cleanJsonResponse(response: string): string {
@@ -37,9 +36,9 @@ export async function analyzePDFContent(content: string) {
     `;
 
     const response = await axios.post(`${API_URL}/ask`, {
-      user_quation: prompt, // Fixed typo in parameter name
-      content: content,
-      subject: 'Physics'
+      user_quation: prompt,
+      content: content, // Including content for the PDF analysis
+      subject: "uploaded"
     });
 
     if (!response.data || !response.data.response) {
@@ -47,15 +46,14 @@ export async function analyzePDFContent(content: string) {
     }
 
     const cleanedResponse = cleanJsonResponse(response.data.response);
-    
+
     try {
       const parsedResponse = JSON.parse(cleanedResponse);
-      
-      // Validate response structure
+
       if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions)) {
         throw new Error('Invalid questions format in response');
       }
-      
+
       return parsedResponse;
     } catch (parseError) {
       console.error('Failed to parse response:', cleanedResponse);
@@ -66,16 +64,13 @@ export async function analyzePDFContent(content: string) {
     if (axios.isAxiosError(error)) {
       throw new Error(`Server error: ${error.response?.data?.message || error.message}`);
     }
-    if (error instanceof Error) {
-      throw new Error(`Failed to analyze PDF: ${error.message}`);
-    }
     throw new Error('Failed to analyze PDF');
   }
 }
 
 export async function generateQuestionsForSubject(subject: string) {
   try {
-    console.log('Generating questions for subject:', subject); // Debug log
+    console.log('Generating questions for subject:', subject);
 
     const prompt = `
       Generate a set of questions for ${subject}:
@@ -105,26 +100,26 @@ export async function generateQuestionsForSubject(subject: string) {
 
     const response = await axios.post(`${API_URL}/ask`, {
       user_quation: prompt,
-      subject: subject
+      subject: subject // Sending subject name directly
     });
-
-    console.log('Server response:', response.data.response); // Debug log
 
     if (!response.data || !response.data.response) {
       throw new Error('Invalid response format from server');
     }
 
     const cleanedResponse = cleanJsonResponse(response.data.response);
-    console.log('Cleaned response:', cleanedResponse); // Debug log
-    
+
+    if (!cleanedResponse || typeof cleanedResponse !== 'string') {
+      throw new Error('Cleaned response is not a valid JSON string');
+    }
+
     try {
       const parsedResponse = JSON.parse(cleanedResponse);
-      
-      // Validate response structure
+
       if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions)) {
         throw new Error('Invalid questions format in response');
       }
-      
+
       return parsedResponse;
     } catch (parseError) {
       console.error('Failed to parse response:', cleanedResponse);
@@ -134,9 +129,6 @@ export async function generateQuestionsForSubject(subject: string) {
     console.error('Question generation error:', error);
     if (axios.isAxiosError(error)) {
       throw new Error(`Server error: ${error.response?.data?.message || error.message}`);
-    }
-    if (error instanceof Error) {
-      throw new Error(`Failed to generate questions: ${error.message}`);
     }
     throw new Error('Failed to generate questions');
   }
@@ -175,15 +167,15 @@ export async function generatePersonalizedFeedback(answers: any[], topics: strin
     }
 
     const cleanedResponse = cleanJsonResponse(response.data.response);
-    
+
     try {
       const parsedResponse = JSON.parse(cleanedResponse);
-      
+
       // Validate response structure
       if (!parsedResponse.strengths || !parsedResponse.weaknesses || !parsedResponse.recommendations) {
         throw new Error('Invalid feedback format in response');
       }
-      
+
       return parsedResponse;
     } catch (parseError) {
       console.error('Failed to parse feedback response:', cleanedResponse);

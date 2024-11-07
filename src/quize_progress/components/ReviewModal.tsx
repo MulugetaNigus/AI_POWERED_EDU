@@ -1,68 +1,24 @@
 import React from 'react';
-import { X, BookOpen, Target, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, BookOpen, Target, CheckCircle2 } from 'lucide-react';
 
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  topic: {
-    topic: string;
-    score: number;
+  feedback: {
+    strengths: string[];
+    weaknesses: string[];
+    recommendations: {
+      topic: string;
+      action: string;
+      resources: string[];
+    }[];
   };
+  topic: string;
+  score: number;
 }
 
-const improvementAreas = {
-  'Mechanics': {
-    title: 'Mechanics Improvement Plan',
-    description: "Your understanding of mechanical physics concepts needs strengthening. Focus on these key areas:",
-    areas: [
-      {
-        title: "Newton's Laws of Motion",
-        description: "Review the fundamental principles of motion, forces, and their interactions. Pay special attention to problem-solving involving multiple forces."
-      },
-      {
-        title: "Conservation of Energy",
-        description: "Practice problems involving energy transformations, particularly between kinetic and potential energy in various systems."
-      },
-      {
-        title: "Momentum and Collisions",
-        description: "Work on understanding elastic and inelastic collisions, and how momentum is conserved in isolated systems."
-      }
-    ],
-    resources: [
-      "Interactive Physics Simulations",
-      "Video Tutorials on Force Analysis",
-      "Practice Problems with Step-by-Step Solutions"
-    ]
-  },
-  'Thermodynamics': {
-    title: 'Thermodynamics Mastery Path',
-    description: "Your thermodynamics foundation needs reinforcement. Concentrate on these essential concepts:",
-    areas: [
-      {
-        title: "Laws of Thermodynamics",
-        description: "Focus on understanding heat transfer, energy conservation, and entropy in thermal processes."
-      },
-      {
-        title: "Gas Laws and Behavior",
-        description: "Practice problems involving ideal gas law, real gases, and their behavior under different conditions."
-      },
-      {
-        title: "Heat Engines and Efficiency",
-        description: "Study the principles of heat engines, refrigeration cycles, and calculating thermal efficiency."
-      }
-    ],
-    resources: [
-      "Thermal Process Animations",
-      "Interactive Temperature-Pressure Diagrams",
-      "Thermodynamics Problem Sets"
-    ]
-  }
-};
-
-export default function ReviewModal({ isOpen, onClose, topic }: ReviewModalProps) {
+export default function ReviewModal({ isOpen, onClose, feedback, topic, score }: ReviewModalProps) {
   if (!isOpen) return null;
-
-  const improvement = improvementAreas[topic.topic as keyof typeof improvementAreas];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -76,10 +32,10 @@ export default function ReviewModal({ isOpen, onClose, topic }: ReviewModalProps
               <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {improvement.title}
+                  {topic} Review
                 </h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Current Score: {topic.score}%
+                  Current Score: {score.toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -91,61 +47,63 @@ export default function ReviewModal({ isOpen, onClose, topic }: ReviewModalProps
             </button>
           </div>
 
-          {/* Description */}
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {improvement.description}
-          </p>
-
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Progress</span>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{topic.score}%</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{score.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-blue-600 h-2.5 rounded-full transition-all"
-                style={{ width: `${topic.score}%` }}
+                style={{ width: `${score}%` }}
               />
             </div>
           </div>
 
-          {/* Improvement Areas */}
-          <div className="space-y-4 mb-8">
-            {improvement.areas.map((area, index) => (
-              <div
-                key={index}
-                className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600"
-              >
-                <div className="flex items-start gap-3">
-                  <Target className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                      {area.title}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      {area.description}
-                    </p>
-                  </div>
+          {/* Strengths & Weaknesses */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">Strengths</h4>
+              <ul className="space-y-2">
+                {feedback.strengths.map((strength, index) => (
+                  <li key={index} className="flex items-start gap-2 text-green-700 dark:text-green-300">
+                    <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <span>{strength}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">Areas to Improve</h4>
+              <ul className="space-y-2">
+                {feedback.weaknesses.map((weakness, index) => (
+                  <li key={index} className="flex items-start gap-2 text-red-700 dark:text-red-300">
+                    <Target className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <span>{weakness}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white">Recommended Actions</h4>
+            {feedback.recommendations.map((rec, index) => (
+              <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h5 className="font-medium text-blue-800 dark:text-blue-200 mb-2">{rec.topic}</h5>
+                <p className="text-blue-700 dark:text-blue-300 mb-3">{rec.action}</p>
+                <div className="text-sm">
+                  <h6 className="font-medium text-blue-800 dark:text-blue-200 mb-1">Resources:</h6>
+                  <ul className="list-disc list-inside space-y-1">
+                    {rec.resources.map((resource, i) => (
+                      <li key={i} className="text-blue-600 dark:text-blue-400">{resource}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Resources */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              Recommended Resources
-            </h4>
-            <ul className="space-y-2">
-              {improvement.resources.map((resource, index) => (
-                <li key={index} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  {resource}
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </div>

@@ -57,7 +57,23 @@ export default function Hero() {
                   'Ace Your Exams',
                   2000,
                   'Supported By AI Experts',
-                  2000
+                  2000,
+                  'Learn Faster, Learn Smarter',
+                  2000,
+                  'Unlock Your Potential',
+                  2000,
+                  'Master Any Subject',
+                  2000,
+                  'Get Personalized Feedback',
+                  2000,
+                  'Boost Your Grades with AI',
+                  2000,
+                  'Smart Study Solutions',
+                  2000,
+                  '24/7 Study Support',
+                  2000,
+                  'Grasp Complex Concepts',
+                  2000,
                 ]}
                 wrapper="span"
                 speed={50}
