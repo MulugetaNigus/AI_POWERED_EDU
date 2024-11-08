@@ -137,7 +137,7 @@ export default function Dashboard() {
           // subject: "Physics"
         });
 
-        console.log(response.data.response);
+        console.log(response.data);
         setMessages(prev => [
           ...prev,
           { text: response.data.response, isAI: true }
