@@ -22,10 +22,10 @@ const SAMPLE_CHAPTERS: Record<string, Chapter[]> = {
     { id: 3, title: '3', description: 'Light, reflection, and refraction' },
     { id: 4, title: '4', description: 'Electric charges, current, and circuits' },
   ],
-  Mathematics: [
-    { id: 1, title: '2', description: 'Equations and expressions' },
-    { id: 2, title: '3', description: 'Shapes and measurements' },
-    { id: 3, title: '4', description: 'Angular functions and relationships' },
+  Algorithm: [
+    { id: 1, title: '1', description: 'Equations and expressions' },
+    { id: 2, title: '2', description: 'Shapes and measurements' },
+    { id: 3, title: '3', description: 'Angular functions and relationships' },
   ],
   // Add more subjects as needed
 };

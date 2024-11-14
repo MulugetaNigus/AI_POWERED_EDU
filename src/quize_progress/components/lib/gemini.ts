@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'http://127.0.0.1:8000'
 
 interface Question {
   text: string;
@@ -220,7 +220,7 @@ export async function generatePersonalizedFeedback(
     `;
 
     const response = await axios.post(`${API_URL}/ask`, {
-      user_question: prompt,
+      user_quation: prompt,
       answers: answers,
       topics: topics
     });

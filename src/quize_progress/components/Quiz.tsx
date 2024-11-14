@@ -25,6 +25,9 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const [showChapterModal, setShowChapterModal] = useState(false);
 
   const startQuiz = async (startChapter: number, endChapter: number) => {
+    console.log("subject: ", subject);
+    console.log("from chapter: ", startChapter);
+    console.log("to: ", endChapter);
     if (!subject) {
       setError('Please select a subject first');
       return;
