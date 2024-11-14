@@ -145,7 +145,7 @@ export async function generateQuestionsForSubject(
     `;
 
     const response = await axios.post(`${API_URL}/ask`, {
-      user_question: prompt,
+      user_quation: prompt,
       subject: subject,
       startChapter,
       endChapter,

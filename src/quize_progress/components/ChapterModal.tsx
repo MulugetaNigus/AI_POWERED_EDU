@@ -17,15 +17,15 @@ interface ChapterModalProps {
 
 const SAMPLE_CHAPTERS: Record<string, Chapter[]> = {
   Physics: [
-    { id: 1, title: 'Mechanics', description: 'Forces, motion, and energy' },
-    { id: 2, title: 'Thermodynamics', description: 'Heat, temperature, and thermal processes' },
-    { id: 3, title: 'Optics', description: 'Light, reflection, and refraction' },
-    { id: 4, title: 'Electricity', description: 'Electric charges, current, and circuits' },
+    { id: 1, title: '1', description: 'Forces, motion, and energy' },
+    { id: 2, title: '2', description: 'Heat, temperature, and thermal processes' },
+    { id: 3, title: '3', description: 'Light, reflection, and refraction' },
+    { id: 4, title: '4', description: 'Electric charges, current, and circuits' },
   ],
   Mathematics: [
-    { id: 1, title: 'Algebra', description: 'Equations and expressions' },
-    { id: 2, title: 'Geometry', description: 'Shapes and measurements' },
-    { id: 3, title: 'Trigonometry', description: 'Angular functions and relationships' },
+    { id: 1, title: '2', description: 'Equations and expressions' },
+    { id: 2, title: '3', description: 'Shapes and measurements' },
+    { id: 3, title: '4', description: 'Angular functions and relationships' },
   ],
   // Add more subjects as needed
 };

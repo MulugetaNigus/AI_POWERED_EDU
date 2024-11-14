@@ -13,7 +13,7 @@ const grades = [
   },
   {
     grade: 'Grade 8',
-    subjects: ['Mathematics', 'Physics', 'English', 'Biology'],
+    subjects: ['Algorithm', 'Physics', 'English', 'Biology'],
     icon: <Microscope className="w-5 h-5" />
   },
   {

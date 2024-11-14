@@ -132,9 +132,9 @@ export default function Dashboard() {
       setReinput(input);
 
       try {
-        const response = await axios.post('http://127.0.0.1:8000/ask', {
-          user_quation: input,
-          // subject: "Physics"
+        const response = await axios.post('http://localhost:3000/process-file', {
+          sybject: "flutter",
+          prompt: "what is flutter"
         });
 
         console.log(response.data);

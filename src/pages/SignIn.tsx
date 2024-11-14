@@ -88,20 +88,22 @@ export default function SignIn() {
           const tokens = credential?.accessToken;
           console.log(tokens);
           // The signed-in user info.
-          const user = result.user;
-          // Save the user login data into local storage
-          localStorage.setItem('user', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            profile: user.photoURL
-            // Add any other user data you want to store
-          }));
-          // Get the JWT token
-          const token = await user.getIdToken();
 
-          // Store the token in local storage
-          localStorage.setItem('token', token);
-          localStorage.setItem("auth", "t");
+          // const user = result.user;
+          // // Save the user login data into local storage
+          // localStorage.setItem('user', JSON.stringify({
+          //   uid: user.uid,
+          //   email: user.email,
+          //   profile: user.photoURL
+          //   // Add any other user data you want to store
+          // }));
+          // // Get the JWT token
+          // const token = await user.getIdToken();
+
+          // // Store the token in local storage
+          // localStorage.setItem('token', token);
+          // localStorage.setItem("auth", "t");
+
           setLoadingForGoogle(false);
           navigate('/on-boarding');
           // IdP data available using getAdditionalUserInfo(result)

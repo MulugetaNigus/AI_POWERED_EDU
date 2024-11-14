@@ -4,7 +4,9 @@ import { X, BookOpen, Target, CheckCircle2 } from 'lucide-react';
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  feedback: {
+  feedbacker: {
+    subject: string;
+    score: string;
     strengths: string[];
     weaknesses: string[];
     recommendations: {
@@ -13,11 +15,9 @@ interface ReviewModalProps {
       resources: string[];
     }[];
   };
-  topic: string;
-  score: number;
 }
 
-export default function ReviewModal({ isOpen, onClose, feedback, topic, score }: ReviewModalProps) {
+export default function ReviewModal({ isOpen, onClose, feedbacker }: ReviewModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -32,10 +32,10 @@ export default function ReviewModal({ isOpen, onClose, feedback, topic, score }:
               <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {topic} Review
+                  {feedbacker.subject} Review
                 </h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Current Score: {score.toFixed(1)}%
+                  Current Score: {feedbacker.score}%
                 </p>
               </div>
             </div>
@@ -51,12 +51,12 @@ export default function ReviewModal({ isOpen, onClose, feedback, topic, score }:
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Progress</span>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{score.toFixed(1)}%</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{feedbacker.score}%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-blue-600 h-2.5 rounded-full transition-all"
-                style={{ width: `${score}%` }}
+                style={{ width: `${feedbacker.score}%` }}
               />
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function ReviewModal({ isOpen, onClose, feedback, topic, score }:
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">Strengths</h4>
               <ul className="space-y-2">
-                {feedback.strengths.map((strength, index) => (
+                {feedbacker.strengths.map((strength, index) => (
                   <li key={index} className="flex items-start gap-2 text-green-700 dark:text-green-300">
                     <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
                     <span>{strength}</span>
@@ -77,7 +77,7 @@ export default function ReviewModal({ isOpen, onClose, feedback, topic, score }:
             <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">Areas to Improve</h4>
               <ul className="space-y-2">
-                {feedback.weaknesses.map((weakness, index) => (
+                {feedbacker.weaknesses.map((weakness, index) => (
                   <li key={index} className="flex items-start gap-2 text-red-700 dark:text-red-300">
                     <Target className="w-5 h-5 mt-0.5 flex-shrink-0" />
                     <span>{weakness}</span>
@@ -90,7 +90,7 @@ export default function ReviewModal({ isOpen, onClose, feedback, topic, score }:
           {/* Recommendations */}
           <div className="space-y-4">
             <h4 className="font-semibold text-gray-900 dark:text-white">Recommended Actions</h4>
-            {feedback.recommendations.map((rec, index) => (
+            {feedbacker.recommendations.map((rec, index) => (
               <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <h5 className="font-medium text-blue-800 dark:text-blue-200 mb-2">{rec.topic}</h5>
                 <p className="text-blue-700 dark:text-blue-300 mb-3">{rec.action}</p>
