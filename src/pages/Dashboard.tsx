@@ -492,12 +492,12 @@ export default function Dashboard() {
             >
               <div className="flex space-x-4">
                 <div className="p-4 border-gray-200 dark:border-gray-700">
-                  <button
+                  {/* <button
                     onClick={() => setShowPDFChat(true)}
                     className="w-full flex items-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                   >
                     <FileText className="h-5 w-5" />
-                  </button>
+                  </button> */}
                 </div>
                 <button
                   type="button"
