@@ -23,7 +23,7 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { ToastContainer, toast } from "react-toastify";
+import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface QuizProps {
@@ -143,7 +143,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
         setOpen(true);
         // Show a success notification
         toast.success("Feedback generated successfully!", {
-          position: "top-center",
+          position: "top-center"
         });
       } catch (error) {
         console.error("Failed to generate feedback:", error);
@@ -367,7 +367,12 @@ export default function Quiz({ subject, grade }: QuizProps) {
           </div>
         </Dialog>
       )}
-      <ToastContainer />
+      <ToastContainer
+        draggable
+        pauseOnHover={true}
+        autoClose={8000}
+        transition={Bounce}
+      />
     </div>
   );
 }

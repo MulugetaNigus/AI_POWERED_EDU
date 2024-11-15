@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
+import { Bounce, ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ContactModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
@@ -26,12 +28,19 @@ const ContactModal = ({ isOpen, onClose }) => {
         .post("http://localhost:8888/api/v1/contact", user_cred)
         .then((result) => {
           console.log(result);
-          alert("success !");
+          // Show a success notification
+          toast.success("Contact message send successfully!", {
+            position: "top-center",
+          });
           setsendLoading(false);
           onClose();
         })
         .catch((err) => {
           setsendLoading(false);
+          // Show an error notification
+          toast.error("Failed to send Contact message!", {
+            position: "top-center",
+          });
           return console.log(err);
         });
     } catch (err) {
@@ -118,6 +127,12 @@ const ContactModal = ({ isOpen, onClose }) => {
           </motion.div>
         </motion.div>
       )}
+      <ToastContainer
+        draggable
+        pauseOnHover={true}
+        autoClose={8000}
+        transition={Bounce}
+      />
     </>
   );
 };
