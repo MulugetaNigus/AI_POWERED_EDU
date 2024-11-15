@@ -133,7 +133,7 @@ export default function Dashboard() {
 
       try {
         const response = await axios.post('http://localhost:3000/process-file', {
-          sybject: "flutter",
+          subject: "flutter",
           prompt: "what is flutter"
         });
 

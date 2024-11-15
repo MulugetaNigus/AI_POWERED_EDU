@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
-import { CheckCircle2, XCircle, BookOpen, AlertTriangle, RefreshCw } from 'lucide-react';
-import { useProgressStore } from './store/progressStore';
-import { generatePersonalizedFeedback, generateQuestionsForSubject } from './lib/gemini';
-import PDFUploader from './PDFUploader';
-import LoadingQuiz from './LoadingQuiz';
-import ChapterModal from './ChapterModal';
+import React, { useState } from "react";
+import {
+  CheckCircle2,
+  XCircle,
+  BookOpen,
+  AlertTriangle,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
+import { useProgressStore } from "./store/progressStore";
+import {
+  generatePersonalizedFeedback,
+  generateQuestionsForSubject,
+} from "./lib/gemini";
+import PDFUploader from "./PDFUploader";
+import LoadingQuiz from "./LoadingQuiz";
+import ChapterModal from "./ChapterModal";
+import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface QuizProps {
   subject: string;
@@ -12,24 +32,35 @@ interface QuizProps {
 }
 
 export default function Quiz({ subject, grade }: QuizProps) {
-  const { questions, topics, addQuizResult, updateQuestions, updateTopics, updateImprovementAreas } = useProgressStore();
+  const {
+    questions,
+    topics,
+    addQuizResult,
+    updateQuestions,
+    updateTopics,
+    updateImprovementAreas,
+  } = useProgressStore();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [answers, setAnswers] = useState<{ correct: boolean; questionIndex: number }[]>([]);
+  const [answers, setAnswers] = useState<
+    { correct: boolean; questionIndex: number }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   const [showChapterModal, setShowChapterModal] = useState(false);
+  const [waitUntillFeedback, setWaitUntilFeedback] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const startQuiz = async (startChapter: number, endChapter: number) => {
     console.log("subject: ", subject);
     console.log("from chapter: ", startChapter);
     console.log("to: ", endChapter);
     if (!subject) {
-      setError('Please select a subject first');
+      setError("Please select a subject first");
       return;
     }
 
@@ -38,7 +69,11 @@ export default function Quiz({ subject, grade }: QuizProps) {
     setIsRetrying(false);
 
     try {
-      const result = await generateQuestionsForSubject(subject, startChapter, endChapter);
+      const result = await generateQuestionsForSubject(
+        subject
+        // startChapter,
+        // endChapter
+      );
       updateQuestions(result.questions);
       updateTopics(result.topics);
       updateImprovementAreas(result.improvementAreas);
@@ -47,7 +82,8 @@ export default function Quiz({ subject, grade }: QuizProps) {
       setError(null);
       setShowChapterModal(false);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to start quiz';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to start quiz";
       setError(errorMessage);
       setHasStarted(false);
     } finally {
@@ -58,11 +94,11 @@ export default function Quiz({ subject, grade }: QuizProps) {
 
   const handleRetry = async () => {
     if (retryCount >= 3) {
-      setError('Maximum retry attempts reached. Please try again later.');
+      setError("Maximum retry attempts reached. Please try again later.");
       return;
     }
 
-    setRetryCount(prev => prev + 1);
+    setRetryCount((prev) => prev + 1);
     setIsRetrying(true);
     setShowChapterModal(true);
   };
@@ -70,18 +106,53 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const handleAnswer = async (index: number) => {
     setSelectedAnswer(index);
     setShowExplanation(true);
-    
+
     const isCorrect = index === questions[currentQuestion].correctAnswer;
-    const newAnswers = [...answers, { correct: isCorrect, questionIndex: currentQuestion }];
+    const newAnswers = [
+      ...answers,
+      { correct: isCorrect, questionIndex: currentQuestion },
+    ];
     setAnswers(newAnswers);
 
     if (currentQuestion === questions.length - 1) {
+      setWaitUntilFeedback(true);
       try {
-        const personalizedFeedback = await generatePersonalizedFeedback(newAnswers, topics);
-        const score = newAnswers.filter(a => a.correct).length;
+        const personalizedFeedback = await generatePersonalizedFeedback(
+          newAnswers,
+          topics
+        );
+        const score = newAnswers.filter((a) => a.correct).length;
         addQuizResult(subject, score, questions.length, personalizedFeedback);
+
+        // Get user email
+        const user_email = JSON.parse(
+          localStorage.getItem("user_info") || "{}"
+        );
+
+        // Axios post request to send feedback info to the server
+        await axios.post("http://localhost:8888/api/v1/enhancement", {
+          email: user_email.email + "-" + uuidv4(),
+          recommendations: personalizedFeedback.recommendations,
+          strengths: personalizedFeedback.strengths,
+          weaknesses: personalizedFeedback.weaknesses,
+          subject: subject,
+          score: score,
+        });
+
+        // Open the modal after successful feedback generation
+        setOpen(true);
+        // Show a success notification
+        toast.success("Feedback generated successfully!", {
+          position: "top-center",
+        });
       } catch (error) {
-        console.error('Failed to generate feedback:', error);
+        console.error("Failed to generate feedback:", error);
+        // Show an error notification
+        toast.error("Failed to generate feedback. Please try again.", {
+          position: "top-center",
+        });
+      } finally {
+        setWaitUntilFeedback(false); // Set to false after the process
       }
     }
   };
@@ -89,7 +160,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const handleNext = () => {
     setSelectedAnswer(null);
     setShowExplanation(false);
-    setCurrentQuestion(prev => Math.min(prev + 1, questions.length - 1));
+    setCurrentQuestion((prev) => Math.min(prev + 1, questions.length - 1));
   };
 
   if (isLoading) {
@@ -199,20 +270,20 @@ export default function Quiz({ subject, grade }: QuizProps) {
             className={`w-full p-4 text-left rounded-lg border transition-all ${
               selectedAnswer === index
                 ? index === questions[currentQuestion].correctAnswer
-                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                  : 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                : 'border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700'
+                  ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                  : "border-red-500 bg-red-50 dark:bg-red-900/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700"
             }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-gray-800 dark:text-white">{option}</span>
-              {showExplanation && selectedAnswer === index && (
-                index === questions[currentQuestion].correctAnswer ? (
+              {showExplanation &&
+                selectedAnswer === index &&
+                (index === questions[currentQuestion].correctAnswer ? (
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
                 ) : (
                   <XCircle className="w-5 h-5 text-red-500" />
-                )
-              )}
+                ))}
             </div>
           </button>
         ))}
@@ -234,6 +305,69 @@ export default function Quiz({ subject, grade }: QuizProps) {
           Next Question
         </button>
       )}
+
+      {waitUntillFeedback && (
+        <Dialog
+          open={open}
+          onClose={() => setOpen(false)}
+          className="relative z-10"
+        >
+          <DialogBackdrop
+            transition
+            className="fixed inset-0 bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+          />
+
+          <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <DialogPanel
+                transition
+                className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all"
+              >
+                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                  <div className="sm:flex sm:items-start">
+                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                      <DialogTitle
+                        as="h3"
+                        className="text-base font-semibold text-gray-900"
+                      >
+                        Generating Personalized Feedback...
+                      </DialogTitle>
+                      <div className="mt-2">
+                        {waitUntillFeedback ? (
+                          <p className="flex items-center text-gray-600">
+                            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                            Please wait while we generate your personalized
+                            feedback
+                          </p>
+                        ) : (
+                          <p className="text-gray-600">
+                            Personalized feedback generated successfully
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                  <button
+                    disabled={waitUntillFeedback}
+                    type="button"
+                    data-autofocus
+                    onClick={() => {
+                      setOpen(false);
+                      setWaitUntilFeedback(false); // Reset feedback wait state if necessary
+                    }}
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                  >
+                    Finish
+                  </button>
+                </div>
+              </DialogPanel>
+            </div>
+          </div>
+        </Dialog>
+      )}
+      <ToastContainer />
     </div>
   );
 }
