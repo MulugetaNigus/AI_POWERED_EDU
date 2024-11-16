@@ -113,7 +113,7 @@ export default function Dashboard() {
 
   // handle the blue effect
   const toggleBlur = () => {
-    setIsBlurred(prev => !prev); // Toggle the blur state
+    setIsBlurred(prev => !prev);
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -321,6 +321,10 @@ export default function Dashboard() {
                   <p>Take a quize</p>
                   <Rocket className='ml-3 w-5 h-5' />
                 </Link>
+                <br />
+                <hr className="text-gray-600 font-light" />
+                <br />
+                <p className="dark:text-gray-600 text-xl font-bold">Chat history</p>
                 {/* Add PDF Chat button */}
                 {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                   <button
@@ -543,6 +547,7 @@ export default function Dashboard() {
               onMessageSent={handlePDFMessage}
             />
           )}
+
         </div>
       </div>
     </>

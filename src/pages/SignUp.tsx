@@ -29,42 +29,56 @@ export default function SignUp() {
   const [theme, settheme] = useState(true);
   const [showPassword, setshowPassword] = useState(false);
   const [LoadingForGoogle, setLoadingForGoogle] = useState(false);
+  const [passwordLenError, setpasswordLenError] = useState(false);
+
+  // functions to check the len
+  const checkLength = (len: number) => {
+    if (len < 8) {
+      return false;
+    }
+    return true;
+  };
 
   // for the navigation purpose
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (checkLength(password.length)){
+      setpasswordLenError(false);
+      setLoading(true);
 
-    setTimeout(() => {
-      try {
-        createUserWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            // Signed up
-            const user = userCredential.user;
-            setLoading(false);
-            console.log(user);
-            // Show a success notification
-            toast.success("Account created successfully!", {
-              position: "top-center",
+      setTimeout(() => {
+        try {
+          createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+              // Signed up
+              const user = userCredential.user;
+              setLoading(false);
+              console.log(user);
+              // Show a success notification
+              toast.success("Account created successfully!", {
+                position: "top-center",
+              });
+              navigate("/signin");
+            })
+            .catch((error) => {
+              // const errorCode = error.code;
+              setLoading(false);
+              // Show an error notification
+              toast.error("Failed to create account. Please try again.", {
+                position: "top-center",
+              });
+              console.log(error.message);
             });
-            navigate("/signin");
-          })
-          .catch((error) => {
-            // const errorCode = error.code;
-            setLoading(false);
-            // Show an error notification
-            toast.error("Failed to create account. Please try again.", {
-              position: "top-center",
-            });
-            console.log(error.message);
-          });
-      } catch (error) {
-        setLoading(false);
-        console.log(error);
-      }
-    }, 3000);
+        } catch (error) {
+          setLoading(false);
+          console.log(error);
+        }
+      }, 3000);
+    } else {
+      setpasswordLenError(true);
+    }
   };
 
   // filter the firebase error
@@ -210,6 +224,7 @@ export default function SignUp() {
                     value={password}
                   />
                 </div>
+                {passwordLenError && <p className="text-red-600 font-normal">Error: password must be atleast 8 character !</p>}
                 <div className="flex mt-4 gap-2 items-center justify-start">
                   <input
                     type="checkbox"
