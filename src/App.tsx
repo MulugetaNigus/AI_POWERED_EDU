@@ -52,7 +52,6 @@ Here's a breakdown of the main points, along with some additional insights:
 
 Flutter is a powerful and rapidly evolving framework that offers a streamlined, efficient, and performant way to build beautiful and engaging mobile apps. It's a great choice for developers looking to create cross-platform applications with a modern and reactive approach.`;
 
-
 function App() {
     return (
         <BrowserRouter>

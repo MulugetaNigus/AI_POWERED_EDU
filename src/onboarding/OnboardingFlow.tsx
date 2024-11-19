@@ -118,6 +118,7 @@ export default function OnboardingFlow() {
 
         // Store the token in local storage
         localStorage.setItem("token", token);
+        localStorage.setItem("user_grade_level", usergrade);
         navigate("/");
       })
       .catch((err) => {

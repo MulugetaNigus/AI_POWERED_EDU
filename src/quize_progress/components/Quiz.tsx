@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -18,7 +18,7 @@ import ChapterModal from "./ChapterModal";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import {
-  Dialog,
+  Dialog, 
   DialogBackdrop,
   DialogPanel,
   DialogTitle,
@@ -143,7 +143,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
         setOpen(true);
         // Show a success notification
         toast.success("Feedback generated successfully!", {
-          position: "top-center"
+          position: "top-center",
         });
       } catch (error) {
         console.error("Failed to generate feedback:", error);

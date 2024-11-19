@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Send,
   ChevronDown,
@@ -17,19 +17,27 @@ import {
   Bot,
   BotIcon,
   BotMessageSquare,
-  BotMessageSquareIcon
-} from 'lucide-react';
+  BotMessageSquareIcon,
+  FolderClock,
+  Layers3,
+  UserRound,
+  Trash2,
+  BadgeAlert,
+  RotateCw,
+} from "lucide-react";
 
-import axios from 'axios';
-import ImageUpload from '../components/ImageUpload';
-import PDFChat from '../components/PDFChat';
-import ChatHistory from '../components/ChatHistory';
-import MarkdownDisplay from '../components/MarkdownDisplay';
-import { auth } from '../config/firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import SideAI from '../components/SideAI';
+import axios from "axios";
+import ImageUpload from "../components/ImageUpload";
+import PDFChat from "../components/PDFChat";
+import ChatHistory from "../components/ChatHistory";
+import MarkdownDisplay from "../components/MarkdownDisplay";
+import { auth } from "../config/firebaseConfig";
+import { signOut } from "firebase/auth";
+import { Link, useNavigate } from "react-router-dom";
+import Header from "../components/Header";
+import SideAI from "../components/SideAI";
+// import uuid from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 interface ChatHistory {
   grade: number;
@@ -41,71 +49,103 @@ interface ChatHistory {
   }>;
 }
 
-const grades = [
-  {
-    level: 6,
-    courses: [
-      { name: 'Grade 6 Mathematics', icon: '📐' },
-      { name: 'Grade 6 English', icon: '📚' },
-      { name: 'Grade 6 Social Studies', icon: '🌍' },
-      { name: 'Grade 6 Civics and Ethics', icon: '🔬' },
-    ]
-  },
-  {
-    level: 8,
-    courses: [
-      { name: 'Grade 8 Mathematics', icon: '📊' },
-      { name: 'Grade 8 Chemistry', icon: '⚗️' },
-      { name: 'Grade 8 Physics', icon: '📖' },
-      { name: 'Grade 8 Civics', icon: '🏛️' },
-      { name: 'Grade 8 Social Studies', icon: '💻' },
-      { name: 'Grade 8 Biology', icon: '🌱' },
-      { name: 'Grade 8 English', icon: '📖' }
-    ]
-  },
-  {
-    level: 12,
-    courses: [
-      { name: 'Grade 12 Mathematics', icon: '🔢' },
-      { name: 'Grade 12 Chemistry', icon: '🧪' },
-      { name: 'Grade 12 Physics', icon: '⚡' },
-      { name: 'Grade 12 Biology', icon: '🧬' },
-      { name: 'Grade 12 Geography', icon: '🗺️' },
-      { name: 'Grade 12 Agriculture', icon: '📝' },
-      { name: 'Grade 12 Economics', icon: '📝' },
-      { name: 'Grade 12 History', icon: '📝' },
-      { name: 'Grade 12 IT', icon: '📝' },
-    ]
-  }
-];
-
+interface chatH {
+  id: number;
+  subject: string;
+  prompt: string;
+  data: string;
+  timestamp: string;
+}
 
 export default function Dashboard() {
   const [messages, setMessages] = useState([
-    { text: "Hello! I'm your AI tutor. Please select a grade and subject to begin learning!", isAI: true }
+    {
+      text: "Hello! I'm your AI tutor. Please select a grade and subject to begin learning!",
+      isAI: true,
+    },
   ]);
-  const [input, setInput] = useState('');
-  const [reinput, setReinput] = useState('');
+  const [input, setInput] = useState("");
+  const [reinput, setReinput] = useState("");
   const [expandedGrade, setExpandedGrade] = useState<number | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<{ grade: number; course: string } | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<{
+    grade: number;
+    course: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [showPDFChat, setShowPDFChat] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
-  const [userProfile, setuserProfile] = useState<{ email: string; uid: string; profile: string } | null>();
+  const [OchatHistory, setOChatHistory] = useState<chatH[]>([]);
+  const [userProfile, setuserProfile] = useState<{
+    email: string;
+    uid: string;
+    profile: string;
+  } | null>();
   const [isBlurred, setIsBlurred] = useState(true);
   const [showSideAI, setShowSideAI] = useState(false);
+  const [user_current_grade, setuser_current_grade] = useState();
   const navigate = useNavigate();
 
   // handle to get the user info
   useEffect(() => {
+    // get user grade level to render the courses crosponding go user onboarding data
+    const user_current_grade = JSON.parse(
+      localStorage.getItem("user_grade_level") as string
+    );
+    setuser_current_grade(user_current_grade);
+
+    // get the history from localstorage and set for "setOChatHistory" when the page start in this useEffect hook
+    const user_History = JSON.parse(
+      localStorage.getItem("chatHistory") as string
+    );
+    setOChatHistory(user_History);
+    // console.log(user_History);
     const userData = localStorage.getItem("user");
     if (userData) {
       setuserProfile(JSON.parse(userData));
     }
-    console.log(userData);
-  }, [])
+    
+  }, []);
+
+  const user_gradeLevel = user_current_grade || 8;
+  const grades = [
+    {
+      level: 6,
+      courses: [
+        { name: "Mathematics", icon: "📐" },
+        { name: "English", icon: "📚" },
+        { name: "Social Studies", icon: "🌍" },
+        { name: "Civics and Ethics", icon: "🔬" },
+      ],
+    },
+    {
+      level: 8,
+      courses: [
+        { name: "Mathematics", icon: "📊" },
+        { name: "Chemistry", icon: "⚗️" },
+        { name: "Physics", icon: "📖" },
+        { name: "Civics", icon: "🏛️" },
+        { name: "Social Studies", icon: "💻" },
+        { name: "Biology", icon: "🌱" },
+        { name: "English", icon: "📖" },
+      ],
+    },
+    {
+      level: 12,
+      courses: [
+        { name: "Mathematics", icon: "🔢" },
+        { name: "Chemistry", icon: "🧪" },
+        { name: "Physics", icon: "⚡" },
+        { name: "Biology", icon: "🧬" },
+        { name: "Geography", icon: "🗺️" },
+        { name: "Agriculture", icon: "📝" },
+        { name: "Economics", icon: "📝" },
+        { name: "History", icon: "📝" },
+        { name: "IT", icon: "📝" },
+      ],
+    },
+  ];
 
   const toggleSideAI = () => {
     setShowSideAI(!showSideAI);
@@ -113,7 +153,7 @@ export default function Dashboard() {
 
   // handle the blue effect
   const toggleBlur = () => {
-    setIsBlurred(prev => !prev);
+    setIsBlurred((prev) => !prev);
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -122,34 +162,54 @@ export default function Dashboard() {
       const userMessage = `${input}`;
       setMessages([...messages, { text: userMessage, isAI: false }]);
       // Update chat history
-      updateChatHistory(selectedCourse.grade, selectedCourse.course, {
-        text: input,
-        isAI: false,
-        timestamp: new Date().toISOString()
-      });
-      setInput('');
+      // updateChatHistory(selectedCourse.grade, selectedCourse.course, {
+      //   text: input,
+      //   isAI: false,
+      //   timestamp: new Date().toISOString()
+      // });
+      setInput("");
       setIsLoading(true);
       setReinput(input);
 
       try {
-        const response = await axios.post('http://localhost:3000/process-file', {
-          subject: "flutter",
-          prompt: "what is flutter"
-        });
+        const response = await axios.post(
+          "http://localhost:3000/process-file",
+          {
+            subject: "flutter",
+            prompt: "can i use flutter to develop web apps",
+          }
+        );
 
-        console.log(response.data);
-        setMessages(prev => [
+        console.log(response.data.response);
+        // if response.data id true i want to store the user subject, prompt and the response data in localstorage for the chat history purpose
+        if (response.data.response) {
+          const chatHistoryData = {
+            id: uuidv4(),
+            subject: selectedCourse.course,
+            prompt: input,
+            data: response.data.response,
+            timestamp: new Date().toISOString(),
+          };
+          let drophistory =
+            JSON.parse(localStorage.getItem("chatHistory") as string) || [];
+          drophistory.push(chatHistoryData);
+          localStorage.setItem("chatHistory", JSON.stringify(drophistory));
+        }
+        setMessages((prev) => [
           ...prev,
-          { text: response.data.response, isAI: true }
+          { text: response.data.response, isAI: true },
         ]);
         if (!showIcons) {
           setShowIcons(true);
         }
       } catch (error) {
         console.error("Error sending message:", error);
-        setMessages(prev => [
+        setMessages((prev) => [
           ...prev,
-          { text: "Sorry, there was an error processing your request.", isAI: true }
+          {
+            text: "Sorry, there was an error processing your request.",
+            isAI: true,
+          },
         ]);
       } finally {
         setIsLoading(false);
@@ -159,33 +219,75 @@ export default function Dashboard() {
     }
   };
 
-  const updateChatHistory = (
-    grade: number,
-    subject: string,
-    message: { text: string; isAI: boolean; timestamp: string }
-  ) => {
-    setChatHistory((prev) => {
-      const existingChat = prev.find(
-        (chat) => chat.grade === grade && chat.subject === subject
-      );
+  // const updateChatHistory = (
+  //   grade: number,
+  //   subject: string,
+  //   message: { text: string; isAI: boolean; timestamp: string }
+  // ) => {
+  //   setChatHistory((prev) => {
+  //     const existingChat = prev.find(
+  //       (chat) => chat.grade === grade && chat.subject === subject
+  //     );
 
-      if (existingChat) {
-        return prev.map((chat) =>
-          chat.grade === grade && chat.subject === subject
-            ? { ...chat, messages: [...chat.messages, message] }
-            : chat
+  //     if (existingChat) {
+  //       return prev.map((chat) =>
+  //         chat.grade === grade && chat.subject === subject
+  //           ? { ...chat, messages: [...chat.messages, message] }
+  //           : chat
+  //       );
+  //     } else {
+  //       return [
+  //         ...prev,
+  //         {
+  //           grade,
+  //           subject,
+  //           messages: [message],
+  //         },
+  //       ];
+  //     }
+  //   });
+  // };
+
+  // handle the chat history
+
+  const handleChatHistory = (his) => {
+    // here i just want to set the chat history data to the user input state and the response state, his prop has the data of the chat history like propmts, responses and timestamps
+    setInput(his.prompt);
+    setMessages([
+      { text: `You: ${his.prompt}`, isAI: true },
+      { text: his.data, isAI: true },
+    ]);
+  };
+
+  // to handle refresh the chat area
+  const handleRefreshChatHistory = () => {
+    // i just want to fresh the chat history to detect the new one, instead of refreshing the page manually
+    setOChatHistory(
+      JSON.parse(localStorage.getItem("chatHistory") as string) || []
+    );
+  };
+
+  // handle to delete the chat history
+  const handleDeleteChatHistory = (his) => {
+    try {
+      const userPermission = window.confirm(
+        "Are you sure you want to delete this chat history?"
+      );
+      if (userPermission) {
+        // here i want to remove the chat history data from the localstorage
+        let drophistory =
+          JSON.parse(localStorage.getItem("chatHistory") as string) || [];
+        drophistory = drophistory.filter(
+          (chat) => chat.timestamp !== his.timestamp
         );
+        localStorage.setItem("chatHistory", JSON.stringify(drophistory));
+        setOChatHistory(drophistory);
       } else {
-        return [
-          ...prev,
-          {
-            grade,
-            subject,
-            messages: [message],
-          },
-        ];
+        null;
       }
-    });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handlePDFMessage = (message: string) => {
@@ -202,31 +304,38 @@ export default function Dashboard() {
   const handleCourseSelect = (grade: number, course: string) => {
     setSelectedCourse({ grade, course });
     setMessages([
-      { text: `Welcome to Grade ${grade} ${course}! How can I help you today?`, isAI: true }
+      {
+        text: `Welcome to Grade ${grade} ${course}! How can I help you today?`,
+        isAI: true,
+      },
     ]);
   };
 
   // handle logout
   const handleLogOut = async () => {
-    const user_confirmation = window.confirm("are you shure you want to logout?")
+    const user_confirmation = window.confirm(
+      "are you shure you want to logout?"
+    );
     if (user_confirmation) {
       try {
         signOut(auth).then(async () => {
-          localStorage.removeItem('token');
-          signOut(auth).then(async () => {
-            localStorage.setItem("auth", "f");
-            navigate("/signin");
-          }).catch((error) => {
-            console.log(error);
-          })
+          localStorage.removeItem("token");
+          signOut(auth)
+            .then(async () => {
+              localStorage.setItem("auth", "f");
+              navigate("/signin");
+            })
+            .catch((error) => {
+              console.log(error);
+            });
         });
       } catch (error) {
         console.log(error);
       }
     } else {
-      null
+      null;
     }
-  }
+  };
 
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -239,7 +348,7 @@ export default function Dashboard() {
 
   const handleStopSpeak = () => {
     window.speechSynthesis.cancel();
-  }
+  };
 
   const handleRegenerateResponse = () => {
     setInput(reinput);
@@ -257,9 +366,11 @@ export default function Dashboard() {
   return (
     <>
       {showSideAI && <SideAI onClose={() => setShowSideAI(false)} />}
-      <a className="p-5 bg-blue-600 text-white rounded-full fixed right-2 bottom-20" onClick={toggleSideAI}
+      <a
+        className="p-5 bg-blue-600 text-white rounded-full fixed right-2 bottom-20"
+        onClick={toggleSideAI}
       >
-        <BotMessageSquareIcon className='w-6 h-6 cursor-pointer hover:animate-spin' />
+        <BotMessageSquareIcon className="w-6 h-6 cursor-pointer hover:animate-spin" />
       </a>
       {/* header component */}
       <Header />
@@ -270,61 +381,111 @@ export default function Dashboard() {
           <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
             {/* Grade Levels and Courses Section */}
             <div className="flex-1 p-4 overflow-y-auto">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="flex gap-2 items-center text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <Layers3 className="w-5 h-5" />
                 Grade Levels
               </h2>
               <div className="space-y-2">
-                {grades.map((grade) => (
-                  <div key={grade.level} className="rounded-lg overflow-hidden">
-                    <button
-                      onClick={() =>
-                        setExpandedGrade(
-                          expandedGrade === grade.level ? null : grade.level
-                        )
-                      }
-                      className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      <span className="font-medium">Grade {grade.level}</span>
-                      {expandedGrade === grade.level ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
-                    {expandedGrade === grade.level && (
-                      <div className="pl-4">
-                        {grade.courses.map((course) => (
-                          <button
-                            key={course.name}
-                            onClick={() =>
-                            {
-                              handleCourseSelect(grade.level, course.name);
-                              console.log(course.name)
-                            }
+                {grades.map(
+                  (g) =>
+                    g.level == user_gradeLevel && (
+                      <div key={g.level} className="rounded-lg overflow-hidden">
+                        <button
+                          onClick={() =>
+                            setExpandedGrade(
+                              expandedGrade === g.level ? null : g.level
+                            )
                           }
-                            className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${selectedCourse?.grade === grade.level &&
-                              selectedCourse?.course === course.name
-                              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                              : 'text-gray-700 dark:text-gray-300'
-                              }`}
-                          >
-                            <span>{course.icon}</span>
-                            <span>{course.name}</span>
-                          </button>
-                        ))}
+                          className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          <span className="font-medium">Grade {g.level}</span>
+                          {expandedGrade === g.level ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </button>
+                        {expandedGrade === g.level && (
+                          <div className="pl-4">
+                            {g.courses.map((course) => (
+                              <button
+                                key={course.name}
+                                onClick={() => {
+                                  handleCourseSelect(g.level, course.name);
+                                  console.log(course.name);
+                                }}
+                                className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                                  selectedCourse?.grade === g.level &&
+                                  selectedCourse?.course === course.name
+                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                    : "text-gray-700 dark:text-gray-300"
+                                }`}
+                              >
+                                <span>{course.icon}</span>
+                                <span>{course.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    )
+                )}
+
                 {/* take a quize and progress page link */}
-                <Link to="/quize-and-progress" className="flex items-center justify-start w-full h-12 bg-blue-600 text-white rounded-lg p-4 border-1 border-blue-600 dark:border-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 dark:hover:bg-blue-500">
+                <Link
+                  to="/quize-and-progress"
+                  className="flex items-center justify-start w-full h-12 bg-blue-600 text-white rounded-lg p-4 border-1 border-blue-600 dark:border-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 dark:hover:bg-blue-500"
+                >
                   <p>Take a quize</p>
-                  <Rocket className='ml-3 w-5 h-5' />
+                  <Rocket className="ml-3 w-5 h-5" />
                 </Link>
                 <br />
                 <hr className="text-gray-600 font-light" />
-                <br />
-                <p className="dark:text-gray-600 text-xl font-bold">Chat history</p>
+                {/* icons to show the chat history and pdf chat */}
+                <div className="flex items-center justify-between">
+                  <h2 className="ml-1 mt-1 flex gap-2 items-center text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                    <FolderClock className="h-5 w-5" />
+                    Chat history
+                  </h2>
+                  <RotateCw
+                    className="w-5 h-5 text-gray-600 dark:text-gray-400 cursor-pointer"
+                    onClick={() => handleRefreshChatHistory()}
+                  />
+                </div>
+                {/* ########################################################### */}
+                {OchatHistory.map((his) => (
+                  <div
+                    key={his?.timestamp}
+                    className="rounded-lg overflow-hidden"
+                  >
+                    {/* <ol>
+                      <li>{his?.data.slice(0, 20) + "..."}</li>
+                    </ol> */}
+                    {/* in this btn i just want to add onclick event to show the selected chat history data to the main chat area */}
+                    <button
+                      // onClick={() => alert(his?.prompt + "\n" + his?.data)}
+                      onClick={() => handleChatHistory(his)}
+                      className="w-full flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      {/* <UserRound className="h-5 w-5" /> */}
+                      <p className="text-gray-600 dark:text-gray-300 font-normal">
+                        {his?.data.slice(0, 10) + "..."}
+                      </p>
+                      <Trash2
+                        className="w-5 h-5 text-red-400"
+                        onClick={() => handleDeleteChatHistory(his)}
+                      />
+                    </button>
+                  </div>
+                ))}
+                {/* add the message no history when the "OchatHistory" dont have any data */}
+                {OchatHistory.length == 0 && (
+                  <div className="flex items-center justify-between w-full h-12 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border-1 border-gray-200 dark:border-gray-700">
+                    <p>No chat history found</p>
+                    <BadgeAlert className="w-5 h-5" />
+                  </div>
+                )}
+                {/* ########################################################### */}
                 {/* Add PDF Chat button */}
                 {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                   <button
@@ -342,21 +503,19 @@ export default function Dashboard() {
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="relative">
-                  {
-                    userProfile?.profile !== null
-                      ?
-                      <img
-                        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&q=80"
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
-                      />
-                      :
-                      <img
-                        src={userProfile?.profile}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
-                      />
-                  }
+                  {userProfile?.profile == null ? (
+                    <img
+                      src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&q=80"
+                      alt="User Profile"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
+                    />
+                  ) : (
+                    <img
+                      src={userProfile?.profile}
+                      alt="User Profile"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
+                    />
+                  )}
                   {/* <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div> */}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -364,12 +523,17 @@ export default function Dashboard() {
                     {userProfile?.email}
                   </h2>
                   <div className="flex items-center justify-between">
-                    <p className={`text-xs ${isBlurred ? 'blur-sm' : ''} text-gray-500 dark:text-gray-400 truncate`}>
+                    <p
+                      className={`text-xs ${
+                        isBlurred ? "blur-sm" : ""
+                      } text-gray-500 dark:text-gray-400 truncate`}
+                    >
                       {userProfile?.uid}
                     </p>
                     <button onClick={toggleBlur} className="ml-2">
                       {isBlurred ? (
-                        <Eye className="h-5 w-5 text-gray-600 dark:text-gray-400" />) : (
+                        <Eye className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      ) : (
                         <EyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       )}
                     </button>
@@ -382,7 +546,8 @@ export default function Dashboard() {
                 <User className="h-4 w-4" />
                 <span>Profile</span>
               </button> */}
-                <button className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                <button
+                  className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
                   onClick={() => handleLogOut()}
                 >
                   <LogOut className="h-4 w-4" />
@@ -408,15 +573,17 @@ export default function Dashboard() {
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex ${message.isAI ? 'justify-start' : 'justify-end'
-                    }`}
+                  className={`flex ${
+                    message.isAI ? "justify-start" : "justify-end"
+                  }`}
                 >
                   <div className="max-w-[80%]">
                     <div
-                      className={`p-4 rounded-lg ${message.isAI
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                        : 'bg-blue-600 text-white'
-                        }`}
+                      className={`p-4 rounded-lg ${
+                        message.isAI
+                          ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                          : "bg-blue-600 text-white"
+                      }`}
                     >
                       <MarkdownDisplay markdownText={message.text} />
                     </div>
@@ -425,7 +592,9 @@ export default function Dashboard() {
                     {message.isAI && (
                       <div className="flex items-center space-x-2 mt-2">
                         <button
-                          onClick={() => handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))}
+                          onClick={() =>
+                            handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))
+                          }
                           onDoubleClick={() => handleStopSpeak()}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                           title="Listen or double click to stop"
@@ -515,11 +684,10 @@ export default function Dashboard() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-
                   placeholder={
                     selectedCourse
-                      ? 'Ask anything about this course...'
-                      : 'Select a course to start chatting...'
+                      ? "Ask anything about this course..."
+                      : "Select a course to start chatting..."
                   }
                   disabled={!selectedCourse || isLoading}
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -547,7 +715,6 @@ export default function Dashboard() {
               onMessageSent={handlePDFMessage}
             />
           )}
-
         </div>
       </div>
     </>

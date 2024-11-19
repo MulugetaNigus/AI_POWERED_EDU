@@ -4,15 +4,13 @@ import { Mail, Lock, Loader2, BookOpen, MoonIcon } from "lucide-react";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
-  signInWithRedirect,
+  GoogleAuthProvider
 } from "firebase/auth";
 import { auth } from "../config/firebaseConfig";
 import { provider } from "../config/firebaseConfig";
 import { FcGoogle } from "react-icons/fc";
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 export default function SignIn() {
   // local states to hold the email and password
   const [email, setemail] = useState("");
