@@ -91,9 +91,9 @@ export default function Dashboard() {
   useEffect(() => {
     // get user grade level to render the courses crosponding go user onboarding data
     const user_current_grade = JSON.parse(
-      localStorage.getItem("user_grade_level") as string
+      localStorage.getItem("user") as string
     );
-    setuser_current_grade(user_current_grade);
+    setuser_current_grade(user_current_grade.user_grade_level);
 
     // get the history from localstorage and set for "setOChatHistory" when the page start in this useEffect hook
     const user_History = JSON.parse(
@@ -105,10 +105,9 @@ export default function Dashboard() {
     if (userData) {
       setuserProfile(JSON.parse(userData));
     }
-    
   }, []);
 
-  const user_gradeLevel = user_current_grade || 8;
+  const user_gradeLevel = user_current_grade || 6;
   const grades = [
     {
       level: 6,
@@ -172,22 +171,28 @@ export default function Dashboard() {
       setReinput(input);
 
       try {
-        const response = await axios.post(
-          "http://localhost:3000/process-file",
-          {
-            subject: "flutter",
-            prompt: "can i use flutter to develop web apps",
-          }
-        );
+        // http://127.0.0.1:8000/process_pdf
+        // const response = await axios.post(
+        //   "http://localhost:3000/process-file",
+        //   {
+        //     subject: "flutter",
+        //     prompt: "can i use flutter to develop web apps",
+        //   }
+        // );
 
-        console.log(response.data.response);
+        const response = await axios.post("http://127.0.0.1:8000/process_pdf", {
+          // subject: "flutter",
+          question: input,
+        });
+
+        console.log(response.data.answer);
         // if response.data id true i want to store the user subject, prompt and the response data in localstorage for the chat history purpose
-        if (response.data.response) {
+        if (response.data.answer) {
           const chatHistoryData = {
             id: uuidv4(),
             subject: selectedCourse.course,
             prompt: input,
-            data: response.data.response,
+            data: response.data.answer,
             timestamp: new Date().toISOString(),
           };
           let drophistory =
@@ -197,7 +202,7 @@ export default function Dashboard() {
         }
         setMessages((prev) => [
           ...prev,
-          { text: response.data.response, isAI: true },
+          { text: response.data.answer, isAI: true },
         ]);
         if (!showIcons) {
           setShowIcons(true);

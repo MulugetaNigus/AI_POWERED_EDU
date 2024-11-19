@@ -107,6 +107,7 @@ export default function OnboardingFlow() {
         localStorage.setItem(
           "user",
           JSON.stringify({
+            user_grade_level: usergrade,
             uid: user.uid,
             email: user.email,
             profile: user.photoURL,
@@ -118,7 +119,7 @@ export default function OnboardingFlow() {
 
         // Store the token in local storage
         localStorage.setItem("token", token);
-        localStorage.setItem("user_grade_level", usergrade);
+        // localStorage.setItem("user_grade_level", usergrade);
         navigate("/");
       })
       .catch((err) => {
@@ -142,7 +143,7 @@ export default function OnboardingFlow() {
               </h2>
             </div>
 
-            {["Grade 6", "Grade 8", "Grade 12"].map((grade) => (
+            {["6", "8", "12"].map((grade) => (
               <button
                 key={grade}
                 onClick={() => {
@@ -158,7 +159,7 @@ export default function OnboardingFlow() {
                 }`}
               >
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {grade}
+                  Grade {grade}
                 </span>
               </button>
             ))}
