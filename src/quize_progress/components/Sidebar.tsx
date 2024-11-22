@@ -7,6 +7,7 @@ import {
   BrainCircuit,
   Atom,
   BookText,
+  Footprints,
   Calculator,
   Microscope,
   Languages,
@@ -32,6 +33,7 @@ const grades = [
 
 const subjectIcons: Record<string, JSX.Element> = {
   Mathematics: <BrainCircuit className="w-4 h-4" />,
+  Algorithm: <Footprints className="w-4 h-4" />,
   Physics: <Atom className="w-4 h-4" />,
   Science: <Microscope className="w-4 h-4" />,
   English: <Languages className="w-4 h-4" />,

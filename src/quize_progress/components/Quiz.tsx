@@ -18,7 +18,7 @@ import ChapterModal from "./ChapterModal";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import {
-  Dialog, 
+  Dialog,
   DialogBackdrop,
   DialogPanel,
   DialogTitle,
@@ -370,7 +370,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
       <ToastContainer
         draggable
         pauseOnHover={true}
-        autoClose={8000}
+        autoClose={5000}
         transition={Bounce}
       />
     </div>

@@ -171,12 +171,11 @@ export default function Dashboard() {
       setReinput(input);
 
       try {
-        // http://127.0.0.1:8000/process_pdf
         // const response = await axios.post(
         //   "http://localhost:3000/process-file",
         //   {
-        //     subject: "flutter",
-        //     prompt: "can i use flutter to develop web apps",
+        //     subject: "algorithm",
+        //     prompt: input,
         //   }
         // );
 
@@ -458,7 +457,7 @@ export default function Dashboard() {
                   />
                 </div>
                 {/* ########################################################### */}
-                {OchatHistory.map((his) => (
+                {OchatHistory.map((his, index) => (
                   <div
                     key={his?.timestamp}
                     className="rounded-lg overflow-hidden"
@@ -474,7 +473,7 @@ export default function Dashboard() {
                     >
                       {/* <UserRound className="h-5 w-5" /> */}
                       <p className="text-gray-600 dark:text-gray-300 font-normal">
-                        {his?.data.slice(0, 10) + "..."}
+                         {index + 1}{"."} {his?.data.slice(0, 10) + "..."}
                       </p>
                       <Trash2
                         className="w-5 h-5 text-red-400"

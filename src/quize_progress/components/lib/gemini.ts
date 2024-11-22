@@ -1,6 +1,7 @@
 import axios from 'axios';
 // import { useState } from 'react';
 
+// const API_URL = 'http://0.0.0.0:8001';
 const API_URL = 'http://127.0.0.1:8000';
 // const [selectedSubject, setselectedSubject] = useState("");
 
@@ -39,7 +40,9 @@ export async function analyzePDFContent(content: string) {
       }
     `;
 
-    const response = await axios.post(`${API_URL}/ask`, {
+    // const response = await axios.post(`${API_URL}/ask`, {
+    const response = await axios.post(`${API_URL}/process_pdf`, {
+      // process_pdf
       user_quation: prompt,
       content: content, // Including content for the PDF analysis
       subject: "uploaded"
@@ -105,16 +108,16 @@ export async function generateQuestionsForSubject(subject: string) {
       }
     `;
 
-    const response = await axios.post(`${API_URL}/ask`, {
-      user_quation: prompt,
+    const response = await axios.post(`${API_URL}/process_pdf`, {
+      question: prompt,
       subject: subject // Sending subject name directly
     });
 
-    if (!response.data || !response.data.response) {
+    if (!response.data || !response.data.answer) {
       throw new Error('Invalid response format from server');
     }
 
-    const cleanedResponse = cleanJsonResponse(response.data.response);
+    const cleanedResponse = cleanJsonResponse(response.data.answer);
 
     if (!cleanedResponse || typeof cleanedResponse !== 'string') {
       throw new Error('Cleaned response is not a valid JSON string');
@@ -162,19 +165,19 @@ export async function generatePersonalizedFeedback(answers: any[], topics: strin
       Answers: ${JSON.stringify(answers)}
       Topics: ${JSON.stringify(topics)}
       `
-    ;
+      ;
 
-    const response = await axios.post(`${API_URL}/ask`, {
-      user_quation: prompt, // Fixed typo in parameter name
+    const response = await axios.post(`${API_URL}/process_pdf`, {
+      question: prompt,
       answers: answers,
       topics: topics
     });
 
-    if (!response.data || !response.data.response) {
+    if (!response.data || !response.data.answer) {
       throw new Error('Invalid response format from server');
     }
 
-    const cleanedResponse = cleanJsonResponse(response.data.response);
+    const cleanedResponse = cleanJsonResponse(response.data.answer);
 
     try {
       const parsedResponse = JSON.parse(cleanedResponse);
