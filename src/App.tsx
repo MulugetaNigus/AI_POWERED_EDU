@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Apps from './quize_progress/Apps';
 import OnboardingFlow from './onboarding/OnboardingFlow';
+import axios from 'axios';
+// import AdminDashboard from './pages/AdminDashboard';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -53,6 +55,17 @@ Here's a breakdown of the main points, along with some additional insights:
 Flutter is a powerful and rapidly evolving framework that offers a streamlined, efficient, and performant way to build beautiful and engaging mobile apps. It's a great choice for developers looking to create cross-platform applications with a modern and reactive approach.`;
 
 function App() {
+    // every 5 sec call this api using axios to prevent server sleep
+    useEffect(() => {
+        const interval = setInterval(() => {
+            axios
+                .get("https://python-gemini-doc-backend.onrender.com")
+                .then((result) => console.log(result))
+                .catch((error) => console.log(error));
+        }, 40000);
+        return () => clearInterval(interval);
+    }, []);
+    
     return (
         <BrowserRouter>
             <ThemeProvider>
@@ -79,6 +92,7 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
+                        {/* <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /> */}
                     </Routes>
                 </div>
             </ThemeProvider>

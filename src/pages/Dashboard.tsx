@@ -9,18 +9,12 @@ import {
   Copy,
   RefreshCw,
   ImageIcon,
-  FileText,
-  Clock,
   Rocket,
   Eye,
   EyeOff,
-  Bot,
-  BotIcon,
-  BotMessageSquare,
   BotMessageSquareIcon,
   FolderClock,
   Layers3,
-  UserRound,
   Trash2,
   BadgeAlert,
   RotateCw,
@@ -179,10 +173,20 @@ export default function Dashboard() {
         //   }
         // );
 
-        const response = await axios.post("http://127.0.0.1:8000/process_pdf", {
-          // subject: "flutter",
-          question: input,
-        });
+        // const response = await axios.post("http://127.0.0.1:8000/process_pdf", {
+        //   // subject: "flutter",
+        //   question: input,
+        // });
+
+        // https://python-gemini-doc-backend.onrender.com
+        // Ngrok endpoints to tunnel = https://586f-197-156-105-116.ngrok-free.app/
+        const response = await axios.post(
+          "https://c560-197-156-105-116.ngrok-free.app/process_pdf",
+          {
+            // subject: "flutter",
+            question: input,
+          }
+        );
 
         console.log(response.data.answer);
         // if response.data id true i want to store the user subject, prompt and the response data in localstorage for the chat history purpose
@@ -282,7 +286,7 @@ export default function Dashboard() {
         let drophistory =
           JSON.parse(localStorage.getItem("chatHistory") as string) || [];
         drophistory = drophistory.filter(
-          (chat) => chat.timestamp !== his.timestamp
+          (chat: any) => chat.timestamp !== his.timestamp
         );
         localStorage.setItem("chatHistory", JSON.stringify(drophistory));
         setOChatHistory(drophistory);
@@ -321,18 +325,15 @@ export default function Dashboard() {
       "are you shure you want to logout?"
     );
     if (user_confirmation) {
-      try {
-        signOut(auth).then(async () => {
-          localStorage.removeItem("token");
+      try {          
           signOut(auth)
             .then(async () => {
-              localStorage.setItem("auth", "f");
+              localStorage.removeItem("token");
               navigate("/signin");
             })
             .catch((error) => {
               console.log(error);
             });
-        });
       } catch (error) {
         console.log(error);
       }
@@ -473,7 +474,8 @@ export default function Dashboard() {
                     >
                       {/* <UserRound className="h-5 w-5" /> */}
                       <p className="text-gray-600 dark:text-gray-300 font-normal">
-                         {index + 1}{"."} {his?.data.slice(0, 10) + "..."}
+                        {index + 1}
+                        {"."} {his?.data.slice(0, 10) + "..."}
                       </p>
                       <Trash2
                         className="w-5 h-5 text-red-400"
