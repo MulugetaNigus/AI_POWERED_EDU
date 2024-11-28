@@ -181,7 +181,7 @@ export default function Dashboard() {
         // https://python-gemini-doc-backend.onrender.com
         // Ngrok endpoints to tunnel = https://586f-197-156-105-116.ngrok-free.app/
         const response = await axios.post(
-          "https://c560-197-156-105-116.ngrok-free.app/process_pdf",
+          "https://python-gemini-doc-backend.onrender.com/process_pdf",
           {
             // subject: "flutter",
             question: input,
@@ -621,6 +621,7 @@ export default function Dashboard() {
                         >
                           <RefreshCw className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                         </button>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">0.76s</p>
                       </div>
                     )}
                   </div>
