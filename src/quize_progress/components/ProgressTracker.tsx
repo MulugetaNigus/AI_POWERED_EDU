@@ -40,6 +40,7 @@ export default function ProgressTracker() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [feedbacker, setFeedback] = useState<any[]>([]);
   const [deleteLoading, setdeleteLoading] = useState(false);
+  const [barChartLoading, setBarChartLoading] = useState(false);
   const selectedFeedback = feedbacker.find(
     (feedback) => feedback.subject === selectedTopic
   );
@@ -49,14 +50,17 @@ export default function ProgressTracker() {
   }, []);
 
   async function fetchData() {
+    setBarChartLoading(true);
     await axios
       .get("http://localhost:8888/api/v1/enhancement")
       .then((response) => {
         setFeedback(response.data);
         console.log("feedbacks from db: ", response.data);
+        setBarChartLoading(false);
       })
       .catch((error) => {
         console.log(error);
+        setBarChartLoading(false);
       });
   }
 
@@ -162,16 +166,22 @@ export default function ProgressTracker() {
           <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
             Topic Performance
           </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData}>
-                <XAxis dataKey="subject" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="score" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {barChartLoading ? (
+            <div className="h-64 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+            </div>
+          ) : (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barData}>
+                  <XAxis dataKey="subject" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="score" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </div>
 
@@ -180,25 +190,6 @@ export default function ProgressTracker() {
           Recommended Focus Areas
         </h3>
         <div className="space-y-4">
-          {/* {improvementAreas.map((area, index) => (
-            <div
-              key={index}
-              className="p-4 border dark:border-gray-700 rounded-lg flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <h4 className="font-medium text-gray-800 dark:text-white">
-                    {area.topic}
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {area.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))} */}
-
           {feedbacker?.map((topic) => (
             <div
               key={topic._id}
