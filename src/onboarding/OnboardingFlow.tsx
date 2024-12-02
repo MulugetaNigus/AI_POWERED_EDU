@@ -52,11 +52,11 @@ export default function OnboardingFlow() {
   const [TrackError, setTrackError] = useState(false);
   const [saveOnBoardingLoading, setsaveOnBoardingLoading] = useState(false);
 
-    // get the user email for pre poplited
-    useEffect(() => {
-      const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-      setuserEmail(user.email);
-    }, []);
+  // get the user email for pre poplited
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    setuserEmail(user.email);
+  }, []);
 
   const handleBack = () => {
     if (currentStep > 0) {
@@ -90,6 +90,8 @@ export default function OnboardingFlow() {
       background: userbackground,
       address: useraddress,
       region: userregion,
+      plan: "free",
+      credit: 10
     };
     console.log(userInfo);
     await axios
@@ -152,11 +154,10 @@ export default function OnboardingFlow() {
                   console.log(grade);
                   setusergrade(grade);
                 }}
-                className={`w-full p-4 text-left rounded-lg border transition-all ${
-                  formData.grade === grade
+                className={`w-full p-4 text-left rounded-lg border transition-all ${formData.grade === grade
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                     : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                }`}
+                  }`}
               >
                 <span className="font-medium text-gray-900 dark:text-white">
                   Grade {grade}
@@ -193,11 +194,10 @@ export default function OnboardingFlow() {
                   console.log(source);
                   setusersource(source);
                 }}
-                className={`w-full p-4 text-left rounded-lg border transition-all ${
-                  formData.discovery === source
+                className={`w-full p-4 text-left rounded-lg border transition-all ${formData.discovery === source
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                     : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                }`}
+                  }`}
               >
                 <span className="font-medium text-gray-900 dark:text-white">
                   {source}

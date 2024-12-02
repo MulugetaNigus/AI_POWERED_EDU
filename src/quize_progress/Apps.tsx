@@ -1,16 +1,37 @@
-import React, { useState } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sun, Moon, Loader2 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import Quiz from './components/Quiz';
 import ProgressTracker from './components/ProgressTracker';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import axios from 'axios';
 
 function AppContent() {
   const [selectedGrade, setSelectedGrade] = useState('Grade 8');
   const [selectedSubject, setSelectedSubject] = useState('Physics');
   const [activeTab, setActiveTab] = useState<'learn' | 'progress'>('learn');
   const { theme, toggleTheme } = useTheme();
+  const [creditBalance, setCreditBalance] = useState<number | null | string>();
+  const [userEmail, setuserEmail] = useState("");
+  const creditVisibility: boolean = true;
+
+  // get current user and get the current user credit based on the current user email
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    setuserEmail(user.email);
+    axios
+      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .then((response) => {
+        const userData = response.data;
+        console.log(userData[0].credit);
+        setCreditBalance(userData[0].credit || 0);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -78,25 +99,29 @@ function AppContent() {
               <div className="hidden md:flex space-x-2">
                 <button
                   onClick={() => setActiveTab('learn')}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    activeTab === 'learn'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                  className={`px-4 py-2 rounded-lg transition-colors ${activeTab === 'learn'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
                 >
                   Learn
                 </button>
                 <button
                   onClick={() => setActiveTab('progress')}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    activeTab === 'progress'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                  className={`px-4 py-2 rounded-lg transition-colors ${activeTab === 'progress'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
                 >
                   Progress
                 </button>
               </div>
+              <p className='text-gray-500 text-lg'>|</p>
+              {creditVisibility &&
+                <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg">
+                  Credits: {creditBalance ? creditBalance : <Loader2 className='w-4 h-4 animate-spin' />}
+                </div>
+              }
               <button
                 onClick={toggleTheme}
                 className="hidden md:block p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"

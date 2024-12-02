@@ -35,7 +35,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2" />
-                support@ethiolearn.com
+                support@ExtreamX.com
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2" />
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p>&copy; {new Date().getFullYear()} EthioLearn. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ExtreamX. All rights reserved.</p>
         </div>
       </div>
       <ContactModal isOpen={isModalOpen} onClose={toggleModal} />

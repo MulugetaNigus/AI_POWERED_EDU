@@ -10,6 +10,7 @@ import Apps from './quize_progress/Apps';
 import OnboardingFlow from './onboarding/OnboardingFlow';
 import axios from 'axios';
 // import AdminDashboard from './pages/AdminDashboard';
+import Subscription from './components/Subscription'
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -65,16 +66,16 @@ function App() {
         }, 40000);
         return () => clearInterval(interval);
     }, []);
-    
+
     return (
         <BrowserRouter>
             <ThemeProvider>
                 <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
                     <Routes>
                         <Route path="/" element={
-                            <ProtectedRoute>
+                            // <ProtectedRoute>
                                 <Home />
-                            </ProtectedRoute>
+                            // {/* </ProtectedRoute> */}
                         } />
                         <Route path="/signin" element={<SignIn />} />
                         <Route path="/signup" element={<SignUp />} />
@@ -92,7 +93,7 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
-                        {/* <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /> */}
+                        <Route path="/subscription" element={<Subscription />} />
                     </Routes>
                 </div>
             </ThemeProvider>

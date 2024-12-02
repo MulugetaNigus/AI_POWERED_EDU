@@ -79,10 +79,19 @@ export default function Dashboard() {
   const [isBlurred, setIsBlurred] = useState(true);
   const [showSideAI, setShowSideAI] = useState(false);
   const [user_current_grade, setuser_current_grade] = useState();
+  const [userEmail, setuserEmail] = useState("");
+  const [userID, setuserID] = useState("");
+  const [renderNewCreditValue , setRenderNewCreditValue] = useState(false);
   const navigate = useNavigate();
+  const creditVisibility: boolean = true;
+
 
   // handle to get the user info
   useEffect(() => {
+
+    // invok this function to get the current user id
+    getCurrentUserId();
+
     // get user grade level to render the courses crosponding go user onboarding data
     const user_current_grade = JSON.parse(
       localStorage.getItem("user") as string
@@ -100,6 +109,23 @@ export default function Dashboard() {
       setuserProfile(JSON.parse(userData));
     }
   }, []);
+
+  // get current user id
+  const getCurrentUserId = () => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    setuserEmail(user.email);
+    axios
+      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .then((response) => {
+        const userData = response.data;
+        console.log(userData[0].credit);
+        setuserID(userData[0]._id || null);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+  };
 
   const user_gradeLevel = user_current_grade || 6;
   const grades = [
@@ -203,6 +229,16 @@ export default function Dashboard() {
           drophistory.push(chatHistoryData);
           localStorage.setItem("chatHistory", JSON.stringify(drophistory));
         }
+
+        // every successfull ai response i want to call this endpoint to update the credit of the user, endpoint = http://localhost:8888/onboard/credit/:id
+        await axios.put(`http://localhost:8888/api/v1/onboard/credit/${userID}`)
+          .then((result => {
+            console.log(result.data.remainingCredits)
+            setRenderNewCreditValue(true)
+          })).catch((err) => {
+            console.log(err);
+          });
+
         setMessages((prev) => [
           ...prev,
           { text: response.data.answer, isAI: true },
@@ -325,15 +361,15 @@ export default function Dashboard() {
       "are you shure you want to logout?"
     );
     if (user_confirmation) {
-      try {          
-          signOut(auth)
-            .then(async () => {
-              localStorage.removeItem("token");
-              navigate("/signin");
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+      try {
+        signOut(auth)
+          .then(async () => {
+            localStorage.removeItem("token");
+            navigate("/signin");
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       } catch (error) {
         console.log(error);
       }
@@ -378,7 +414,7 @@ export default function Dashboard() {
         <BotMessageSquareIcon className="w-6 h-6 cursor-pointer hover:animate-spin" />
       </a>
       {/* header component */}
-      <Header />
+      <Header creditVisibility={creditVisibility} RerenderToUpdateCredit={renderNewCreditValue} />
       {/* the rest of the dashboard code here */}
       <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900">
         <div className="flex h-[calc(100vh-4rem)]">
@@ -419,12 +455,11 @@ export default function Dashboard() {
                                   handleCourseSelect(g.level, course.name);
                                   console.log(course.name);
                                 }}
-                                className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
-                                  selectedCourse?.grade === g.level &&
+                                className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${selectedCourse?.grade === g.level &&
                                   selectedCourse?.course === course.name
-                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                                    : "text-gray-700 dark:text-gray-300"
-                                }`}
+                                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                  : "text-gray-700 dark:text-gray-300"
+                                  }`}
                               >
                                 <span>{course.icon}</span>
                                 <span>{course.name}</span>
@@ -530,9 +565,8 @@ export default function Dashboard() {
                   </h2>
                   <div className="flex items-center justify-between">
                     <p
-                      className={`text-xs ${
-                        isBlurred ? "blur-sm" : ""
-                      } text-gray-500 dark:text-gray-400 truncate`}
+                      className={`text-xs ${isBlurred ? "blur-sm" : ""
+                        } text-gray-500 dark:text-gray-400 truncate`}
                     >
                       {userProfile?.uid}
                     </p>
@@ -579,17 +613,15 @@ export default function Dashboard() {
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex ${
-                    message.isAI ? "justify-start" : "justify-end"
-                  }`}
+                  className={`flex ${message.isAI ? "justify-start" : "justify-end"
+                    }`}
                 >
                   <div className="max-w-[80%]">
                     <div
-                      className={`p-4 rounded-lg ${
-                        message.isAI
-                          ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                          : "bg-blue-600 text-white"
-                      }`}
+                      className={`p-4 rounded-lg ${message.isAI
+                        ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                        : "bg-blue-600 text-white"
+                        }`}
                     >
                       <MarkdownDisplay markdownText={message.text} />
                     </div>

@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 
 const faqs = [
   {
-    question: 'What is EthioLearn?',
-    answer: 'EthioLearn is an online learning platform that provides personalized AI-powered tutoring for Ethiopian students.'
+    question: 'What is ExtreamX?',
+    answer: 'ExtreamX is an online learning platform that provides personalized AI-powered tutoring for Ethiopian students.'
   },
   {
     question: 'How does the AI tutoring work?',

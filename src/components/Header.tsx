@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, X, LogOut } from 'lucide-react';
+import { BookOpen, LogIn, Menu, X, LogOut, Loader2 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
+import axios from 'axios';
 
-export default function Header() {
+export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const navigate = useNavigate();
+  const [userEmail, setuserEmail] = useState("");
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    setuserEmail(user.email);
+    axios
+      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .then((response) => {
+        const userData = response.data;
+        console.log(userData[0].credit);
+        setCreditBalance(userData[0].credit || 0);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [RerenderToUpdateCredit]);
 
   // handle sing out
   const handleLogOut = async () => {
@@ -48,10 +66,18 @@ export default function Header() {
             <ThemeToggle />
             {
               localStorage.getItem('token') ? (
-                <p onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  SignOut
-                </p>
+                <>
+                  {creditVisibility &&
+                    <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg">
+                      Credits: {creditBalance ? creditBalance : <Loader2 className='w-4 h-4 animate-spin' />}
+                    </div>
+                  }
+
+                  <p onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    SignOut
+                  </p>
+                </>
               ) : (
                 <>
                   <Link to="/signin" className="px-4 py-2 text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition">

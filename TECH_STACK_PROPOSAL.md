@@ -92,3 +92,80 @@ This tech stack is designed to provide:
 - Robust security
 - Comprehensive AI/ML capabilities
 - Excellent user experience
+
+
+<!-- code -->
+<!-- 
+import { getUserCredits } from "../services/creditService";
+import SubscriptionModal from "../components/SubscriptionModal";
+ -->
+<!-- 
+const [credits, setCredits] = useState<number | null>(null);
+const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+ -->
+ <!-- 
+ useEffect(() => {
+  const fetchCredits = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userCredits = await getUserCredits(user.uid);
+      if (userCredits) {
+        setCredits(userCredits.credits);
+        if (userCredits.credits <= 2) {
+          setShowSubscriptionModal(true);
+        }
+      }
+    }
+  };
+  fetchCredits();
+}, []);
+  -->
+<!-- 
+const checkCredits = async () => {
+  const user = auth.currentUser;
+  if (user) {
+    const userCredits = await getUserCredits(user.uid);
+    if (userCredits) {
+      setCredits(userCredits.credits);
+      if (userCredits.credits <= 0) {
+        setShowSubscriptionModal(true);
+        return false;
+      }
+    }
+  }
+  return true;
+};
+ -->
+ <!-- 
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!await checkCredits()) {
+    return;
+  }
+  // ... rest of your existing handleSubmit code
+};
+  -->
+<!-- 
+return (
+  <div className="flex flex-col min-h-screen">
+    {/* Your existing dashboard content */}
+    
+    {/* Add this at the end */}
+    <SubscriptionModal
+      isOpen={showSubscriptionModal}
+      onClose={() => setShowSubscriptionModal(false)}
+      remainingCredits={credits || 0}
+    />
+  </div>
+);
+ -->
+ <!-- 
+ These changes will:
+
+Check credits when the dashboard loads
+Show the subscription modal when credits are low (≤ 2)
+Check credits before each AI interaction
+Show the subscription modal when trying to use AI with no credits
+Display current credit balance
+Would you like me to help you implement any specific part of these changes?
+  -->
