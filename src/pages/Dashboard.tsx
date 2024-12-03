@@ -32,6 +32,10 @@ import Header from "../components/Header";
 import SideAI from "../components/SideAI";
 // import uuid from 'uuid';
 import { v4 as uuidv4 } from "uuid";
+import { initializePayment } from "../services/paymentService";
+import SubscriptionModal from "../components/SubscriptionModal";
+
+
 
 interface ChatHistory {
   grade: number;
@@ -81,9 +85,12 @@ export default function Dashboard() {
   const [user_current_grade, setuser_current_grade] = useState();
   const [userEmail, setuserEmail] = useState("");
   const [userID, setuserID] = useState("");
-  const [renderNewCreditValue , setRenderNewCreditValue] = useState(false);
+  const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
+  const [userCurrentCredit, setUserCurrentCredit] = useState<string>("");
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
+  const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
 
 
   // handle to get the user info
@@ -119,6 +126,7 @@ export default function Dashboard() {
       .then((response) => {
         const userData = response.data;
         console.log(userData[0].credit);
+        setUserCurrentCredit(userData[0].credit);
         setuserID(userData[0]._id || null);
       })
       .catch((error) => {
@@ -189,6 +197,14 @@ export default function Dashboard() {
       setInput("");
       setIsLoading(true);
       setReinput(input);
+
+      // before calling my ai endpoint for getting a respnse i just want you to add a little bit checking for the user credit > 0 using the local state  = userCurrentCredit
+      // if the userCurrentCredit is less than 0 i want to show the modal to the user to subscribe if user say yes i want to redirect to the subscription page unless stay here 
+      if (Number(userCurrentCredit) <= 0) {
+        setShowSubscriptionModal(true);
+        setIsLoading(false);
+        return;
+      }
 
       try {
         // const response = await axios.post(
@@ -404,6 +420,36 @@ export default function Dashboard() {
     setShowImageUpload(false);
   };
 
+  // sample payment test
+  const handlePayment = async () => {
+    try {
+      const response = await axios.post('http://localhost:8888/api/v1/initialize',
+        {
+          amount: "5000",
+          currency: "ETB",
+          email: "sample@gmail.com",
+          tx_ref: "test" + new Date().getMilliseconds().toString(),
+          callback_url: "https://www.google.com",
+          return_url: "https://www.google.com"
+        }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
+        },
+      });
+
+      // Check if we have a successful response with checkout URL
+      if (response.data.status === 'success' && response.data.data.checkout_url) {
+        // Redirect to the checkout URL
+        window.location.href = response.data.data.checkout_url;
+      } else {
+        console.error('Payment initialization failed:', response.data);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+    }
+  }
+
   return (
     <>
       {showSideAI && <SideAI onClose={() => setShowSideAI(false)} />}
@@ -479,6 +525,7 @@ export default function Dashboard() {
                   <p>Take a quize</p>
                   <Rocket className="ml-3 w-5 h-5" />
                 </Link>
+                <button onClick={handlePayment}>pay</button>
                 <br />
                 <hr className="text-gray-600 font-light" />
                 {/* icons to show the chat history and pdf chat */}
@@ -754,6 +801,13 @@ export default function Dashboard() {
               onMessageSent={handlePDFMessage}
             />
           )}
+
+          {/* subscribe modal here */}
+          <SubscriptionModal
+            isOpen={showSubscriptionModal}
+            onClose={() => setShowSubscriptionModal(false)}
+            remainingCredits={Number(userCurrentCredit)}
+          />
         </div>
       </div>
     </>

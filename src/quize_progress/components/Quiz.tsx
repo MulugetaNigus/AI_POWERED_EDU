@@ -54,6 +54,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const [showChapterModal, setShowChapterModal] = useState(false);
   const [waitUntillFeedback, setWaitUntilFeedback] = useState(false);
   const [open, setOpen] = useState(true);
+  const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
 
   const startQuiz = async (startChapter: number, endChapter: number) => {
     console.log("subject: ", subject);
@@ -81,6 +82,18 @@ export default function Quiz({ subject, grade }: QuizProps) {
       setRetryCount(0);
       setError(null);
       setShowChapterModal(false);
+
+      // Update user credits after successful quiz generation
+      const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+      if (user.email) {
+        try {
+          const response = await axios.put(`http://localhost:8888/api/v1/onboard/credit/${user.email}`);
+          console.log("Updated credits:", response.data.remainingCredits);
+          setRenderNewCreditValue(true);
+        } catch (err) {
+          console.log("Error updating credits:", err);
+        }
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to start quiz";

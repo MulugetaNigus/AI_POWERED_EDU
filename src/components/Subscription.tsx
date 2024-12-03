@@ -95,76 +95,78 @@ export default function Subscription() {
   };
 
   return (
-    <div className="py-12 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
-            Choose Your Learning Plan
-          </h2>
-          <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
-            Get more AI credits and unlock advanced features
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-6 lg:p-8">
+      {/* Add decorative background elements */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10"></div>
+        <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-blue-500/5 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-[500px] bg-gradient-to-t from-purple-500/5 to-transparent"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto relative">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-4">
+            Choose Your Plan
+          </h1>
+          <p className="text-xl font-medium text-gray-800 dark:text-gray-200">
+            Get more credits and unlock premium features
           </p>
         </div>
 
-        <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-2">
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm divide-y divide-gray-200 dark:divide-gray-700"
+              className={`relative overflow-hidden rounded-2xl p-8 backdrop-blur-md border border-white/20 shadow-xl
+                ${plan.id === 'premium' 
+                  ? 'bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-800/80 dark:to-gray-900/60' 
+                  : 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-800/90 dark:to-gray-900/70'}`}
             >
-              <div className="p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                  {plan.name}
-                </h3>
-                <p className="mt-4">
-                  <span className="text-4xl font-extrabold text-gray-900 dark:text-white">
-                    {plan.price} ETB
+              {/* Add card decorative elements */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
+              <div className="absolute -inset-[1px] bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-2xl blur-sm"></div>
+
+              {plan.id === 'premium' && (
+                <div className="absolute top-4 right-4">
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
+                    Popular
                   </span>
-                  <span className="text-base font-medium text-gray-500 dark:text-gray-400">
-                    /month
+                </div>
+              )}
+
+              <div className="relative">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{plan.name}</h3>
+                <div className="flex items-baseline mb-8">
+                  <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                    ETB {plan.price}
                   </span>
-                </p>
-                <p className="mt-8">
-                  <span className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Includes:
-                  </span>
-                  <ul className="mt-4 space-y-4">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <div className="flex-shrink-0">
-                          <svg
-                            className="h-6 w-6 text-green-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                        <p className="ml-3 text-base text-gray-700 dark:text-gray-300">
-                          {feature}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </p>
-              </div>
-              <div className="px-6 pt-6 pb-8">
+                  <span className="ml-2 text-lg font-medium text-gray-800 dark:text-gray-200">/one time</span>
+                </div>
+
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-gray-800 dark:text-gray-200 font-medium">
+                      <div className="mr-3 p-1 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/10">
+                        <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
                 <button
                   onClick={() => handleSubscribe(plan)}
                   disabled={loading}
-                  className="w-full bg-blue-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full py-4 px-6 rounded-xl text-white font-semibold transition-all duration-200
+                    ${plan.id === 'premium'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-purple-500/25'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-blue-500/25'}
+                    ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {loading ? (
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                      Processing...
-                    </div>
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                   ) : (
                     'Subscribe Now'
                   )}
@@ -173,12 +175,6 @@ export default function Subscription() {
             </div>
           ))}
         </div>
-
-        {userCredits !== null && (
-          <div className="mt-8 text-center text-gray-600 dark:text-gray-300">
-            Your current balance: {userCredits} credits
-          </div>
-        )}
       </div>
     </div>
   );

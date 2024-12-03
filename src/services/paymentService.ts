@@ -1,21 +1,16 @@
 import axios from 'axios';
 
 // Replace with your actual Chapa secret key
-const CHAPA_SECRET_KEY = 'CHASECK_TEST-QJNjBQLqB1A9ypz7FxYdJ7EIhIgjhLgr';
 const CHAPA_API_URL = 'https://api.chapa.co/v1';
+const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
 
 interface PaymentInitializationData {
   amount: number;
+  currency?: string,
   email: string;
-  first_name: string;
-  last_name: string;
   tx_ref: string;
   callback_url: string;
   return_url: string;
-  customization: {
-    title: string;
-    description: string;
-  };
 }
 
 export async function initializePayment(data: PaymentInitializationData) {
@@ -26,18 +21,19 @@ export async function initializePayment(data: PaymentInitializationData) {
         amount: data.amount,
         currency: 'ETB',
         email: data.email,
-        first_name: data.first_name,
-        last_name: data.last_name,
         tx_ref: data.tx_ref,
         callback_url: data.callback_url,
         return_url: data.return_url,
-        customization: data.customization
       },
       {
         headers: {
           'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization'
+        },
+        withCredentials: true
       }
     );
 
@@ -55,8 +51,12 @@ export async function verifyPayment(txRef: string) {
       {
         headers: {
           'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization'
+        },
+        withCredentials: true
       }
     );
 

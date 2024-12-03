@@ -41,6 +41,7 @@ export default function ProgressTracker() {
   const [feedbacker, setFeedback] = useState<any[]>([]);
   const [deleteLoading, setdeleteLoading] = useState(false);
   const [barChartLoading, setBarChartLoading] = useState(false);
+  const [focusAreasLoading, setFocusAreasLoading] = useState(false);
   const selectedFeedback = feedbacker.find(
     (feedback) => feedback.subject === selectedTopic
   );
@@ -51,16 +52,19 @@ export default function ProgressTracker() {
 
   async function fetchData() {
     setBarChartLoading(true);
+    setFocusAreasLoading(true);
     await axios
       .get("http://localhost:8888/api/v1/enhancement")
       .then((response) => {
         setFeedback(response.data);
         console.log("feedbacks from db: ", response.data);
         setBarChartLoading(false);
+        setFocusAreasLoading(false);
       })
       .catch((error) => {
         console.log(error);
         setBarChartLoading(false);
+        setFocusAreasLoading(false);
       });
   }
 
@@ -190,43 +194,53 @@ export default function ProgressTracker() {
           Recommended Focus Areas
         </h3>
         <div className="space-y-4">
-          {feedbacker?.map((topic) => (
-            <div
-              key={topic._id}
-              className="p-4 border dark:border-gray-700 rounded-lg flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <h4 className="font-medium text-gray-800 dark:text-white">
-                    {topic.subject}
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Current score: {topic.score}%
-                  </p>
+          {focusAreasLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+            </div>
+          ) : feedbacker?.length > 0 ? (
+            feedbacker?.map((topic) => (
+              <div
+                key={topic._id}
+                className="p-4 border dark:border-gray-700 rounded-lg flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <h4 className="font-medium text-gray-800 dark:text-white">
+                      {topic.subject}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Current score: {topic.score}%
+                    </p>
+                  </div>
+                </div>
+                {/* action buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedTopic(topic.subject)}
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Review
+                  </button>
+                  <button
+                    onClick={() => handleDelete(topic._id)}
+                    className="px-4 py-2 text-sm bg-red-700 text-white rounded-lg hover:bg-red-900 transition-colors"
+                  >
+                    {deleteLoading && topic._id ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
                 </div>
               </div>
-              {/* action buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedTopic(topic.subject)}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Review
-                </button>
-                <button
-                  onClick={() => handleDelete(topic._id)}
-                  className="px-4 py-2 text-sm bg-red-700 text-white rounded-lg hover:bg-red-900 transition-colors"
-                >
-                  {deleteLoading && topic._id ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    "Delete"
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">
+              No recommended focus areas found.
+            </p>
+          )}
         </div>
       </div>
 
