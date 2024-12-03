@@ -3,6 +3,7 @@ import { auth } from '../config/firebaseConfig';
 import { getUserCredits, createPayment } from '../services/mongoService';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
+import SuccessPayment from './SuccessPayment';
 
 interface Plan {
   id: string;
@@ -53,6 +54,7 @@ export default function Subscription() {
   const [userCredits, setUserCredits] = useState<number | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [email, setEmail] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
@@ -74,19 +76,30 @@ export default function Subscription() {
     setLoading(true);
 
     try {
+      // Generate a unique transaction reference
+      const tx_ref = `sub_${plan.id}_${Date.now()}`;
+
       const response = await axios.post('http://localhost:8888/api/v1/initialize',
         {
           amount: plan.price.toString(),
           currency: "ETB",
           email: email,
-          tx_ref: "subscriber-" + plan.id + new Date().getMilliseconds().toString(),
-          callback_url: "https://www.google.com",
-          return_url: "https://www.google.com"
+          tx_ref: tx_ref,
+          callback_url: `${window.location.origin}/payment-callback?tx_ref=${tx_ref}`,
+          return_url: `${window.location.origin}/payment-callback?tx_ref=${tx_ref}`
         }
       );
 
       // Check if we have a successful response with checkout URL
       if (response.data.status === 'success' && response.data.data.checkout_url) {
+        // Store transaction details in localStorage for verification
+        localStorage.setItem('pending_payment', JSON.stringify({
+          tx_ref,
+          plan_id: plan.id,
+          amount: plan.price,
+          credits: plan.credits
+        }));
+
         // Redirect to the checkout URL
         window.location.href = response.data.data.checkout_url;
       } else {
@@ -94,63 +107,19 @@ export default function Subscription() {
       }
     } catch (error) {
       console.error('Payment error:', error);
+    } finally {
+      setLoading(false);
     }
-
-
-
-    // try {
-    //   if (!email) {
-    //     throw new Error('User email not found');
-    //   }
-
-    //   // ref code
-    //   const txRef = `sub_${email}_${Date.now()}_${plan.id}`;
-
-    //   // Initialize Chapa payment
-    //   const response = await axios.post("http://localhost:8888/api/v1/initialize",
-    //     {
-    //       amount: "5000",
-    //       currency: "ETB",
-    //       email: "sample@gmail.com",
-    //       tx_ref: "132100",
-    //       callback_url: "https://www.google.com",
-    //       return_url: "https://www.google.com"
-    //     }
-    //   );
-
-    //   console.log('Payment Response:', response.data);
-
-    //   // Redirect to Chapa payment page
-    //   if (response.data && response.data.checkout_url) {
-    //     window.location.href = response.data.checkout_url;
-    //   } else {
-    //     throw new Error('Invalid payment response');
-    //   }
-
-    // } catch (error: any) {
-    //   console.error('Payment initialization failed:', {
-    //     message: error.message,
-    //     response: error.response?.data,
-    //     status: error.response?.status,
-    //     statusText: error.response?.statusText,
-    //     requestData: error.config?.data
-    //   });
-
-    //   let errorMessage = 'Failed to initialize payment. Please try again.';
-    //   if (error.response?.data?.message) {
-    //     errorMessage = error.response.data.message;
-    //   } else if (error.response?.status === 500) {
-    //     errorMessage = 'Server error. Please check if all required fields are provided correctly.';
-    //   }
-
-    //   alert(errorMessage);
-    // } finally {
-    //   setLoading(false);
-    // }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-6 lg:p-8">
+      {/* Success Payment Modal */}
+      <SuccessPayment
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        plan={selectedPlan || undefined}
+      />
       {/* Add decorative background elements */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10"></div>

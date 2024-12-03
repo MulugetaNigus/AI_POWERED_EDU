@@ -11,6 +11,7 @@ import OnboardingFlow from './onboarding/OnboardingFlow';
 import axios from 'axios';
 // import AdminDashboard from './pages/AdminDashboard';
 import Subscription from './components/Subscription'
+import PaymentCallback from './pages/PaymentCallback';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -94,6 +95,7 @@ function App() {
                             }
                         />
                         <Route path="/subscription" element={<Subscription />} />
+                        <Route path="/payment-callback" element={<PaymentCallback />} />
                     </Routes>
                 </div>
             </ThemeProvider>
