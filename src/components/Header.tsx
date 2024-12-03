@@ -9,23 +9,36 @@ import axios from 'axios';
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [userEmail, setuserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setuserEmail(user.email);
-    axios
-      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
-      .then((response) => {
+    setUserEmail(user.email || "");
+  }, []);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (!userEmail) return;
+      
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
         const userData = response.data;
-        console.log(userData[0].credit);
-        setCreditBalance(userData[0].credit || 0);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [RerenderToUpdateCredit]);
+        if (userData && userData[0]) {
+          setCreditBalance(userData[0].credit || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching credits:", error);
+        setCreditBalance(0);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCredits();
+  }, [userEmail, RerenderToUpdateCredit]);
 
   // handle sing out
   const handleLogOut = async () => {
@@ -67,11 +80,11 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
             {
               localStorage.getItem('token') ? (
                 <>
-                  {creditVisibility &&
+                  {creditVisibility && (
                     <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg">
-                      Credits: {creditBalance ? creditBalance : <Loader2 className='w-4 h-4 animate-spin' />}
+                      Credits: {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : creditBalance}
                     </div>
-                  }
+                  )}
 
                   <p onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
                     <LogOut className="h-4 w-4 mr-2" />

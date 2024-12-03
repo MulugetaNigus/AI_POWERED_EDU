@@ -14,9 +14,20 @@ interface Plan {
 
 const plans: Plan[] = [
   {
+    id: 'starter',
+    name: 'Starter Plan',
+    price: 250,
+    credits: 50,
+    features: [
+      '50 AI Credits',
+      'PDF Chat Support',
+      'Feedback Analytics',
+    ]
+  },
+  {
     id: 'basic',
     name: 'Basic Plan',
-    price: 500, 
+    price: 500,
     credits: 100,
     features: [
       '100 AI Credits',
@@ -27,7 +38,7 @@ const plans: Plan[] = [
   {
     id: 'premium',
     name: 'Premium Plan',
-    price: 1000, 
+    price: 1000,
     credits: 500,
     features: [
       '500 AI Credits',
@@ -41,8 +52,12 @@ export default function Subscription() {
   const [loading, setLoading] = useState(false);
   const [userCredits, setUserCredits] = useState<number | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    setEmail(user.email);
+    console.log(user.email);
     const fetchCredits = async () => {
       const user = auth.currentUser;
       if (user) {
@@ -57,41 +72,81 @@ export default function Subscription() {
 
   const handleSubscribe = async (plan: Plan) => {
     setLoading(true);
+
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      const txRef = `sub_${user.uid}_${Date.now()}_${plan.id}`;
-
-      // Create payment record in MongoDB
-      await createPayment(user.uid, txRef, plan.price, plan.id as 'basic' | 'premium');
-
-      // Initialize Chapa payment
-      const response = await axios.post('YOUR_BACKEND_ENDPOINT/create-payment', {
-        amount: plan.price,
-        email: user.email,
-        first_name: user.displayName?.split(' ')[0] || 'User',
-        last_name: user.displayName?.split(' ').slice(1).join(' ') || 'Name',
-        tx_ref: txRef,
-        callback_url: `${window.location.origin}/payment-callback`,
-        return_url: `${window.location.origin}/dashboard`,
-        customization: {
-          title: `${plan.name} Subscription`,
-          description: `Subscribe to ${plan.name} and get ${plan.credits} credits`
+      const response = await axios.post('http://localhost:8888/api/v1/initialize',
+        {
+          amount: plan.price.toString(),
+          currency: "ETB",
+          email: email,
+          tx_ref: "subscriber-" + plan.id + new Date().getMilliseconds().toString(),
+          callback_url: "https://www.google.com",
+          return_url: "https://www.google.com"
         }
-      });
+      );
 
-      // Redirect to Chapa payment page
-      window.location.href = response.data.data.checkout_url;
-
+      // Check if we have a successful response with checkout URL
+      if (response.data.status === 'success' && response.data.data.checkout_url) {
+        // Redirect to the checkout URL
+        window.location.href = response.data.data.checkout_url;
+      } else {
+        console.error('Payment initialization failed:', response.data);
+      }
     } catch (error) {
-      console.error('Payment initialization failed:', error);
-      alert('Failed to initialize payment. Please try again.');
-    } finally {
-      setLoading(false);
+      console.error('Payment error:', error);
     }
+
+
+
+    // try {
+    //   if (!email) {
+    //     throw new Error('User email not found');
+    //   }
+
+    //   // ref code
+    //   const txRef = `sub_${email}_${Date.now()}_${plan.id}`;
+
+    //   // Initialize Chapa payment
+    //   const response = await axios.post("http://localhost:8888/api/v1/initialize",
+    //     {
+    //       amount: "5000",
+    //       currency: "ETB",
+    //       email: "sample@gmail.com",
+    //       tx_ref: "132100",
+    //       callback_url: "https://www.google.com",
+    //       return_url: "https://www.google.com"
+    //     }
+    //   );
+
+    //   console.log('Payment Response:', response.data);
+
+    //   // Redirect to Chapa payment page
+    //   if (response.data && response.data.checkout_url) {
+    //     window.location.href = response.data.checkout_url;
+    //   } else {
+    //     throw new Error('Invalid payment response');
+    //   }
+
+    // } catch (error: any) {
+    //   console.error('Payment initialization failed:', {
+    //     message: error.message,
+    //     response: error.response?.data,
+    //     status: error.response?.status,
+    //     statusText: error.response?.statusText,
+    //     requestData: error.config?.data
+    //   });
+
+    //   let errorMessage = 'Failed to initialize payment. Please try again.';
+    //   if (error.response?.data?.message) {
+    //     errorMessage = error.response.data.message;
+    //   } else if (error.response?.status === 500) {
+    //     errorMessage = 'Server error. Please check if all required fields are provided correctly.';
+    //   }
+
+    //   alert(errorMessage);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   return (
@@ -113,21 +168,30 @@ export default function Subscription() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {plans.map((plan) => (
             <div
               key={plan.id}
               className={`relative overflow-hidden rounded-2xl p-8 backdrop-blur-md border border-white/20 shadow-xl
-                ${plan.id === 'premium' 
-                  ? 'bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-800/80 dark:to-gray-900/60' 
-                  : 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-800/90 dark:to-gray-900/70'}`}
+                group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300
+                ${plan.id === 'premium'
+                  ? 'bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-800/80 dark:to-gray-900/60'
+                  : plan.id === 'starter'
+                    ? 'bg-gradient-to-br from-white/95 to-white/75 dark:from-gray-800/95 dark:to-gray-900/75'
+                    : 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-800/90 dark:to-gray-900/70'}`}
             >
-              {/* Add card decorative elements */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
-              <div className="absolute -inset-[1px] bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-2xl blur-sm"></div>
+              {/* Mirror effect overlay */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent dark:from-white/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
+                <div className="absolute inset-0 bg-gradient-to-tl from-white/40 via-transparent to-transparent dark:from-white/10 transform translate-x-full group-hover:translate-x-0 transition-transform duration-700 delay-100"></div>
+              </div>
+
+              {/* Card decorative elements */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-colors duration-300"></div>
+              <div className="absolute -inset-[1px] bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-2xl blur-sm group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-colors duration-300"></div>
 
               {plan.id === 'premium' && (
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 transform group-hover:scale-105 transition-transform duration-300">
                   <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
                     Popular
                   </span>
@@ -135,9 +199,9 @@ export default function Subscription() {
               )}
 
               <div className="relative">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{plan.name}</h3>
-                <div className="flex items-baseline mb-8">
-                  <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 transform group-hover:translate-y-[-2px] transition-transform duration-300">{plan.name}</h3>
+                <div className="flex items-baseline mb-8 transform group-hover:translate-y-[-2px] transition-transform duration-300">
+                  <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent group-hover:from-blue-500 group-hover:to-purple-500 transition-colors duration-300">
                     ETB {plan.price}
                   </span>
                   <span className="ml-2 text-lg font-medium text-gray-800 dark:text-gray-200">/one time</span>
@@ -145,8 +209,11 @@ export default function Subscription() {
 
                 <ul className="space-y-4 mb-8">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-gray-800 dark:text-gray-200 font-medium">
-                      <div className="mr-3 p-1 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/10">
+                    <li
+                      key={index}
+                      className="flex items-center text-gray-800 dark:text-gray-200 font-medium transform group-hover:translate-x-1 transition-transform duration-300 delay-[${index * 50}ms]"
+                    >
+                      <div className="mr-3 p-1 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/10 group-hover:from-green-500/30 group-hover:to-green-500/20 transition-colors duration-300">
                         <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
@@ -159,10 +226,13 @@ export default function Subscription() {
                 <button
                   onClick={() => handleSubscribe(plan)}
                   disabled={loading}
-                  className={`w-full py-4 px-6 rounded-xl text-white font-semibold transition-all duration-200
+                  className={`w-full py-4 px-6 rounded-xl text-white font-semibold transition-all duration-300
+                    transform group-hover:scale-[1.02] group-hover:shadow-xl
                     ${plan.id === 'premium'
                       ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-purple-500/25'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-blue-500/25'}
+                      : plan.id === 'starter'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-blue-500/25'
+                        : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-blue-500/25'}
                     ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {loading ? (

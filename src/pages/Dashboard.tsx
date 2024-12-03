@@ -431,12 +431,8 @@ export default function Dashboard() {
           tx_ref: "test" + new Date().getMilliseconds().toString(),
           callback_url: "https://www.google.com",
           return_url: "https://www.google.com"
-        }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
-        },
-      });
+        }
+      );
 
       // Check if we have a successful response with checkout URL
       if (response.data.status === 'success' && response.data.data.checkout_url) {
