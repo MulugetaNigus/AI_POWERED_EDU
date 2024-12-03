@@ -6,18 +6,18 @@ import { useNavigate } from 'react-router-dom';
 interface SuccessPaymentProps {
   isOpen: boolean;
   onClose: () => void;
-  plan?: {
-    name: string;
-    credits: number;
-  };
 }
 
-const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose, plan }) => {
+const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const pendingPayment = JSON.parse(localStorage.getItem('pending_payment') || '{}');
 
   const handleConfirm = () => {
     onClose();
     navigate('/dashboard');
+    // Clean up localStorage
+    localStorage.removeItem('pending_payment');
+    localStorage.removeItem('payment_success');
   };
 
   return (
@@ -79,7 +79,7 @@ const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose, plan }
                 
                 <div className="space-y-4">
                   <p className="text-xl text-gray-700 dark:text-gray-300">
-                    Thank you for subscribing to {plan?.name}
+                    Thank you for your purchase
                   </p>
 
                   {/* Features Grid */}
@@ -88,7 +88,7 @@ const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose, plan }
                       <div className="flex items-center justify-center gap-2 text-lg">
                         <CreditCard className="w-6 h-6 text-green-500" />
                         <p className="font-semibold text-gray-800 dark:text-gray-200">
-                          Payment Verified
+                          {pendingPayment.amount} ETB
                         </p>
                       </div>
                     </div>
@@ -96,7 +96,7 @@ const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose, plan }
                       <div className="flex items-center justify-center gap-2 text-lg">
                         <Zap className="w-6 h-6 text-green-500" />
                         <p className="font-semibold text-gray-800 dark:text-gray-200">
-                          {plan?.credits} Credits Added
+                          {pendingPayment.credits} Credits
                         </p>
                       </div>
                     </div>
@@ -108,7 +108,7 @@ const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose, plan }
                   </div>
 
                   {/* Confirm Button */}
-                  {/* <motion.button
+                  <motion.button
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
@@ -119,7 +119,7 @@ const SuccessPayment: React.FC<SuccessPaymentProps> = ({ isOpen, onClose, plan }
                     className="cursor-pointer mt-6 px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold shadow-lg shadow-green-500/25 transition-all duration-200 transform hover:scale-[1.02]"
                   >
                     Continue to Dashboard
-                  </motion.button> */}
+                  </motion.button>
                 </div>
               </motion.div>
 

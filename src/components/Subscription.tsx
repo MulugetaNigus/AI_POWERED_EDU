@@ -59,16 +59,21 @@ export default function Subscription() {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
     setEmail(user.email);
-    console.log(user.email);
+    
     const fetchCredits = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        const credits = await getUserCredits(user.uid);
-        if (credits) {
-          setUserCredits(credits.credits);
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const creditsDoc = await getUserCredits(user.uid);
+          if (creditsDoc) {
+            setUserCredits(creditsDoc.credits);
+          }
         }
+      } catch (error) {
+        console.error('Error fetching credits:', error);
       }
     };
+
     fetchCredits();
   }, []);
 
@@ -76,6 +81,7 @@ export default function Subscription() {
     setLoading(true);
 
     try {
+      const user = JSON.parse(localStorage.getItem("user_info") || "{}");
       // Generate a unique transaction reference
       const tx_ref = `sub_${plan.id}_${Date.now()}`;
 
@@ -97,7 +103,8 @@ export default function Subscription() {
           tx_ref,
           plan_id: plan.id,
           amount: plan.price,
-          credits: plan.credits
+          credits: plan.credits,
+          userId: user._id // Store user ID for credit update
         }));
 
         // Redirect to the checkout URL

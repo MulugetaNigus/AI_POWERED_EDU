@@ -29,18 +29,35 @@ const PaymentCallback = () => {
 
         // Verify payment with backend
         const response = await axios.get(`http://localhost:8888/api/v1/verify/${tx_ref}`);
-        
+
         if (response.data.status === 'success') {
-          setShowSuccess(true);
-          // Store success in localStorage to persist across refreshes
-          localStorage.setItem('payment_success', 'true');
+          try {
+            // Get pending payment details from localStorage
+            const pendingPayment = JSON.parse(localStorage.getItem('pending_payment') || '{}');
+            
+            // Update credits using stored values
+            const creditResponse = await axios.put(
+              `http://localhost:8888/api/v1/onboard/credit/674ac7117faa14533fcedc42/${pendingPayment.credits}`
+            );
+
+            if (creditResponse.data) {
+              setShowSuccess(true);
+              localStorage.setItem('payment_success', 'true');
+              console.log('Credit updated:', creditResponse.data);
+            } else {
+              throw new Error('Failed to update credits');
+            }
+          } catch (error) {
+            console.error('Error updating credit:', error);
+            throw error;
+          }
         } else {
           throw new Error('Payment verification failed');
         }
       } catch (error: any) {
         console.error('Verification error:', error);
         setError(error.message || 'Payment verification failed');
-        
+
         // Redirect to subscription page after 3 seconds on error
         setTimeout(() => {
           navigate('/subscription');
