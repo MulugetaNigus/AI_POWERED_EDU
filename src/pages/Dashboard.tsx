@@ -132,7 +132,6 @@ export default function Dashboard() {
       .catch((error) => {
         console.log(error);
       });
-
   };
 
   const user_gradeLevel = user_current_grade || 6;

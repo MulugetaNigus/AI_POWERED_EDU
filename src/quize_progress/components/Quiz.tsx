@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -55,6 +55,32 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const [waitUntillFeedback, setWaitUntilFeedback] = useState(false);
   const [open, setOpen] = useState(true);
   const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
+  const [userEmail, setuserEmail] = useState("");
+  const [UserCurrentCredit, setUserCurrentCredit] = useState(0);
+  const [userID, setuserID] = useState("");
+
+
+  useEffect(() => {
+    getCurrentUserId();
+  }, [])
+
+
+  // get current user id
+  const getCurrentUserId = () => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    setuserEmail(user.email);
+    axios
+      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .then((response) => {
+        const userData = response.data;
+        console.log(userData[0].credit);
+        setUserCurrentCredit(userData[0].credit);
+        setuserID(userData[0]._id || null);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const startQuiz = async (startChapter: number, endChapter: number) => {
     console.log("subject: ", subject);
@@ -87,7 +113,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
       const user = JSON.parse(localStorage.getItem("user_info") || "{}");
       if (user.email) {
         try {
-          const response = await axios.put(`http://localhost:8888/api/v1/onboard/credit/${user.email}`);
+          const response = await axios.put(`http://localhost:8888/api/v1/onboard/credit/${userID}`);
           console.log("Updated credits:", response.data.remainingCredits);
           setRenderNewCreditValue(true);
         } catch (err) {
@@ -280,13 +306,12 @@ export default function Quiz({ subject, grade }: QuizProps) {
             key={index}
             onClick={() => handleAnswer(index)}
             disabled={showExplanation}
-            className={`w-full p-4 text-left rounded-lg border transition-all ${
-              selectedAnswer === index
-                ? index === questions[currentQuestion].correctAnswer
-                  ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                  : "border-red-500 bg-red-50 dark:bg-red-900/20"
-                : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700"
-            }`}
+            className={`w-full p-4 text-left rounded-lg border transition-all ${selectedAnswer === index
+              ? index === questions[currentQuestion].correctAnswer
+                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                : "border-red-500 bg-red-50 dark:bg-red-900/20"
+              : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-gray-800 dark:text-white">{option}</span>
@@ -389,3 +414,4 @@ export default function Quiz({ subject, grade }: QuizProps) {
     </div>
   );
 }
+

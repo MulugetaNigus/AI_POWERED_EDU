@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { auth } from '../config/firebaseConfig';
-import { getUserCredits, createPayment } from '../services/mongoService';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import SuccessPayment from './SuccessPayment';
@@ -51,7 +49,6 @@ const plans: Plan[] = [
 
 export default function Subscription() {
   const [loading, setLoading] = useState(false);
-  const [userCredits, setUserCredits] = useState<number | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [email, setEmail] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -59,22 +56,6 @@ export default function Subscription() {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
     setEmail(user.email);
-    
-    const fetchCredits = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const creditsDoc = await getUserCredits(user.uid);
-          if (creditsDoc) {
-            setUserCredits(creditsDoc.credits);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching credits:', error);
-      }
-    };
-
-    fetchCredits();
   }, []);
 
   const handleSubscribe = async (plan: Plan) => {
