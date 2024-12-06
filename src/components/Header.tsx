@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, X, LogOut, Loader2 } from 'lucide-react';
+import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
@@ -82,6 +82,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                 <>
                   {creditVisibility && (
                     <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg">
+                      <CreditCard className="w-5 h-5" />
                       Credits: {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : creditBalance}
                     </div>
                   )}

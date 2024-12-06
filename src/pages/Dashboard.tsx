@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Send,
   ChevronDown,
@@ -91,6 +91,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
   const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
+  const userCurrentCreditRef = useRef<string>("");
 
 
   // handle to get the user info
@@ -183,6 +184,7 @@ export default function Dashboard() {
   };
 
   const handleSend = async (e: React.FormEvent) => {
+    console.log("Current user credit: ", userCurrentCredit)
     e.preventDefault();
     if (input.trim() && selectedCourse) {
       const userMessage = `${input}`;
@@ -220,7 +222,7 @@ export default function Dashboard() {
         // });
 
         // https://python-gemini-doc-backend.onrender.com
-        // Ngrok endpoints to tunnel = https://586f-197-156-105-116.ngrok-free.app/
+        // Ngrok endpoints to tunnel = https://8d30-102-213-69-44.ngrok-free.app
         const response = await axios.post(
           "https://python-gemini-doc-backend.onrender.com/process_pdf",
           {
@@ -249,6 +251,7 @@ export default function Dashboard() {
         await axios.put(`http://localhost:8888/api/v1/onboard/credit/${userID}`)
           .then((result => {
             console.log(result.data.remainingCredits)
+            setUserCurrentCredit(result.data.remainingCredits)
             setRenderNewCreditValue(true)
           })).catch((err) => {
             console.log(err);
