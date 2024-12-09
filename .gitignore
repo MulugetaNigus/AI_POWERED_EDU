@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 .env
-config
+// config
 node_modules
 src/AI_Engine
 dist

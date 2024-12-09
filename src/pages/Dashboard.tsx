@@ -547,6 +547,7 @@ export default function Dashboard() {
                       <li>{his?.data.slice(0, 20) + "..."}</li>
                     </ol> */}
                     {/* in this btn i just want to add onclick event to show the selected chat history data to the main chat area */}
+                    
                     <button
                       // onClick={() => alert(his?.prompt + "\n" + his?.data)}
                       onClick={() => handleChatHistory(his)}
@@ -562,6 +563,7 @@ export default function Dashboard() {
                         onClick={() => handleDeleteChatHistory(his)}
                       />
                     </button>
+                    
                   </div>
                 ))}
                 {/* add the message no history when the "OchatHistory" dont have any data */}
