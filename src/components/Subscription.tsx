@@ -52,6 +52,7 @@ export default function Subscription() {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [email, setEmail] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [paymentError, setpaymentError] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
@@ -94,6 +95,7 @@ export default function Subscription() {
         console.error('Payment initialization failed:', response.data);
       }
     } catch (error) {
+      setpaymentError(true);
       console.error('Payment error:', error);
     } finally {
       setLoading(false);
@@ -116,13 +118,19 @@ export default function Subscription() {
       </div>
 
       <div className="max-w-7xl mx-auto relative">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-4">
+        <div className="text-start mb-5">
+          <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-4">
             Choose Your Plan
           </h1>
           <p className="text-xl font-medium text-gray-800 dark:text-gray-200">
             Get more credits and unlock premium features
           </p>
+          <br />
+          {paymentError &&
+            <div className='border-2 border-red-200 bg-red-200 p-4 rounded flex items-center justify-center w-2/6'>
+              <span><p className='text-red-900 font-bold text-base'>Payment Error, Please try again !</p></span>
+            </div>
+          }
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">

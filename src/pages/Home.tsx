@@ -23,7 +23,7 @@ export default function Home() {
       <MotivationalSection />
       <FAQ />
       <Testimonials />
-      <hr className="border-t border-gray-800 mt-28 pt-8" />
+      <hr className="border-t border-gray-100 mt-28 pt-8" />
       <Footer />
     </main>
   );
