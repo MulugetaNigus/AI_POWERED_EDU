@@ -224,7 +224,7 @@ export default function Dashboard() {
         // https://python-gemini-doc-backend.onrender.com
         // Ngrok endpoints to tunnel = https://8d30-102-213-69-44.ngrok-free.app
         const response = await axios.post(
-          "https://python-gemini-doc-backend.onrender.com/process_pdf",
+          "http://127.0.0.1:8000/process_pdf",
           {
             // subject: "flutter",
             question: input,
@@ -547,7 +547,7 @@ export default function Dashboard() {
                       <li>{his?.data.slice(0, 20) + "..."}</li>
                     </ol> */}
                     {/* in this btn i just want to add onclick event to show the selected chat history data to the main chat area */}
-                    
+
                     <button
                       // onClick={() => alert(his?.prompt + "\n" + his?.data)}
                       onClick={() => handleChatHistory(his)}
@@ -563,7 +563,7 @@ export default function Dashboard() {
                         onClick={() => handleDeleteChatHistory(his)}
                       />
                     </button>
-                    
+
                   </div>
                 ))}
                 {/* add the message no history when the "OchatHistory" dont have any data */}
