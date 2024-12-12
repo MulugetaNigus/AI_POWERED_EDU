@@ -8,6 +8,7 @@ import FAQ from '../components/FAQ';
 import MotivationalSection from '../components/MotivationalSection';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import Togather from '../components/Togather';
 
 export default function Home() {
 
@@ -22,6 +23,7 @@ export default function Home() {
       <CourseList />
       <MotivationalSection />
       <FAQ />
+      <Togather />
       <Testimonials />
       <hr className="border-t border-gray-100 mt-28 pt-8" />
       <Footer />
