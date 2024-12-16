@@ -5,6 +5,7 @@ import ThemeToggle from './ThemeToggle';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import axios from 'axios';
+import { Button } from '@headlessui/react';
 
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
   useEffect(() => {
     const fetchCredits = async () => {
       if (!userEmail) return;
-      
+
       setIsLoading(true);
       try {
         const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
@@ -61,7 +62,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
 
   return (
     <header className="fixed top-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm z-50">
-      <nav className="container mx-auto px-4 py-4">
+      <nav className="container mx-auto px-4 py-5">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-500" />
@@ -72,7 +73,10 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
             <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Home</Link>
             <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a>
             <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a>
-            <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">AI Assistance</Link>
+            <span className='text-xl text-gray-400'>{" | "}</span>
+            <Button style={{ backgroundColor: "rgb(67, 179,141)" }} className="px-3 py-2 rounded-md">
+              <Link to="/dashboard" className="text-white  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">AI Assistance</Link>
+            </Button>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -87,17 +91,17 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                     </div>
                   )}
 
-                  <p onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                  <p style={{ backgroundColor: "rgb(67, 179,141)" }} onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
                     <LogOut className="h-4 w-4 mr-2" />
                     SignOut
                   </p>
                 </>
               ) : (
                 <>
-                  <Link to="/signin" className="px-4 py-2 text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition">
+                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }} to="/signin" className="px-3 py-2 text-white rounded-lg transition">
                     Log In
                   </Link>
-                  <Link to="/signup" className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }} to="/signup" className="flex items-center px-3 py-2 text-white rounded-lg transition">
                     <LogIn className="h-4 w-4 mr-2" />
                     Sign Up
                   </Link>
