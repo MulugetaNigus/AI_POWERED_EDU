@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import Modal from './Modal';
 
-import img from '../Assets/Hero.png'
+import img from '../Assets/HeroOne1.png'
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -141,11 +141,11 @@ export default function Hero() {
             >
               <img
                 // src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
-                src={"https://img.freepik.com/premium-vector/books-step-education-infographics_41793-550.jpg?w=740"}
-                alt="Students learning"
-                className="rounded-xl"
-                width={650}
-                height={550}
+                src={img}
+                alt="Students_learning_png"
+                // className="rounded-xl"
+                width={600}
+                // height={550}
               />
             </motion.div>
 

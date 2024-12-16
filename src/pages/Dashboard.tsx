@@ -712,16 +712,35 @@ export default function Dashboard() {
 
               {/* loading state for the AI */}
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
-                    <div className="flex items-center space-x-2">
-                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                      <span className="text-gray-800 dark:text-gray-200">
-                        AI is thinking...
-                      </span>
+
+                <div className="max-w-[60%]">
+                  <div className="animate-pulse flex space-x-4">
+                    <div className="flex-1 space-y-6 py-1">
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-4 gap-4">
+                          <div className="h-4 bg-slate-700 rounded col-span-1"></div>
+                          <div className="h-4 bg-slate-700 rounded col-span-2"></div>
+                          <div className="h-4 bg-slate-700 rounded col-span-1"></div>
+                          <div className="h-4 bg-slate-700 rounded col-span-2"></div>
+                          <div className="h-4 bg-slate-700 rounded col-span-2"></div>
+                        </div>
+                        <div className="h-4 bg-slate-700 rounded"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                // <div className="flex justify-start">
+                //   <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
+                //     <div className="flex items-center space-x-2">
+                //       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                //       <span className="text-gray-800 dark:text-gray-200">
+                //         AI is thinking...
+                //       </span>
+                //     </div>
+                //   </div>
+                // </div>
+
               )}
             </div>
 

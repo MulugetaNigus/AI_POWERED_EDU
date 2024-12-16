@@ -18,6 +18,14 @@ const faqs = [
     question: 'Is there a free trial available?',
     answer: 'Yes, we offer a free trial period for new users to explore our platform and features.'
   },
+  {
+    question: 'What subjects are available?',
+    answer: 'We offer a wide range of subjects including Mathematics, Chemistry, Physics, Biology, and English.'
+  },
+  {
+    question: 'Is there a free trial available?',
+    answer: 'Yes, we offer a free trial period for new users to explore our platform and features.'
+  },
 ];
 
 export default function FAQ() {

@@ -13,6 +13,9 @@ import axios from 'axios';
 import Subscription from './components/Subscription'
 import PaymentCallback from './pages/PaymentCallback';
 
+// clerk here
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
+
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
 
@@ -78,8 +81,8 @@ function App() {
                                 <Home />
                             // {/* </ProtectedRoute> */}
                         } />
-                        <Route path="/signin" element={<SignIn />} />
-                        <Route path="/signup" element={<SignUp />} />
+                        <Route path="/signin" element={ <SignIn /> } />
+                        <Route path="/signup" element={ <SignUp /> } />
                         <Route path='/quize-and-progress' element={
                             <ProtectedRoute>
                                 <Apps />

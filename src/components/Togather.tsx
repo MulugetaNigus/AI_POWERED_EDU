@@ -21,7 +21,7 @@ const Togather = () => {
 
                 {/* right side */}
                 <div className="">
-                    <img src={img} alt="togather_image" width={1700} height={4000} />
+                    <img src={"https://img.freepik.com/premium-vector/leisure-time-isolated-cartoon-vector-illustrations-happy-students-having-leisure-time-coffee_107173-75430.jpg?uid=R110435962&ga=GA1.1.1909156352.1733350697"} alt="togather_image" width={1700} height={4000} />
                 </div>
             </div>
         </>

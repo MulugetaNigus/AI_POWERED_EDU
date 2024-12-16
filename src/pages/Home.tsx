@@ -22,8 +22,8 @@ export default function Home() {
       <Subjects />
       <CourseList />
       <MotivationalSection />
-      <FAQ />
       <Togather />
+      <FAQ />
       <Testimonials />
       <hr className="border-t border-gray-100 mt-28 pt-8" />
       <Footer />
