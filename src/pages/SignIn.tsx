@@ -47,15 +47,15 @@ export default function SignIn() {
               setLoading(false);
               console.log(user);
               // Save the user login data into local storage
-              // localStorage.setItem(
-              //   "user",
-              //   JSON.stringify({
-              //     uid: user.uid,
-              //     email: user.email,
-              //     profile: user.photoURL,
-              //     // Add any other user data you want to store
-              //   })
-              // );
+              localStorage.setItem(
+                "user_info",
+                JSON.stringify({
+                  uid: user.uid,
+                  email: user.email,
+                  profile: user.photoURL,
+                  // Add any other user data you want to store
+                })
+              );
 
               // // Get the JWT token
               // const token = await user.getIdToken();
@@ -117,14 +117,14 @@ export default function SignIn() {
           console.log(tokens);
           // The signed-in user info.
 
-          // const user = result.user;
+          const user = result.user;
           // // Save the user login data into local storage
-          // localStorage.setItem('user', JSON.stringify({
-          //   uid: user.uid,
-          //   email: user.email,
-          //   profile: user.photoURL
-          //   // Add any other user data you want to store
-          // }));
+          localStorage.setItem('user_info', JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            profile: user.photoURL
+            // Add any other user data you want to store
+          }));
           // // Get the JWT token
           // const token = await user.getIdToken();
 

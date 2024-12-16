@@ -47,6 +47,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     if (user_confirmation) {
       try {
         signOut(auth).then(async () => {
+          localStorage.setItem("user_info", "{}");
           localStorage.removeItem('token');
           navigate("/signin");
         }).catch((error) => {
