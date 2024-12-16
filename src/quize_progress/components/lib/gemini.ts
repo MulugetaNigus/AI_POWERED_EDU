@@ -1,8 +1,8 @@
 import axios from 'axios';
 // import { useState } from 'react';
 
-// const API_URL = 'http://0.0.0.0:8001';
-const API_URL = 'https://python-gemini-doc-backend.onrender.com';
+const API_URL = 'http://127.0.0.1:8000';
+// const API_URL = 'https://python-gemini-doc-backend.onrender.com';
 // const [selectedSubject, setselectedSubject] = useState("");
 
 function cleanJsonResponse(response: string): string {
@@ -147,7 +147,7 @@ export async function generateQuestionsForSubject(subject: string) {
 export async function generatePersonalizedFeedback(answers: any[], topics: string[]) {
   try {
     const prompt = `
-      Based on these quiz answers and topics, provide personalized learning feedback.
+      Based on these quiz answers and topics, provide personalized learning feedback, for the weaknesses generate appropriate website and youtube links in order to improve.
       Return ONLY a JSON object with this exact structure (no markdown, no explanations):
       {
         "strengths": ["strength1", "strength2"],

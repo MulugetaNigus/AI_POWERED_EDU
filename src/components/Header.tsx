@@ -74,9 +74,11 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
             <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a>
             <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a>
             <span className='text-xl text-gray-400'>{" | "}</span>
-            <Button style={{ backgroundColor: "rgb(67, 179,141)" }} className="px-3 py-2 rounded-md">
-              <Link to="/dashboard" className="text-white  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">AI Assistance</Link>
-            </Button>
+            {/* <Button style={{ backgroundColor: "rgb(67, 179,141)" }} className="px-3 py-2 rounded-md"> */}
+            <Link to="/dashboard" className="text-gray-600  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">
+              ✨ AI Assistance
+            </Link>
+            {/* </Button> */}
           </div>
 
           <div className="hidden md:flex items-center space-x-4">

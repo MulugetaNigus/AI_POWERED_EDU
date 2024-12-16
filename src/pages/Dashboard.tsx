@@ -19,6 +19,7 @@ import {
   BadgeAlert,
   RotateCw,
 } from "lucide-react";
+import { motion } from 'framer-motion';
 
 import axios from "axios";
 import ImageUpload from "../components/ImageUpload";
@@ -224,7 +225,7 @@ export default function Dashboard() {
         // https://python-gemini-doc-backend.onrender.com
         // Ngrok endpoints to tunnel = https://8d30-102-213-69-44.ngrok-free.app
         const response = await axios.post(
-          "https://python-gemini-doc-backend.onrender.com/process_pdf",
+          "http://127.0.0.1:8000/process_pdf",
           {
             // subject: "flutter",
             question: input,
