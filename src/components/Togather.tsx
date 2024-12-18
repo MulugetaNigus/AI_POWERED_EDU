@@ -1,5 +1,4 @@
-import React from "react";
-import { motion } from "framer-motion"; // Import Framer Motion for animations
+import { motion } from "framer-motion";
 
 const Togather = () => {
     return (
@@ -33,20 +32,20 @@ const Togather = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <img 
-                        src={"https://img.freepik.com/premium-vector/leisure-time-isolated-cartoon-vector-illustrations-happy-students-having-leisure-time-coffee_107173-75430.jpg?uid=R110435962&ga=GA1.1.1909156352.1733350697"} 
-                        alt="Happy students enjoying leisure time" 
-                        className="rounded-lg" 
-                        width={700} 
-                        height={400} 
+                    <img
+                        src={"https://img.freepik.com/premium-vector/leisure-time-isolated-cartoon-vector-illustrations-happy-students-having-leisure-time-coffee_107173-75430.jpg?uid=R110435962&ga=GA1.1.1909156352.1733350697"}
+                        alt="Happy students enjoying leisure time"
+                        className="rounded-lg"
+                        width={700}
+                        height={400}
                     />
                     <span className="absolute inset-0 opacity-30 transform -translate-y-1/4 blur-md">
-                        <img 
-                            src={"https://img.freepik.com/premium-vector/leisure-time-isolated-cartoon-vector-illustrations-happy-students-having-leisure-time-coffee_107173-75430.jpg?uid=R110435962&ga=GA1.1.1909156352.1733350697"} 
-                            alt="Happy students enjoying leisure time" 
-                            className="rounded-lg" 
-                            width={700} 
-                            height={400} 
+                        <img
+                            src={"https://img.freepik.com/premium-vector/leisure-time-isolated-cartoon-vector-illustrations-happy-students-having-leisure-time-coffee_107173-75430.jpg?uid=R110435962&ga=GA1.1.1909156352.1733350697"}
+                            alt="Happy students enjoying leisure time"
+                            className="rounded-lg"
+                            width={700}
+                            height={400}
                         />
                     </span>
                 </motion.div>
