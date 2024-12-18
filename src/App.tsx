@@ -14,7 +14,8 @@ import Subscription from './components/Subscription'
 import PaymentCallback from './pages/PaymentCallback';
 
 // clerk here
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, UserButton, RedirectToSignIn } from "@clerk/clerk-react";
+import SignInPage from './auth/SignIn';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -60,8 +61,24 @@ Here's a breakdown of the main points, along with some additional insights:
 Flutter is a powerful and rapidly evolving framework that offers a streamlined, efficient, and performant way to build beautiful and engaging mobile apps. It's a great choice for developers looking to create cross-platform applications with a modern and reactive approach.`;
 
 function App() {
-    // every 5 sec call this api using axios to prevent server sleep
+
     useEffect(() => {
+
+        // const handleVisibilityChange = () => {
+        //     if (document.visibilityState === 'visible') {
+        //         const token = localStorage.getItem('token');
+        //         if (!token) {
+        //             window.location.href = '/signin';
+        //         }
+        //     }
+        // };
+
+        // document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // return () => {
+        //     document.removeEventListener('visibilitychange', handleVisibilityChange);
+        // };
+
         const interval = setInterval(() => {
             axios
                 .get("https://python-gemini-doc-backend.onrender.com")
@@ -72,17 +89,32 @@ function App() {
     }, []);
 
     return (
+
+        // <header>
+        //     <SignedOut>
+        //         <RedirectToSignIn />
+        //     </SignedOut>
+        //     <SignedIn>
+        //         <UserButton />
+        //     </SignedIn>
+        // </header>
+
         <BrowserRouter>
             <ThemeProvider>
                 <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
                     <Routes>
                         <Route path="/" element={
                             // <ProtectedRoute>
-                                <Home />
+                            <Home />
                             // {/* </ProtectedRoute> */}
                         } />
-                        <Route path="/signin" element={ <SignIn /> } />
-                        <Route path="/signup" element={ <SignUp /> } />
+                        <Route path="/signin" element={
+                            <SignIn />
+                            // <SignInPage />
+                        } />
+                        <Route path="/signup" element={
+                            <SignUp />
+                        } />
                         <Route path='/quize-and-progress' element={
                             <ProtectedRoute>
                                 <Apps />
@@ -97,8 +129,16 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
-                        <Route path="/subscription" element={<Subscription />} />
-                        <Route path="/payment-callback" element={<PaymentCallback />} />
+                        <Route path="/subscription" element={
+                            <ProtectedRoute>
+                                <Subscription />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/payment-callback" element={
+                            <ProtectedRoute>
+                                <PaymentCallback />
+                            </ProtectedRoute>
+                        } />
                     </Routes>
                 </div>
             </ThemeProvider>

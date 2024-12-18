@@ -117,24 +117,33 @@ export default function Dashboard() {
     if (userData) {
       setuserProfile(JSON.parse(userData));
     }
-  }, []);
+  }, [input]);
 
   // get current user id
-  const getCurrentUserId = () => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setuserEmail(user.email);
-    axios
-      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
-      .then((response) => {
-        const userData = response.data;
-        console.log(userData[0].credit);
-        setUserCurrentCredit(userData[0].credit);
-        setuserID(userData[0]._id || null);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+const getCurrentUserId = () => {
+  const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+  const email = user.email; // Get the email directly from local storage
+  setuserEmail(email); // Update the state
+
+  axios
+    .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+    .then((response) => {
+      const userData = response.data;
+
+     // Filter the user data to find the current user's credit
+     const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+     console.log("dashboard credit: ", currentUserData.credit);
+     if (currentUserData) {
+       setUserCurrentCredit(currentUserData.credit);
+       setuserID(currentUserData._id);
+     } else {
+       setUserCurrentCredit("0");
+     }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
 
   const user_gradeLevel = user_current_grade || 6;
   const grades = [

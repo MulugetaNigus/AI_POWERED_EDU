@@ -16,7 +16,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setUserEmail(user.email || "");
+    setUserEmail(user.email);
   }, []);
 
   useEffect(() => {
@@ -27,8 +27,12 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
       try {
         const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
         const userData = response.data;
-        if (userData && userData[0]) {
-          setCreditBalance(userData[0].credit || 0);
+        // Filter the user data to find the current user's credit
+        const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+        if (currentUserData) {
+          setCreditBalance(currentUserData.credit || 0);
+        } else {
+          setCreditBalance(0);
         }
       } catch (error) {
         console.error("Error fetching credits:", error);
@@ -39,6 +43,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     };
 
     fetchCredits();
+
   }, [userEmail, RerenderToUpdateCredit]);
 
   // handle sing out

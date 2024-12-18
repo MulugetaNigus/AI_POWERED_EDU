@@ -13,7 +13,7 @@ import { ClerkProvider } from '@clerk/clerk-react'
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-  <ClerkProvider publishableKey={"pk_test_c2VjdXJlLWZvYWwtMzIuY2xlcmsuYWNjb3VudHMuZGV2JA"}>
+  <ClerkProvider publishableKey="pk_test_c2VjdXJlLWZvYWwtMzIuY2xlcmsuYWNjb3VudHMuZGV2JA" afterSignOutUrl="/signin">
     <App />
   </ClerkProvider>
   // {/* </StrictMode> */}
