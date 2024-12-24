@@ -19,6 +19,7 @@ import {
   BadgeAlert,
   RotateCw,
 } from "lucide-react";
+
 import { motion } from 'framer-motion';
 
 import axios from "axios";
@@ -33,9 +34,7 @@ import Header from "../components/Header";
 import SideAI from "../components/SideAI";
 // import uuid from 'uuid';
 import { v4 as uuidv4 } from "uuid";
-import { initializePayment } from "../services/paymentService";
 import SubscriptionModal from "../components/SubscriptionModal";
-
 
 
 interface ChatHistory {
@@ -63,6 +62,7 @@ export default function Dashboard() {
       isAI: true,
     },
   ]);
+
   const [input, setInput] = useState("");
   const [reinput, setReinput] = useState("");
   const [expandedGrade, setExpandedGrade] = useState<number | null>(null);
@@ -74,7 +74,7 @@ export default function Dashboard() {
   const [showIcons, setShowIcons] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [showPDFChat, setShowPDFChat] = useState(false);
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  // const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [OchatHistory, setOChatHistory] = useState<chatH[]>([]);
   const [userProfile, setuserProfile] = useState<{
     email: string;
@@ -91,8 +91,8 @@ export default function Dashboard() {
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
-  const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
-  const userCurrentCreditRef = useRef<string>("");
+  // const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
+  // const userCurrentCreditRef = useRef<string>("");
 
 
   // handle to get the user info
@@ -120,30 +120,30 @@ export default function Dashboard() {
   }, [input]);
 
   // get current user id
-const getCurrentUserId = () => {
-  const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-  const email = user.email; // Get the email directly from local storage
-  setuserEmail(email); // Update the state
+  const getCurrentUserId = () => {
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    const email = user.email; // Get the email directly from local storage
+    setuserEmail(email); // Update the state
 
-  axios
-    .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
-    .then((response) => {
-      const userData = response.data;
+    axios
+      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .then((response) => {
+        const userData = response.data;
 
-     // Filter the user data to find the current user's credit
-     const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
-     console.log("dashboard credit: ", currentUserData.credit);
-     if (currentUserData) {
-       setUserCurrentCredit(currentUserData.credit);
-       setuserID(currentUserData._id);
-     } else {
-       setUserCurrentCredit("0");
-     }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-};
+        // Filter the user data to find the current user's credit
+        const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+        console.log("dashboard credit: ", currentUserData.credit);
+        if (currentUserData) {
+          setUserCurrentCredit(currentUserData.credit);
+          setuserID(currentUserData._id);
+        } else {
+          setUserCurrentCredit("0");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const user_gradeLevel = user_current_grade || 6;
   const grades = [
@@ -457,6 +457,16 @@ const getCurrentUserId = () => {
       console.error('Payment error:', error);
     }
   }
+
+
+  // USER TOKEN UTILITY
+  // const user_input = window.prompt("how can i assist you today:");
+  // userInputToken.push(user_input.split(" "));
+  // console.log(userInputToken);
+  // user_input_len = userInputToken.map((items, index) => items.length);
+  // alert(FreeToken - user_input_len);
+  // console.log(FreeToken - user_input_len);
+
 
   return (
     <>

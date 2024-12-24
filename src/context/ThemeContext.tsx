@@ -7,7 +7,6 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-// AI-POWERED EDTECH FOR 6, 8, 12 GRADES
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -15,7 +14,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem('theme');
     return (savedTheme as Theme) || 
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      (window.matchMedia('(prefers-color-scheme: light)').matches ? 'dark' : 'light');
   });
 
   useEffect(() => {
