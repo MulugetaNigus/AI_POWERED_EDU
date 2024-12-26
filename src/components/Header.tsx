@@ -2,21 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
-import { signOut } from 'firebase/auth';
+// import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import axios from 'axios';
 import { Button } from '@headlessui/react';
+import { useUser, UserButton } from "@clerk/clerk-react";
 
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState<string | undefined>("");
+
+  const { isSignedIn, user, signOut } = useUser();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setUserEmail(user.email);
+    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    // setUserEmail(user.email);
+    setUserEmail(user?.emailAddresses[0].emailAddress);
   }, []);
 
   useEffect(() => {
@@ -46,8 +50,18 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
 
   }, [userEmail, RerenderToUpdateCredit]);
 
+  // Function to handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/signin");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   // handle sing out
-  const handleLogOut = async () => {
+  const handleLogOuts = async () => {
     const user_confirmation = window.confirm("are you shure you want to logout?")
     if (user_confirmation) {
       try {
@@ -90,7 +104,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
             {
-              localStorage.getItem('token') ? (
+              isSignedIn ? (
                 <>
                   {creditVisibility && (
                     <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg">
@@ -99,10 +113,20 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                     </div>
                   )}
 
-                  <p style={{ backgroundColor: "rgb(67, 179,141)" }} onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                  {/* <p style={{ backgroundColor: "rgb(67, 179,141)" }} onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
                     <LogOut className="h-4 w-4 mr-2" />
                     SignOut
-                  </p>
+                  </p> */}
+
+                  <div>
+                    <button onClick={handleLogout}>
+                      <div>
+                        {/* Show the Clerk user icon/avatar */}
+                        <UserButton />
+                      </div>
+                    </button>
+                  </div>
+
                 </>
               ) : (
                 <>

@@ -28,13 +28,16 @@ import PDFChat from "../components/PDFChat";
 import ChatHistory from "../components/ChatHistory";
 import MarkdownDisplay from "../components/MarkdownDisplay";
 import { auth } from "../config/firebaseConfig";
-import { signOut } from "firebase/auth";
+// import { signOut } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import SideAI from "../components/SideAI";
 // import uuid from 'uuid';
 import { v4 as uuidv4 } from "uuid";
 import SubscriptionModal from "../components/SubscriptionModal";
+
+// cleck importations
+import { UserButton, useUser } from '@clerk/clerk-react';
 
 
 interface ChatHistory {
@@ -48,6 +51,7 @@ interface ChatHistory {
 }
 
 interface chatH {
+  email: string;
   id: number;
   subject: string;
   prompt: string;
@@ -56,6 +60,8 @@ interface chatH {
 }
 
 export default function Dashboard() {
+
+  // default dashboard msg at the top
   const [messages, setMessages] = useState([
     {
       text: "Hello! I'm your AI tutor. Please select a grade and subject to begin learning!",
@@ -84,19 +90,29 @@ export default function Dashboard() {
   const [isBlurred, setIsBlurred] = useState(true);
   const [showSideAI, setShowSideAI] = useState(false);
   const [user_current_grade, setuser_current_grade] = useState();
-  const [userEmail, setuserEmail] = useState("");
+  const [userEmail, setuserEmail] = useState<string | undefined>("");
   const [userID, setuserID] = useState("");
   const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
   const [userCurrentCredit, setUserCurrentCredit] = useState<string>("");
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
+  const [currentUsername, setCurrentUsername] = useState<string | undefined>("");
+  const [isUsernameVisible, setIsUsernameVisible] = useState(false);
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
+
   // const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
   // const userCurrentCreditRef = useRef<string>("");
+
+  // clerk config
+  const { isSignedIn, user, signOut } = useUser();
+  // console.log("may be this is the username: ", user?.emailAddresses[0].emailAddress);
 
 
   // handle to get the user info
   useEffect(() => {
+
+    // to get the username when the page load
+    setCurrentUsername(user?.emailAddresses[0].emailAddress as string);
 
     // invok this function to get the current user id
     getCurrentUserId();
@@ -121,18 +137,20 @@ export default function Dashboard() {
 
   // get current user id
   const getCurrentUserId = () => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    const email = user.email; // Get the email directly from local storage
-    setuserEmail(email); // Update the state
+    // Assuming 'user' is defined somewhere in the component
+    const email = user?.emailAddresses[0].emailAddress;
+    setuserEmail(email);
+    console.log("user email: " + email);
 
     axios
-      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .get(`http://localhost:8888/api/v1/onboard?email=${email}`)
       .then((response) => {
         const userData = response.data;
 
         // Filter the user data to find the current user's credit
-        const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
-        console.log("dashboard credit: ", currentUserData.credit);
+        const currentUserData = userData.find((user: { email: string; }) => user.email === email);
+        console.log("dashboard credit: ", currentUserData?.credit); // Use optional chaining
+
         if (currentUserData) {
           setUserCurrentCredit(currentUserData.credit);
           setuserID(currentUserData._id);
@@ -144,6 +162,7 @@ export default function Dashboard() {
         console.log(error);
       });
   };
+
 
   const user_gradeLevel = user_current_grade || 6;
   const grades = [
@@ -245,6 +264,7 @@ export default function Dashboard() {
         // if response.data id true i want to store the user subject, prompt and the response data in localstorage for the chat history purpose
         if (response.data.answer) {
           const chatHistoryData = {
+            email: currentUsername,
             id: uuidv4(),
             subject: selectedCourse.course,
             prompt: input,
@@ -383,27 +403,19 @@ export default function Dashboard() {
     ]);
   };
 
-  // handle logout
-  const handleLogOut = async () => {
-    const user_confirmation = window.confirm(
-      "are you shure you want to logout?"
-    );
-    if (user_confirmation) {
-      try {
-        signOut(auth)
-          .then(async () => {
-            localStorage.removeItem("token");
-            navigate("/signin");
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      null;
+  // Function to handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/signin");
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
+  };
+
+  // handle logout
+  const handleLogouts = async () => {
+    handleLogout();
   };
 
   const handleCopyText = (text: string) => {
@@ -458,14 +470,9 @@ export default function Dashboard() {
     }
   }
 
-
-  // USER TOKEN UTILITY
-  // const user_input = window.prompt("how can i assist you today:");
-  // userInputToken.push(user_input.split(" "));
-  // console.log(userInputToken);
-  // user_input_len = userInputToken.map((items, index) => items.length);
-  // alert(FreeToken - user_input_len);
-  // console.log(FreeToken - user_input_len);
+  const toggleUsernameVisibility = () => {
+    setIsUsernameVisible(!isUsernameVisible);
+  };
 
 
   return (
@@ -558,7 +565,7 @@ export default function Dashboard() {
                   />
                 </div>
                 {/* ########################################################### */}
-                {OchatHistory.map((his, index) => (
+                {OchatHistory?.map((his, index) => (
                   <div
                     key={his?.timestamp}
                     className="rounded-lg overflow-hidden"
@@ -567,27 +574,31 @@ export default function Dashboard() {
                       <li>{his?.data.slice(0, 20) + "..."}</li>
                     </ol> */}
                     {/* in this btn i just want to add onclick event to show the selected chat history data to the main chat area */}
-
-                    <button
-                      // onClick={() => alert(his?.prompt + "\n" + his?.data)}
-                      onClick={() => handleChatHistory(his)}
-                      className="w-full flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      {/* <UserRound className="h-5 w-5" /> */}
-                      <p className="text-gray-600 dark:text-gray-300 font-normal">
-                        {index + 1}
-                        {"."} {his?.data.slice(0, 10) + "..."}
-                      </p>
-                      <Trash2
-                        className="w-5 h-5 text-red-400"
-                        onClick={() => handleDeleteChatHistory(his)}
-                      />
-                    </button>
+                    {
+                      his?.email == currentUsername
+                      &&
+                      <button
+                        // onClick={() => alert(his?.prompt + "\n" + his?.data)}
+                        onClick={() => handleChatHistory(his)}
+                        className="w-full flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        {/* <UserRound className="h-5 w-5" /> */}
+                        <p className="text-gray-600 dark:text-gray-300 font-normal">
+                          {index + 1}
+                          {"."} {his?.data.slice(0, 10) + "..."}
+                        </p>
+                        <Trash2
+                          className="w-5 h-5 text-red-400"
+                          onClick={() => handleDeleteChatHistory(his)}
+                        />
+                      </button>
+                    }
 
                   </div>
+
                 ))}
                 {/* add the message no history when the "OchatHistory" dont have any data */}
-                {OchatHistory.length == 0 && (
+                {OchatHistory?.length == 0 && (
                   <div className="flex items-center justify-between w-full h-12 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border-1 border-gray-200 dark:border-gray-700">
                     <p>No chat history found</p>
                     <BadgeAlert className="w-5 h-5" />
@@ -607,60 +618,38 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Profile Section */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="relative">
-                  {userProfile?.profile == null ? (
-                    <img
-                      src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&q=80"
-                      alt="User Profile"
-                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
-                    />
-                  ) : (
-                    <img
-                      src={userProfile?.profile}
-                      alt="User Profile"
-                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
-                    />
-                  )}
-                  {/* <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div> */}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {userProfile?.email}
-                  </h2>
-                  <div className="flex items-center justify-between">
-                    <p
-                      className={`text-xs ${isBlurred ? "blur-sm" : ""
-                        } text-gray-500 dark:text-gray-400 truncate`}
-                    >
-                      {userProfile?.uid}
-                    </p>
-                    <button onClick={toggleBlur} className="ml-2">
-                      {isBlurred ? (
-                        <Eye className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                      ) : (
-                        <EyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {/* <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+            <div className="flex flex-row items-center justify-between ml-5 gap-10 m-4">
+              {/* <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
                 <User className="h-4 w-4" />
                 <span>Profile</span>
               </button> */}
-                <button
-                  className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                  onClick={() => handleLogOut()}
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
+              {isSignedIn && (
+                <div className="flex flex-row items-center justify-between gap-2">
+                  {/* user profile box */}
+                  <div>
+                    <button onClick={handleLogout}>
+                      <UserButton />
+                    </button>
+                  </div>
+                  {/* username of the current user */}
+                  <div className={`relative ${!isUsernameVisible ? 'blur-sm' : ''}`}>
+                    <span className="mr-8">{currentUsername}</span>
+                    <button
+                      className="absolute right-0 top-0"
+                      onClick={toggleUsernameVisibility}
+                    >
+                      {isUsernameVisible ? <EyeOff /> : <Eye />}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* <button
+                className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                onClick={handleLogouts}
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </button> */}
             </div>
           </div>
 
@@ -685,7 +674,7 @@ export default function Dashboard() {
                 >
                   <div className="max-w-[80%]">
                     <div
-                      className={`p-4 rounded-lg ${message.isAI
+                      className={`mt-5 p-4 rounded-lg ${message.isAI
                         ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                         : "bg-blue-600 text-white"
                         }`}
@@ -848,7 +837,7 @@ export default function Dashboard() {
             remainingCredits={Number(userCurrentCredit)}
           />
         </div>
-      </div>
+      </div >
     </>
   );
 }

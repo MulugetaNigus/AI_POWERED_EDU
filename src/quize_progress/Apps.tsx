@@ -6,6 +6,7 @@ import Quiz from './components/Quiz';
 import ProgressTracker from './components/ProgressTracker';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import axios from 'axios';
+import { useUser } from '@clerk/clerk-react'
 
 function AppContent() {
   const [selectedGrade, setSelectedGrade] = useState('Grade 8');
@@ -13,24 +14,40 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'learn' | 'progress'>('learn');
   const { theme, toggleTheme } = useTheme();
   const [creditBalance, setCreditBalance] = useState<number | null | string>();
-  const [userEmail, setuserEmail] = useState("");
+  const [userEmail, setuserEmail] = useState<string | undefined>("");
   const creditVisibility: boolean = true;
+
+  // to get clerk info
+  const { user } = useUser();
 
   // get current user and get the current user credit based on the current user email
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setuserEmail(user.email);
-    axios
-      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
-      .then((response) => {
-        const userData = response.data;
-        console.log(userData[0].credit);
-        setCreditBalance(userData[0].credit || 0);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+
+    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    // setuserEmail(user.email);
+    setuserEmail(user?.emailAddresses[0].emailAddress)
+
+    // call the actuall funtion to get the current use credit
+    handleGetCredit();
+
   }, []);
+
+  // get the current user current credit
+  const handleGetCredit = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
+      const userData = response.data;
+      // Filter the user data to find the current user's credit
+      const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+      if (currentUserData) {
+        setCreditBalance(currentUserData.credit || 0);
+      } else {
+        setCreditBalance(0);
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
 
   return (

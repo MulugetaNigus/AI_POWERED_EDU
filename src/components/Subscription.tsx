@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import SuccessPayment from './SuccessPayment';
+import { useUser } from '@clerk/clerk-react'
 
 interface Plan {
   id: string;
@@ -48,15 +49,19 @@ const plans: Plan[] = [
 ];
 
 export default function Subscription() {
+
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [email, setEmail] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [paymentError, setpaymentError] = useState(false);
 
+  const { isSignedIn, user, signOut } = useUser();
+
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setEmail(user.email);
+    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    // setEmail(user.email);
+    setEmail(user?.emailAddresses[0].emailAddress);
   }, []);
 
   const handleSubscribe = async (plan: Plan) => {

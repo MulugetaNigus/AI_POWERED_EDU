@@ -6,6 +6,7 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute2 from './components/ProtectedRoute2'
 import Apps from './quize_progress/Apps';
 import OnboardingFlow from './onboarding/OnboardingFlow';
 import axios from 'axios';
@@ -14,8 +15,12 @@ import Subscription from './components/Subscription'
 import PaymentCallback from './pages/PaymentCallback';
 
 // clerk here
-import { SignedIn, SignedOut, SignInButton, UserButton, RedirectToSignIn } from "@clerk/clerk-react";
+// import { SignIn, SignUp, PasswordReset } from "@clerk/clerk-react";
+
+import SignUpPage from './auth/SignUp';
 import SignInPage from './auth/SignIn';
+import ForgotPasswordPage from './auth/ForgotPasswordPage';
+import ResetPasswordPage from './auth/ResetPasswordPage';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -109,35 +114,41 @@ function App() {
                             // {/* </ProtectedRoute> */}
                         } />
                         <Route path="/signin" element={
-                            <SignIn />
-                            // <SignInPage />
+                            // <SignIn />
+                            <SignInPage />
                         } />
                         <Route path="/signup" element={
-                            <SignUp />
+                            // <SignUp /> 
+                            <SignUpPage />
                         } />
+
+                        <Route path='forgot-password' element={<ForgotPasswordPage />} />
+                        <Route path='reset-password' element={<ResetPasswordPage />} />
+
                         <Route path='/quize-and-progress' element={
-                            <ProtectedRoute>
+                            // this is the route
+                            <ProtectedRoute2>
                                 <Apps />
-                            </ProtectedRoute>
+                            </ProtectedRoute2>
                         } />
                         <Route path='/on-boarding' element={<OnboardingFlow />} />
                         <Route
                             path="/dashboard"
                             element={
-                                <ProtectedRoute>
+                                <ProtectedRoute2>
                                     <Dashboard />
-                                </ProtectedRoute>
+                                </ProtectedRoute2>
                             }
                         />
                         <Route path="/subscription" element={
-                            <ProtectedRoute>
+                            <ProtectedRoute2>
                                 <Subscription />
-                            </ProtectedRoute>
+                            </ProtectedRoute2>
                         } />
                         <Route path="/payment-callback" element={
-                            <ProtectedRoute>
+                            <ProtectedRoute2>
                                 <PaymentCallback />
-                            </ProtectedRoute>
+                            </ProtectedRoute2>
                         } />
                     </Routes>
                 </div>

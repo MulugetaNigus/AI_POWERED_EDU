@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { setUncaughtExceptionCaptureCallback } from "process";
 import axios from "axios";
+import { useUser } from '@clerk/clerk-react';
 
 interface FormData {
   grade: string;
@@ -43,7 +44,7 @@ export default function OnboardingFlow() {
     },
     privacyPolicy: false,
   });
-  const [userEmail, setuserEmail] = useState("");
+  const [userEmail, setuserEmail] = useState<string | undefined>("");
   const [usergrade, setusergrade] = useState("");
   const [usersource, setusersource] = useState("");
   const [userbackground, setuserbackground] = useState("");
@@ -53,9 +54,13 @@ export default function OnboardingFlow() {
   const [saveOnBoardingLoading, setsaveOnBoardingLoading] = useState(false);
 
   // get the user email for pre poplited
+  const { isSignedIn, user, signOut } = useUser();
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setuserEmail(user.email);
+    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    // setuserEmail(user.email);
+    console.log("may be this is the username: ", user?.emailAddresses[0].emailAddress);
+    setuserEmail(user?.emailAddresses[0].emailAddress);
+    const Emailito = user?.emailAddresses[0].emailAddress;
   }, []);
 
   const handleBack = () => {
@@ -84,7 +89,7 @@ export default function OnboardingFlow() {
   const handleFinish = async () => {
     setsaveOnBoardingLoading(true);
     const userInfo = {
-      email: userEmail,
+      email: user?.emailAddresses[0].emailAddress,
       grade: usergrade,
       source: usersource,
       background: userbackground,
@@ -155,8 +160,8 @@ export default function OnboardingFlow() {
                   setusergrade(grade);
                 }}
                 className={`w-full p-4 text-left rounded-lg border transition-all ${formData.grade === grade
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                    : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                  : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   }`}
               >
                 <span className="font-medium text-gray-900 dark:text-white">
@@ -195,8 +200,8 @@ export default function OnboardingFlow() {
                   setusersource(source);
                 }}
                 className={`w-full p-4 text-left rounded-lg border transition-all ${formData.discovery === source
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                    : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                  : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   }`}
               >
                 <span className="font-medium text-gray-900 dark:text-white">
