@@ -7,6 +7,7 @@ import { auth } from '../config/firebaseConfig';
 import axios from 'axios';
 import { Button } from '@headlessui/react';
 import { useUser, UserButton } from "@clerk/clerk-react";
+import { useClerk } from '@clerk/clerk-react';
 
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
   const [userEmail, setUserEmail] = useState<string | undefined>("");
 
   const { isSignedIn, user, signOut } = useUser();
+  const clerk = useClerk();
 
   useEffect(() => {
     // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
@@ -130,13 +132,26 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                 </>
               ) : (
                 <>
-                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }} to="/signin" className="px-3 py-2 text-white rounded-lg transition">
-                    Log In
-                  </Link>
-                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }} to="/signup" className="flex items-center px-3 py-2 text-white rounded-lg transition">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Sign Up
-                  </Link>
+                  <button onClick={() => clerk.openSignIn({})}>
+                    <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
+                      // to="/signin"
+                      to=""
+                      className="px-3 py-2 text-white rounded-lg transition"
+                    >
+                      Log In
+                    </Link>
+                  </button>
+
+                  <button onClick={() => clerk.openSignUp({})}>
+                    <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
+                      // to="/signup" 
+                      to=""
+                      className="flex items-center px-3 py-2 text-white rounded-lg transition"
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Sign Up
+                    </Link>
+                  </button>
                 </>
               )
             }

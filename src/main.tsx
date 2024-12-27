@@ -10,7 +10,7 @@ const publishableKey = "pk_test_c2VjdXJlLWZvYWwtMzIuY2xlcmsuYWNjb3VudHMuZGV2JA"
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-  <ClerkProvider frontendApi={frontendApi} publishableKey={publishableKey}>
+  <ClerkProvider publishableKey={publishableKey} frontendApi={frontendApi} >
     <App />
   </ClerkProvider>
   // {/* </StrictMode> */}
