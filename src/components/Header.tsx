@@ -132,26 +132,26 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                 </>
               ) : (
                 <>
-                  <button onClick={() => clerk.openSignIn({})}>
-                    <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
-                      // to="/signin"
-                      to=""
-                      className="px-3 py-2 text-white rounded-lg transition"
-                    >
-                      Log In
-                    </Link>
-                  </button>
+                  {/* <button onClick={() => clerk.openSignIn({})}> */}
+                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
+                    to="/signin"
+                    // to=""
+                    className="px-3 py-2 text-white rounded-lg transition"
+                  >
+                    Log In
+                  </Link>
+                  {/* </button> */}
 
-                  <button onClick={() => clerk.openSignUp({})}>
-                    <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
-                      // to="/signup" 
-                      to=""
-                      className="flex items-center px-3 py-2 text-white rounded-lg transition"
-                    >
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Sign Up
-                    </Link>
-                  </button>
+                  {/* <button onClick={() => clerk.openSignUp({})}> */}
+                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
+                    to="/signup"
+                    // to=""
+                    className="flex items-center px-3 py-2 text-white rounded-lg transition"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign Up
+                  </Link>
+                  {/* </button> */}
                 </>
               )
             }

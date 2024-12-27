@@ -22,32 +22,41 @@ function AppContent() {
 
   // get current user and get the current user credit based on the current user email
   useEffect(() => {
+    const email = user?.emailAddresses[0]?.emailAddress; // Safely access email
+    setuserEmail(email);
 
-    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    // setuserEmail(user.email);
-    setuserEmail(user?.emailAddresses[0].emailAddress)
+    if (email) {
+      handleGetCredit(email);
+    }
+  }, [user]); // Run effect whenever the user object changes
 
-    // call the actuall funtion to get the current use credit
-    handleGetCredit();
-
-  }, []);
+  const handleGetCredit = async (email: string) => {
+    try {
+      const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${email}`);
+      const userData = response.data;
+      const currentUserData = userData.find((user: { email: string; }) => user.email === email);
+      setCreditBalance(currentUserData ? currentUserData.credit : 0);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // get the current user current credit
-  const handleGetCredit = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
-      const userData = response.data;
-      // Filter the user data to find the current user's credit
-      const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
-      if (currentUserData) {
-        setCreditBalance(currentUserData.credit || 0);
-      } else {
-        setCreditBalance(0);
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const handleGetCredit = async () => {
+  //   try {
+  //     const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
+  //     const userData = response.data;
+  //     // Filter the user data to find the current user's credit
+  //     const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+  //     if (currentUserData) {
+  //       setCreditBalance(currentUserData.credit || 0);
+  //     } else {
+  //       setCreditBalance(0);
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
 
   return (
