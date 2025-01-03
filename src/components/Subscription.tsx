@@ -52,25 +52,67 @@ export default function Subscription() {
 
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState<string | undefined>("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [paymentError, setpaymentError] = useState(false);
+  const [userID, setUserID] = useState<string | undefined>("")
 
   const { isSignedIn, user, signOut } = useUser();
+  let currentUserEmail: string | undefined = ""
 
   useEffect(() => {
-    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    // setEmail(user.email);
     setEmail(user?.emailAddresses[0].emailAddress);
+    currentUserEmail = user?.emailAddresses[0].emailAddress;
+
+    if (currentUserEmail) {
+      fetchID();
+    }
   }, []);
+
+  // useEffect(() => {
+  //   // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+  //   // setEmail(user.email);
+
+  //   // getting the user id for finishing the payment
+  //   fetchID();
+  //   console.log("user id: " + userID);
+  //   console.log("current user id:", currentUserEmail);
+  // }, []);
+
+  useEffect(() => {
+    console.log("user id:", userID);
+    if (!userID) {
+     return console.log("there is no user id set !")
+    }
+    localStorage.setItem("CURRENTUSERIDFORPAYMENT", JSON.stringify(userID));
+  }, [userID]);
+
+  const fetchID = async () => {
+    if (!currentUserEmail) return;
+
+    try {
+      const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${currentUserEmail}`);
+      const userData = response.data;
+      const currentUserData = userData.find((user: { email: string; }) => user.email === currentUserEmail);
+      if (currentUserData) {
+        setUserID(currentUserData._id);
+      } else {
+        setUserID(undefined);
+      }
+    } catch (error) {
+      console.error("Error fetching credits:", error);
+      setUserID(undefined);
+    }
+  };
 
   const handleSubscribe = async (plan: Plan) => {
     setLoading(true);
 
     try {
-      const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+      // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
       // Generate a unique transaction reference
       const tx_ref = `sub_${plan.id}_${Date.now()}`;
+      const callbackUrl = `${window.location.origin}/payment-callback?tx_ref=${tx_ref}`;
 
       const response = await axios.post('http://localhost:8888/api/v1/initialize',
         {
@@ -78,8 +120,8 @@ export default function Subscription() {
           currency: "ETB",
           email: email,
           tx_ref: tx_ref,
-          callback_url: `${window.location.origin}/payment-callback?tx_ref=${tx_ref}`,
-          return_url: `${window.location.origin}/payment-callback?tx_ref=${tx_ref}`
+          callback_url: callbackUrl,
+          return_url: callbackUrl
         }
       );
 
@@ -91,7 +133,7 @@ export default function Subscription() {
           plan_id: plan.id,
           amount: plan.price,
           credits: plan.credits,
-          userId: user._id // Store user ID for credit update
+          userId: userID // Store user ID for credit update
         }));
 
         // Redirect to the checkout URL

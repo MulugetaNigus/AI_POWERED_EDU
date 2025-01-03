@@ -35,6 +35,7 @@ function AppContent() {
       const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${email}`);
       const userData = response.data;
       const currentUserData = userData.find((user: { email: string; }) => user.email === email);
+      // Set the credit balance to the value found in the server response, or 0 if not found
       setCreditBalance(currentUserData ? currentUserData.credit : 0);
     } catch (err) {
       console.log(err);

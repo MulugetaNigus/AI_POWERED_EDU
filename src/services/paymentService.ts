@@ -53,7 +53,7 @@ export async function verifyPayment(txRef: string) {
           'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST',
           'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization'
         },
         withCredentials: true

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import SuccessPayment from '../components/SuccessPayment';
 import { Loader2 } from 'lucide-react';
+import { useUser } from '@clerk/clerk-react'
 
 const PaymentCallback = () => {
   const [verifying, setVerifying] = useState(true);
@@ -10,14 +11,21 @@ const PaymentCallback = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useUser();
+
 
   useEffect(() => {
+
+    // get the current user ID
+    const userID = JSON.parse(localStorage.getItem("CURRENTUSERIDFORPAYMENT") as string);
+
     const verifyPayment = async () => {
       try {
         // Get tx_ref from URL parameters
         const params = new URLSearchParams(location.search);
         const tx_ref = params.get('tx_ref');
         const status = params.get('status');
+        console.log("current userID:", userID);
 
         if (!tx_ref) {
           throw new Error('Transaction reference not found');
@@ -31,13 +39,17 @@ const PaymentCallback = () => {
         const response = await axios.get(`http://localhost:8888/api/v1/verify/${tx_ref}`);
 
         if (response.data.status === 'success') {
+          if (!userID) {
+            console.error("User ID is not available for credit update.");
+            throw new Error('User ID is required to update credits.');
+          }
           try {
             // Get pending payment details from localStorage
             const pendingPayment = JSON.parse(localStorage.getItem('pending_payment') || '{}');
-            
+
             // Update credits using stored values
             const creditResponse = await axios.put(
-              `http://localhost:8888/api/v1/onboard/credit/674ac7117faa14533fcedc42/${pendingPayment.credits}`
+              `http://localhost:8888/api/v1/onboard/credit/${userID}/${pendingPayment.credits}`
             );
 
             if (creditResponse.data) {
@@ -67,7 +79,8 @@ const PaymentCallback = () => {
       }
     };
 
-    verifyPayment();
+
+      verifyPayment();
   }, [location, navigate]);
 
   if (verifying) {

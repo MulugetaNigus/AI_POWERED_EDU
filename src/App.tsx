@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/Home';
@@ -21,6 +21,7 @@ import SignUpPage from './auth/SignUp';
 import SignInPage from './auth/SignIn';
 import ForgotPasswordPage from './auth/ForgotPasswordPage';
 import ResetPasswordPage from './auth/ResetPasswordPage';
+import { useUser } from '@clerk/clerk-react';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -67,7 +68,14 @@ Flutter is a powerful and rapidly evolving framework that offers a streamlined, 
 
 function App() {
 
+    // to know wether the user login or not
+    const { isSignedIn } = useUser();
+    const [dislayOnBoarding, setdislayOnBoarding] = useState<string | undefined>()
+
     useEffect(() => {
+
+        // get the bool values from the localstorage to display onboarding or not
+        setdislayOnBoarding(localStorage.getItem("ONBOARDINGSTATE") as string)
 
         // const handleVisibilityChange = () => {
         //     if (document.visibilityState === 'visible') {
@@ -110,7 +118,11 @@ function App() {
                     <Routes>
                         <Route path="/" element={
                             // <ProtectedRoute>
-                            <Home />
+                            dislayOnBoarding?.length
+                                ?
+                                <Home />
+                                :
+                                <OnboardingFlow />
                             // {/* </ProtectedRoute> */}
                         } />
                         <Route path="/signin" element={
@@ -146,9 +158,9 @@ function App() {
                             </ProtectedRoute2>
                         } />
                         <Route path="/payment-callback" element={
-                            <ProtectedRoute2>
-                                <PaymentCallback />
-                            </ProtectedRoute2>
+                            // <ProtectedRoute2>
+                            <PaymentCallback />
+                            // {/* </ProtectedRoute2> */}
                         } />
                     </Routes>
                 </div>

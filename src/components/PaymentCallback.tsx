@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { auth } from '../config/firebaseConfig';
 import { verifyPayment } from '../services/paymentService';
-import { updateSubscription, updatePaymentStatus } from '../services/mongoService';
+// import { updateSubscription, updatePaymentStatus } from '../services/mongoService';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function PaymentCallback() {
@@ -31,14 +31,14 @@ export default function PaymentCallback() {
           const planId = txRef.split('_')[3];
           
           // Update payment status in MongoDB
-          await updatePaymentStatus(txRef, 'success');
+          // await updatePaymentStatus(txRef, 'success');
           
-          // Update user subscription in MongoDB
-          await updateSubscription(
-            user.uid,
-            planId as 'basic' | 'premium',
-            1 // 1 month subscription
-          );
+          // // Update user subscription in MongoDB
+          // await updateSubscription(
+          //   user.uid,
+          //   planId as 'basic' | 'premium',
+          //   1 // 1 month subscription
+          // );
 
           setStatus('success');
           setMessage('Payment successful! Your subscription has been activated.');

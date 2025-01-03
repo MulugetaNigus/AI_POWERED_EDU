@@ -11,7 +11,6 @@ import {
   Loader2,
   MessageCircleWarning
 } from "lucide-react";
-import { setUncaughtExceptionCaptureCallback } from "process";
 import axios from "axios";
 import { useUser } from '@clerk/clerk-react';
 
@@ -55,10 +54,11 @@ export default function OnboardingFlow() {
 
   // get the user email for pre poplited
   const { isSignedIn, user, signOut } = useUser();
+
   useEffect(() => {
     // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
     // setuserEmail(user.email);
-    console.log("may be this is the username: ", user?.emailAddresses[0].emailAddress);
+    console.log("may be this is the username: ", user);
     setuserEmail(user?.emailAddresses[0].emailAddress);
     const Emailito = user?.emailAddresses[0].emailAddress;
   }, []);
@@ -107,27 +107,28 @@ export default function OnboardingFlow() {
         // alert("success !");
         // after sending user data to the db, set localStorage oprations and redirect to home page
         // Save the user login data into localstroage and parse it and in order to use as a user variable
-        const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+        // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
         // console.log(users);
 
-        // get user_info from localst
+        // get user_info from localstorage
         localStorage.setItem(
           "user",
           JSON.stringify({
             user_grade_level: usergrade,
-            uid: user.uid,
-            email: user.email,
-            profile: user.photoURL,
+            uid: user?.id,
+            email: userEmail,
+            // profile: user.photoURL,
             // Add any other user data you want to store
           })
         );
         // Get the JWT token
-        const token = await user.uid;
+        const token = user?.id;
 
         // Store the token in local storage
-        localStorage.setItem("token", token);
-        // localStorage.setItem("user_grade_level", usergrade);
+        localStorage.setItem("token", token as string);
+        localStorage.setItem("ONBOARDINGSTATE", "somevaluehere");
         navigate("/");
+        window.location.reload();
       })
       .catch((err) => {
         setsaveOnBoardingLoading(false);
