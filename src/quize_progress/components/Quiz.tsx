@@ -25,6 +25,7 @@ import {
 } from "@headlessui/react";
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useUser } from '@clerk/clerk-react';
 
 interface QuizProps {
   subject: string;
@@ -55,20 +56,23 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const [waitUntillFeedback, setWaitUntilFeedback] = useState(false);
   const [open, setOpen] = useState(true);
   const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
-  const [userEmail, setuserEmail] = useState("");
+  const [userEmail, setuserEmail] = useState<string | undefined>("");
   const [UserCurrentCredit, setUserCurrentCredit] = useState(0);
   const [userID, setuserID] = useState("");
+
+  // get the user email from the clerk by distructuring
+  const { user } = useUser();
 
 
   useEffect(() => {
     getCurrentUserId();
+    console.log("current user email:", user?.emailAddresses[0].emailAddress);
   }, [])
 
 
   // get current user id
   const getCurrentUserId = () => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setuserEmail(user.email);
+    setuserEmail(user?.emailAddresses[0].emailAddress);
     axios
       .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
       .then((response) => {
@@ -82,10 +86,10 @@ export default function Quiz({ subject, grade }: QuizProps) {
       });
   };
 
-  const startQuiz = async (startChapter: number, endChapter: number) => {
+  const startQuiz = async (difficulty: string) => {
     console.log("subject: ", subject);
-    console.log("from chapter: ", startChapter);
-    console.log("to: ", endChapter);
+    console.log("from difficulty: ", difficulty);
+    console.log("to difficulty: ", difficulty);
     if (!subject) {
       setError("Please select a subject first");
       return;
@@ -96,11 +100,8 @@ export default function Quiz({ subject, grade }: QuizProps) {
     setIsRetrying(false);
 
     try {
-      const result = await generateQuestionsForSubject(
-        subject
-        // startChapter,
-        // endChapter
-      );
+      const result = await generateQuestionsForSubject(subject, difficulty);
+      console.log("this is the return from the QUESTION GENERATOR: ", result);
       updateQuestions(result.questions);
       updateTopics(result.topics);
       updateImprovementAreas(result.improvementAreas);
@@ -110,8 +111,8 @@ export default function Quiz({ subject, grade }: QuizProps) {
       setShowChapterModal(false);
 
       // Update user credits after successful quiz generation
-      const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-      if (user.email) {
+      // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+      if (userEmail && result.questions) {
         try {
           const response = await axios.put(`http://localhost:8888/api/v1/onboard/credit/${userID}`);
           console.log("Updated credits:", response.data.remainingCredits);
@@ -119,6 +120,8 @@ export default function Quiz({ subject, grade }: QuizProps) {
         } catch (err) {
           console.log("Error updating credits:", err);
         }
+      } else {
+        console.log("something went wrong with updating a user credit !")
       }
     } catch (err) {
       const errorMessage =
@@ -386,7 +389,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                {/* <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     disabled={waitUntillFeedback}
                     type="button"
@@ -399,7 +402,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
                   >
                     Finish
                   </button>
-                </div>
+                </div> */}
               </DialogPanel>
             </div>
           </div>

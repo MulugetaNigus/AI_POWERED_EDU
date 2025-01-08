@@ -50,13 +50,13 @@ export default function ReviewModal({ isOpen, onClose, feedbacker }: ReviewModal
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Progress</span>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{feedbacker.score}%</span>
+              {/* <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Progress</span> */}
+              {/* <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{feedbacker.score}%</span> */}
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-blue-600 h-2.5 rounded-full transition-all"
-                style={{ width: `${feedbacker.score}%` }}
+                style={{ width: `${parseInt(feedbacker.score)}%` }}
               />
             </div>
           </div>

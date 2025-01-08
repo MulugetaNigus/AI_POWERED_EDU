@@ -8,6 +8,9 @@ import { ClerkProvider, RedirectToSignIn, RedirectToSignUp, BrowserRouter } from
 const frontendApi = "https://secure-foal-32.clerk.accounts.dev";
 const publishableKey = "pk_test_c2VjdXJlLWZvYWwtMzIuY2xlcmsuYWNjb3VudHMuZGV2JA"
 
+// new = sk_test_j7jHt16WOVIv7XkrlSqEfZX6NOwL5Nm6hIK2lBghfV
+// const publishableKey = "pk_test_cmVzb2x2ZWQtcm9kZW50LTYyLmNsZXJrLmFjY291bnRzLmRldiQ"
+
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
   <ClerkProvider publishableKey={publishableKey} frontendApi={frontendApi} >

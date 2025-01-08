@@ -11,7 +11,6 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-
 import {
   BookOpen,
   Brain,
@@ -24,6 +23,7 @@ import {
 import ReviewModal from "./ReviewModal";
 import { useProgressStore } from "./store/progressStore";
 import axios from "axios";
+import { useUser } from '@clerk/clerk-react';
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
@@ -46,6 +46,10 @@ export default function ProgressTracker() {
     (feedback) => feedback.subject === selectedTopic
   );
 
+  // Clerk current user email
+  const { user } = useUser();
+  const userEmail = user?.emailAddresses[0].emailAddress;
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -56,8 +60,17 @@ export default function ProgressTracker() {
     await axios
       .get("http://localhost:8888/api/v1/enhancement")
       .then((response) => {
-        setFeedback(response.data);
-        console.log("feedbacks from db: ", response.data);
+        const cleanedFeedback = response.data.map(feedback => {
+          const fullEmail = feedback.email;
+          const cleanEmail = fullEmail.split('-')[0]; // Extract the clean email address
+          return { ...feedback, email: cleanEmail }; // Return new object with cleaned email
+        });
+
+        // Filter to include only the feedback that matches userEmail
+        const matchedFeedback = cleanedFeedback.filter(feedback => feedback.email === userEmail);
+
+        setFeedback(matchedFeedback);
+        console.log("Matched feedbacks from db: ", matchedFeedback);
         setBarChartLoading(false);
         setFocusAreasLoading(false);
       })
@@ -68,21 +81,14 @@ export default function ProgressTracker() {
       });
   }
 
-  // const [feedbacker, setFeedback] = useState([]);
-  // useEffect(() => {
-  //   const existingFeedback = JSON.parse(localStorage.getItem("feedback") || "[]");
-  //   setFeedback(existingFeedback)
-  //   console.log("eski eyew pass yemtadergewun: ", existingFeedback);
-  // }, []);
-
   const pieData = feedbacker.map((feedback) => ({
     name: feedback.subject,
-    progress: feedback.score, // or any field that represents progress
+    progress: feedback.score,
   }));
 
   const barData = feedbacker.map((feedback) => ({
     subject: feedback.subject,
-    score: feedback.score, // Assuming score is the desired metric
+    score: feedback.score,
   }));
 
   // Get topics that need improvement (score < 70%)
@@ -94,11 +100,9 @@ export default function ProgressTracker() {
       feedback: result.feedback,
     }));
 
-  // handle delete enhancements
+  // Handle delete enhancements
   const handleDelete = async (id: string) => {
-    // alert(id);
     setdeleteLoading(true);
-    // delete with id axios req
     await axios
       .delete(`http://localhost:8888/api/v1/deleteEnhancement/${id}`)
       .then((response) => {
@@ -114,58 +118,8 @@ export default function ProgressTracker() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Overall Progress"
-          value={`${getOverallProgress()}%`}
-          icon={<TrendingUp className="w-6 h-6" />}
-          color="text-blue-600 dark:text-blue-400"
-        />
-        <StatCard
-          title="Completed Quizzes"
-          value={getCompletedQuizzes()}
-          icon={<Trophy className="w-6 h-6" />}
-          color="text-green-600 dark:text-green-400"
-        />
-        <StatCard
-          title="Study Streak"
-          value={`${studyStreak} days`}
-          icon={<Target className="w-6 h-6" />}
-          color="text-yellow-600 dark:text-yellow-400"
-        />
-        <StatCard
-          title="Areas to Improve"
-          value={getAreasToImprove().toString()}
-          icon={<AlertCircle className="w-6 h-6" />}
-          color="text-red-600 dark:text-red-400"
-        />
-      </div> */}
-
+      {/* Optional Stats Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-            Subject Progress
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart width={400} height={400}>
-                <Pie
-                  data={pieData}
-                  dataKey="progress"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  label
-                />
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div> */}
-
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
             Topic Performance
@@ -215,7 +169,6 @@ export default function ProgressTracker() {
                     </p>
                   </div>
                 </div>
-                {/* action buttons */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedTopic(topic.subject)}
@@ -248,9 +201,7 @@ export default function ProgressTracker() {
         <ReviewModal
           isOpen={!!selectedTopic}
           onClose={() => setSelectedTopic(null)}
-          feedbacker={selectedFeedback} // pass specific feedback here
-          // subject={selectedTopic}
-          // score={(quizResults[selectedTopic].score / quizResults[selectedTopic].totalQuestions) * 100}
+          feedbacker={selectedFeedback}
         />
       )}
     </div>

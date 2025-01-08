@@ -1,45 +1,24 @@
 import React, { useState } from 'react';
 import { X, Book, ChevronDown } from 'lucide-react';
 
-interface Chapter {
-  id: number;
-  title: string;
-  description: string;
-}
-
 interface ChapterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onStartQuiz: (startChapter: number, endChapter: number) => void;
+  onStartQuiz: (startChapter: string, endChapter: string) => void;
   subject: string;
   grade: string;
 }
 
-const SAMPLE_CHAPTERS: Record<string, Chapter[]> = {
-  Physics: [
-    { id: 1, title: '1', description: 'Forces, motion, and energy' },
-    { id: 2, title: '2', description: 'Heat, temperature, and thermal processes' },
-    { id: 3, title: '3', description: 'Light, reflection, and refraction' },
-    { id: 4, title: '4', description: 'Electric charges, current, and circuits' },
-  ],
-  Algorithm: [
-    { id: 1, title: '1', description: 'Equations and expressions' },
-    { id: 2, title: '2', description: 'Shapes and measurements' },
-    { id: 3, title: '3', description: 'Angular functions and relationships' },
-  ],
-  // Add more subjects as needed
-};
+const DIFFICULTY_LEVELS = ['easy', 'medium', 'hard'];
 
 export default function ChapterModal({ isOpen, onClose, onStartQuiz, subject, grade }: ChapterModalProps) {
-  const [startChapter, setStartChapter] = useState<number>(0);
-  const [endChapter, setEndChapter] = useState<number>(0);
-  const chapters = SAMPLE_CHAPTERS[subject] || [];
+  const [difficulty, setDifficulty] = useState<string>('');
 
   if (!isOpen) return null;
 
   const handleStartQuiz = () => {
-    if (startChapter && endChapter) {
-      onStartQuiz(startChapter, endChapter);
+    if (difficulty) {
+      onStartQuiz(difficulty, difficulty);
     }
   };
 
@@ -62,29 +41,29 @@ export default function ChapterModal({ isOpen, onClose, onStartQuiz, subject, gr
             <div className="flex items-center gap-2 mb-2">
               <Book className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Choose Quiz Chapters
+                Choose Quiz Difficulty
               </h3>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Select the chapter range for your {subject} quiz
+              Select the difficulty level for your {subject} quiz
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Start Chapter
+                Difficulty Level
               </label>
               <div className="relative">
                 <select
-                  value={startChapter}
-                  onChange={(e) => setStartChapter(Number(e.target.value))}
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
                   className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
                 >
-                  <option value={0}>Select chapter</option>
-                  {chapters.map((chapter) => (
-                    <option key={chapter.id} value={chapter.id}>
-                      {chapter.title}
+                  <option value="">Select difficulty</option>
+                  {DIFFICULTY_LEVELS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
                     </option>
                   ))}
                 </select>
@@ -92,32 +71,9 @@ export default function ChapterModal({ isOpen, onClose, onStartQuiz, subject, gr
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                End Chapter
-              </label>
-              <div className="relative">
-                <select
-                  value={endChapter}
-                  onChange={(e) => setEndChapter(Number(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
-                >
-                  <option value={0}>Select chapter</option>
-                  {chapters
-                    .filter((chapter) => chapter.id >= startChapter)
-                    .map((chapter) => (
-                      <option key={chapter.id} value={chapter.id}>
-                        {chapter.title}
-                      </option>
-                    ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              </div>
-            </div>
-
             <button
               onClick={handleStartQuiz}
-              disabled={!startChapter || !endChapter}
+              disabled={!difficulty}
               className="w-full mt-4 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Let's Start

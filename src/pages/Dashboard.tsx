@@ -35,7 +35,6 @@ import SideAI from "../components/SideAI";
 // import uuid from 'uuid';
 import { v4 as uuidv4 } from "uuid";
 import SubscriptionModal from "../components/SubscriptionModal";
-
 // cleck importations
 import { UserButton, useUser } from '@clerk/clerk-react';
 
@@ -133,7 +132,8 @@ export default function Dashboard() {
     if (userData) {
       setuserProfile(JSON.parse(userData));
     }
-  }, [input]);
+    console.log("selected course now live:", selectedCourse?.course)
+  }, [input, selectedCourse?.course]);
 
   // get current user id
   const getCurrentUserId = () => {
@@ -190,8 +190,8 @@ export default function Dashboard() {
     {
       level: 12,
       courses: [
-        { name: "Mathematics", icon: "🔢" },
-        { name: "Chemistry", icon: "🧪" },
+        { name: "flutter", icon: "🔢" },
+        { name: "embedded", icon: "🧪" },
         { name: "Physics", icon: "⚡" },
         { name: "Biology", icon: "🧬" },
         { name: "Geography", icon: "🗺️" },
@@ -255,7 +255,7 @@ export default function Dashboard() {
         const response = await axios.post(
           "http://127.0.0.1:8000/process_pdf",
           {
-            // subject: "flutter",
+            subject: selectedCourse?.course,
             question: input,
           }
         );

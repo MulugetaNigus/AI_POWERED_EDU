@@ -7,7 +7,7 @@ const SignInPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <SignIn path="/signin" routing="path" forceRedirectUrl="/on-boarding" />
+      <SignIn path="/signin" routing="path" />
     </div>
   );
 };

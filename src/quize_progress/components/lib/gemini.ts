@@ -11,6 +11,9 @@ function cleanJsonResponse(response: string): string {
   return cleaned;
 }
 
+// difficulty types
+// type difficultyLevel = "easy" | "medium" | "hard";
+
 // For analyzing uploaded PDF content
 export async function analyzePDFContent(content: string) {
   try {
@@ -18,7 +21,6 @@ export async function analyzePDFContent(content: string) {
       Analyze this educational content and create:
       1. A set of 5 multiple choice questions with explanations
       2. Key topics covered
-      3. Areas for improvement based on content complexity
       
       Return ONLY a JSON object with this exact structure (no markdown, no explanations):
       {
@@ -43,16 +45,16 @@ export async function analyzePDFContent(content: string) {
     // const response = await axios.post(`${API_URL}/ask`, {
     const response = await axios.post(`${API_URL}/process_pdf`, {
       // process_pdf
-      user_quation: prompt,
-      content: content, // Including content for the PDF analysis
+      question: prompt,
+      content: content,
       subject: "uploaded"
     });
 
-    if (!response.data || !response.data.response) {
+    if (!response.data || !response.data.answer) {
       throw new Error('Invalid response format from server');
     }
 
-    const cleanedResponse = cleanJsonResponse(response.data.response);
+    const cleanedResponse = cleanJsonResponse(response.data.answer);
 
     try {
       const parsedResponse = JSON.parse(cleanedResponse);
@@ -77,36 +79,40 @@ export async function analyzePDFContent(content: string) {
 
 
 // For generating questions based on a selected subject
-export async function generateQuestionsForSubject(subject: string) {
+export async function generateQuestionsForSubject(subject: string, difficulty: string) {
   try {
     // setselectedSubject(subject);
     console.log('Generating questions for subject:', subject);
+    console.log('difficulty level:', difficulty);
 
     const prompt = `
-      Generate a set of questions for ${subject}:
-      1. A set of 5 multiple choice questions with explanations
-      2. Key topics covered
-      3. Areas for improvement based on content complexity
-      
-      Return ONLY a JSON object with this exact structure (no markdown, no explanations):
-      {
-        "questions": [
-          {
-            "text": "question text",
-            "options": ["option1", "option2", "option3", "option4"],
-            "correctAnswer": 0,
-            "explanation": "detailed explanation"
-          }
-        ],
-        "topics": ["topic1", "topic2"],
-        "improvementAreas": [
-          {
-            "topic": "topic name",
-            "description": "improvement details"
-          }
-        ]
-      }
+    Generate a unique and varied set of questions for ${subject} with a specified difficulty level ${difficulty} your questions generation is based on the provided difficulty:${difficulty} , every time this function is called. Ensure that:
+    1. Each set includes 5 multiple choice questions with diverse topics, question types, and difficulty levels.
+    2. Provide detailed explanations for each correct answer.
+    3. Cover key topics related to the subject, ensuring no repetition of questions from previous sets.
+    4. Identify areas for improvement based on content complexity and include relevant suggestions.
+    
+    Return ONLY a JSON object with the following structure (no markdown, no explanations):
+    
+    {
+      "questions": [
+        {
+          "text": "question text",
+          "options": ["option1", "option2", "option3", "option4"],
+          "correctAnswer": 0,
+          "explanation": "detailed explanation"
+        }
+      ],
+      "topics": ["topic1", "topic2"],
+      "improvementAreas": [
+        {
+          "topic": "topic name",
+          "description": "improvement details"
+        }
+      ]
+    }
     `;
+    
 
     const response = await axios.post(`${API_URL}/process_pdf`, {
       question: prompt,
@@ -147,30 +153,33 @@ export async function generateQuestionsForSubject(subject: string) {
 export async function generatePersonalizedFeedback(answers: any[], topics: string[]) {
   try {
     const prompt = `
-      Based on these quiz answers and topics, provide personalized learning feedback, for the weaknesses generate appropriate website and youtube links in order to improve.
-      Return ONLY a JSON object with this exact structure (no markdown, no explanations):
-      {
-        "strengths": ["strength1", "strength2"],
-        "weaknesses": ["weakness1", "weakness2"],
-        "recommendations": [
-          {
-            "topic": "topic name",
-            "action": "specific improvement action",
-            "resources": ["resource1", "resource2"]
-          }
-        ]
-      }
-        
-      Quiz data:
-      Answers: ${JSON.stringify(answers)}
-      Topics: ${JSON.stringify(topics)}
-      `
-      ;
+Based on the provided quiz answers and topics, analyze the user's performance to offer personalized learning feedback. Identify strengths and weaknesses. For each weakness, generate specific improvement actions and recommend relevant online resources such as websites and YouTube links. If no weaknesses are found, add an encouraging narrative in the strengths section to motivate the user.
+
+Return ONLY a JSON object with the following structure (no additional explanations or markdown):
+
+{
+  "strengths": ["strength1", "strength2", "motivationalMessage"],
+  "weaknesses": ["weakness1", "weakness2"],
+  "recommendations": [
+    {
+      "topic": "topic name",
+      "action": "specific improvement action",
+      "resources": ["resource1", "resource2"]
+    }
+  ]
+}
+
+Quiz data:
+Answers: ${JSON.stringify(answers)}
+Topics: ${JSON.stringify(topics)}
+`;
+
 
     const response = await axios.post(`${API_URL}/process_pdf`, {
       question: prompt,
       answers: answers,
-      topics: topics
+      topics: topics,
+      subject: "flutter"
     });
 
     if (!response.data || !response.data.answer) {

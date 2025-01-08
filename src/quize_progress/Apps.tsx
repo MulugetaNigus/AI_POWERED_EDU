@@ -7,6 +7,7 @@ import ProgressTracker from './components/ProgressTracker';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import axios from 'axios';
 import { useUser } from '@clerk/clerk-react'
+import PDFUploader from './components/PDFUploader';
 
 function AppContent() {
   const [selectedGrade, setSelectedGrade] = useState('Grade 8');
@@ -108,7 +109,7 @@ function AppContent() {
       </div>
 
       <main className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           <header className="flex items-center justify-between p-6 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -165,6 +166,7 @@ function AppContent() {
 
           {activeTab === 'learn' ? (
             <div className="p-6 space-y-6">
+              {/* <PDFUploader /> */}
               {/* <Chat /> */}
               <Quiz subject={selectedSubject} grade={selectedGrade} />
             </div>

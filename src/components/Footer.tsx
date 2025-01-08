@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Facebook, Twitter, Instagram, Mail, Phone } from 'lucide-react';
-import ContactModal from './ContactModal'; // Import the ContactModal component
+import ContactModal from './ContactModal';
+import { useUser } from '@clerk/clerk-react';
 
 export default function Footer() {
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isSignedIn } = useUser();
 
   const toggleModal = () => {
+    if (!isSignedIn) {
+      return alert("please SignIn first");
+    }
     setIsModalOpen(!isModalOpen);
   };
 
@@ -23,10 +29,9 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-blue-400 transition">About Us</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition">Subjects</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition">AI Tutoring</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition">Success Stories</a></li>
+              <li><a href="/" className="hover:text-blue-400 transition">Home</a></li>
+              <li><a href="#features" className="hover:text-blue-400 transition">Feature</a></li>
+              <li><a href="#subjects" className="hover:text-blue-400 transition">Subject</a></li>
             </ul>
           </div>
 
@@ -66,7 +71,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p>&copy; {new Date().getFullYear()} ExtreamX. All rights reserved. </p>
+          <p>&copy; {new Date().getFullYear()} ExtreamX {" "}|{" "} All rights reserved. </p>
         </div>
       </div>
       <ContactModal isOpen={isModalOpen} onClose={toggleModal} />

@@ -4,17 +4,15 @@ import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useUser } from '@clerk/clerk-react';
 
 const ContactModal = ({ isOpen, onClose }) => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState<string | undefined>("");
   const [message, setMessage] = useState("");
   const [sendLoading, setsendLoading] = useState(false);
 
-  // get the user email for pre poplited
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    setEmail(user.email);
-  }, []);
+  // ge the current user email using clek user object
+  const { user } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,8 +77,8 @@ const ContactModal = ({ isOpen, onClose }) => {
                   id="email"
                   type="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={user?.emailAddresses[0].emailAddress}
+                  onChange={(e) => setEmail(user?.emailAddresses[0].emailAddress)}
                   className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   // placeholder="Enter your email"
                   readOnly

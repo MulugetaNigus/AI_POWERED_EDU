@@ -26,7 +26,7 @@ const grades = [
   },
   {
     grade: "12",
-    subjects: ["Mathematics", "Physics", "English", "Biology"],
+    subjects: ["flutter", "embedded", "English", "Biology"],
     icon: <GraduationCap className="w-5 h-5" />,
   },
 ];
@@ -106,7 +106,8 @@ export default function Sidebar({
                           key={subject}
                           onClick={() => {
                             onSubjectSelect(subject);
-                            console.log(subject + " " + gradeData.grade);
+                            // console.log(subject + " " + gradeData.grade);
+                            console.log("selected subjects: ", subject);
                           }}
                           className={`w-full flex items-center gap-2 p-2 text-sm transition-colors ${
                             selectedSubject === subject
