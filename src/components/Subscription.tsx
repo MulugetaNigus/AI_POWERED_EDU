@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import SuccessPayment from './SuccessPayment';
-import { useUser } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react';
 
 interface Plan {
   id: string;
@@ -50,15 +50,15 @@ const plans: Plan[] = [
 
 export default function Subscription() {
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<{ [planId: string]: boolean }>({});
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [email, setEmail] = useState<string | undefined>("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [paymentError, setpaymentError] = useState(false);
-  const [userID, setUserID] = useState<string | undefined>("")
+  const [paymentError, setPaymentError] = useState(false);
+  const [userID, setUserID] = useState<string | undefined>("");
 
   const { isSignedIn, user, signOut } = useUser();
-  let currentUserEmail: string | undefined = ""
+  let currentUserEmail: string | undefined = "";
 
   useEffect(() => {
     setEmail(user?.emailAddresses[0].emailAddress);
@@ -82,7 +82,7 @@ export default function Subscription() {
   useEffect(() => {
     console.log("user id:", userID);
     if (!userID) {
-     return console.log("there is no user id set !")
+      return console.log("there is no user id set!");
     }
     localStorage.setItem("CURRENTUSERIDFORPAYMENT", JSON.stringify(userID));
   }, [userID]);
@@ -106,7 +106,7 @@ export default function Subscription() {
   };
 
   const handleSubscribe = async (plan: Plan) => {
-    setLoading(true);
+    setLoading(prev => ({ ...prev, [plan.id]: true }));
 
     try {
       // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
@@ -142,10 +142,10 @@ export default function Subscription() {
         console.error('Payment initialization failed:', response.data);
       }
     } catch (error) {
-      setpaymentError(true);
+      setPaymentError(true);
       console.error('Payment error:', error);
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, [plan.id]: false }));
     }
   };
 
@@ -216,7 +216,7 @@ export default function Subscription() {
                   <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent group-hover:from-blue-500 group-hover:to-purple-500 transition-colors duration-300">
                     ETB {plan.price}
                   </span>
-                  <span className="ml-2 text-lg font-medium text-gray-800 dark:text-gray-200">/one time</span>
+                  {/* <span className="ml-2 text-lg font-medium text-gray-800 dark:text-gray-200">/one time</span> */}
                 </div>
 
                 <ul className="space-y-4 mb-8">
@@ -237,7 +237,7 @@ export default function Subscription() {
 
                 <button
                   onClick={() => handleSubscribe(plan)}
-                  disabled={loading}
+                  disabled={loading[plan.id]}
                   className={`w-full py-4 px-6 rounded-xl text-white font-semibold transition-all duration-300
                     transform group-hover:scale-[1.02] group-hover:shadow-xl
                     ${plan.id === 'premium'
@@ -245,9 +245,9 @@ export default function Subscription() {
                       : plan.id === 'starter'
                         ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-blue-500/25'
                         : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-blue-500/25'}
-                    ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    ${loading[plan.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {loading ? (
+                  {loading[plan.id] ? (
                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                   ) : (
                     'Subscribe Now'
@@ -261,3 +261,4 @@ export default function Subscription() {
     </div>
   );
 }
+
