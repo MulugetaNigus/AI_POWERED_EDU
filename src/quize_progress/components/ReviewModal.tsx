@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { X, BookOpen, Target, CheckCircle2 } from 'lucide-react';
 
 interface ReviewModalProps {
@@ -18,6 +18,11 @@ interface ReviewModalProps {
 }
 
 export default function ReviewModal({ isOpen, onClose, feedbacker }: ReviewModalProps) {
+
+  // useEffect( () => {
+    // alert(feedbacker.score)
+  // }, [])
+
   if (!isOpen) return null;
 
   return (
@@ -56,7 +61,7 @@ export default function ReviewModal({ isOpen, onClose, feedbacker }: ReviewModal
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-blue-600 h-2.5 rounded-full transition-all"
-                style={{ width: `${parseInt(feedbacker.score)}%` }}
+                style={{ width: `${parseInt(feedbacker.score) * 20}%` }}
               />
             </div>
           </div>

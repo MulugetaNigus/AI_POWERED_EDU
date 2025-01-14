@@ -39,11 +39,16 @@ export default function ProgressTracker() {
 
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [feedbacker, setFeedback] = useState<any[]>([]);
-  const [deleteLoading, setdeleteLoading] = useState(false);
   const [barChartLoading, setBarChartLoading] = useState(false);
   const [focusAreasLoading, setFocusAreasLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<{ [id: string]: boolean }>({});
+
+  // const selectedFeedback = feedbacker.find(
+  //   (feedback) => feedback.subject === selectedTopic
+  // );
+
   const selectedFeedback = feedbacker.find(
-    (feedback) => feedback.subject === selectedTopic
+    (feedback) => feedback._id === selectedTopic
   );
 
   // Clerk current user email
@@ -102,17 +107,18 @@ export default function ProgressTracker() {
 
   // Handle delete enhancements
   const handleDelete = async (id: string) => {
-    setdeleteLoading(true);
+    setDeleteLoading(prev => ({ ...prev, [id]: true }));
     await axios
       .delete(`http://localhost:8888/api/v1/deleteEnhancement/${id}`)
       .then((response) => {
         console.log(response.data);
         fetchData();
-        setdeleteLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        setdeleteLoading(false);
+      })
+      .finally(() => {
+        setDeleteLoading(prev => ({ ...prev, [id]: false }));
       });
   };
 
@@ -171,7 +177,8 @@ export default function ProgressTracker() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setSelectedTopic(topic.subject)}
+                    // onClick={() => setSelectedTopic(topic.subject)}
+                    onClick={() => setSelectedTopic(topic._id)}
                     className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Review
@@ -180,7 +187,7 @@ export default function ProgressTracker() {
                     onClick={() => handleDelete(topic._id)}
                     className="px-4 py-2 text-sm bg-red-700 text-white rounded-lg hover:bg-red-900 transition-colors"
                   >
-                    {deleteLoading && topic._id ? (
+                    {deleteLoading[topic._id] ? (
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
                       "Delete"

@@ -709,7 +709,7 @@ export default function Dashboard() {
                         >
                           <RefreshCw className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                         </button>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">0.76s</p>
+                        {/* <p className="text-xs text-gray-500 dark:text-gray-400">0.76s</p> */}
                       </div>
                     )}
                   </div>
