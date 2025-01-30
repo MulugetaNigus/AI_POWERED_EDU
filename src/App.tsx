@@ -30,6 +30,9 @@ import ExamApp from './Exam/ExamApp';
 import CommunityPage from './Community/CommunityPage';
 import MyPost from './Community/MyPost/MyPost';
 import img1 from './Assets/girl1.webp'
+import MyGroup from './Community/MyGroup/MyGroup';
+import SearchGroups from './Community/SearchGroup/SearchGroups';
+import Chat from './Community/Chat/Chat';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -88,6 +91,42 @@ const samplePosts = [
         title: "AI-revolution",
         status: "pending"
     },
+];
+
+// Sample data for demonstration
+const sampleMembers = [
+    {
+        username: "mullerking",
+        profilePicture: "path/to/mullerking.png",
+        posts: [
+            {
+                title: "AI-revolution",
+                content: "this is muller king and his post here",
+                status: "approved"
+            },
+            {
+                title: "Another Post",
+                content: "this is another post by muller king",
+                status: "pending"
+            }
+        ]
+    },
+    {
+        username: "johndoe",
+        profilePicture: "path/to/johndoe.png",
+        posts: [
+            {
+                title: "Dark Mode",
+                content: "this is johndoe's post about dark mode",
+                status: "approved"
+            },
+            {
+                title: "Light Mode",
+                content: "this is johndoe's post about light mode",
+                status: "approved"
+            }
+        ]
+    }
 ];
 
 function App() {
@@ -207,9 +246,26 @@ function App() {
                                     posts={samplePosts}
                                 />
                             </ProtectedRoute2>
-                        } >
+                        } />
+                        <Route path='/community/myGroup' element={
+                            <MyGroup
+                                groupName="Sample Group"
+                                groupDescription="This is a sample group for demonstration"
+                                groupPicture={img1}
+                                members={sampleMembers}
+                            />
+                        } />
+                        <Route path="/search-groups" element={
+                            <ProtectedRoute2>
+                                <SearchGroups />
+                            </ProtectedRoute2>
+                        } />
+                        <Route path="/search-groups/chat" element={
+                            <ProtectedRoute2>
+                                <Chat />
+                            </ProtectedRoute2>
+                        } />
 
-                        </Route>
                         {/* FOR 404 */}
                         <Route path="*" element={
                             // <ProtectedRoute2>

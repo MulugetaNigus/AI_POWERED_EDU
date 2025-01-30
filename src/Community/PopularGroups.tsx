@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface Group {
     id: string;
@@ -13,7 +14,6 @@ const popularGroups: Group[] = [
     { id: '3', name: 'Science Explorers', members: 1500, imageUrl: 'https://cdn-icons-png.freepik.com/256/3976/3976631.png?ga=GA1.1.532673313.1738069987&semt=ais_hybrid' },
     { id: '4', name: 'Literature Lovers', members: 750, imageUrl: 'https://cdn-icons-png.freepik.com/256/15113/15113073.png?ga=GA1.1.532673313.1738069987&semt=ais_hybrid' },
     { id: '5', name: 'Literature Lovers', members: 750, imageUrl: 'https://cdn-icons-png.freepik.com/256/15113/15113073.png?ga=GA1.1.532673313.1738069987&semt=ais_hybrid' },
-    { id: '6', name: 'Literature Lovers', members: 750, imageUrl: 'https://cdn-icons-png.freepik.com/256/15113/15113073.png?ga=GA1.1.532673313.1738069987&semt=ais_hybrid' },
 ];
 
 const PopularGroups: React.FC = () => {
@@ -38,9 +38,11 @@ const PopularGroups: React.FC = () => {
                     </li>
                 ))}
             </ul>
-            <button className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition">
-                See All Groups
-            </button>
+            <Link to="/search-groups">
+                <button className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition">
+                    See All Groups
+                </button>
+            </Link>
         </div>
     );
 };
