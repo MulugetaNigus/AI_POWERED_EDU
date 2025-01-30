@@ -86,7 +86,7 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
     console.log('difficulty level:', difficulty);
 
     const prompt = `
-    Generate a unique and varied set of questions for ${subject} with a specified difficulty level ${difficulty} your questions generation is based on the provided difficulty:${difficulty} , every time this function is called. Ensure that:
+    Generate a unique and varity set of questions for ${subject} with a specified difficulty level ${difficulty} your questions generation is based on the provided difficulty:${difficulty} , every time this function is called. Ensure that:
     1. Each set includes 5 multiple choice questions with diverse topics, question types, and difficulty levels.
     2. Provide detailed explanations for each correct answer.
     3. Cover key topics related to the subject, ensuring no repetition of questions from previous sets.

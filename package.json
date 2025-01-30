@@ -38,6 +38,7 @@
     "react-type-animation": "^3.2.0",
     "react-use": "^17.6.0",
     "recharts": "^2.13.3",
+    "styled-components": "^6.1.14",
     "three": "^0.171.0",
     "uuid": "^11.0.3",
     "zustand": "^5.0.1"

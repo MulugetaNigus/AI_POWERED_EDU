@@ -593,7 +593,6 @@ export default function Dashboard() {
                         />
                       </button>
                     }
-
                   </div>
 
                 ))}
@@ -794,6 +793,7 @@ export default function Dashboard() {
                 >
                   <ImageIcon className="h-5 w-5" />
                 </button>
+                {/* <p>here is the sample content goes...</p> */}
                 <input
                   type="text"
                   value={input}

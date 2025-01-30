@@ -4,7 +4,8 @@ import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import Modal from './Modal';
-import img from '../Assets/HeroOne1.png'
+// import img from '../Assets/HeroOne1.png'
+import img from '../Assets/Heronew.png'
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ export default function Hero() {
                 src={img}
                 alt="Students_learning_png"
                 // className="rounded-xl"
-                width={600}
+                width={500}
                 // height={550}
               />
             </motion.div>

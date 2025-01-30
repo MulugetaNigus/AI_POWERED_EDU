@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard } from 'lucide-react';
+import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard, BookOpenCheck, Users, Trophy, Link2 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 // import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
@@ -92,12 +92,37 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Home</Link>
-            <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a>
-            <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a>
+            {/* <Link to="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Home</Link> */}
+            {/* <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a> */}
+            {/* <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a> */}
+            {/* <span className='text-xl text-gray-400'>{" | "}</span> */}
+            <Link to="/exam" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+              <span className='w-5 h-2 mr-3'>
+                <BookOpenCheck />
+              </span>
+              Exam
+            </Link>
+            <Link to="/community" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+              <span className='w-5 h-2 mr-3'>
+                <Users />
+              </span>
+              Community
+            </Link>
+            <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+              <span className='w-5 h-2 mr-3'>
+                <Trophy />
+              </span>
+              Prizes
+            </Link>
+            <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+              <span className='w-5 h-2 mr-3'>
+                <Link2 />
+              </span>
+              Resources
+            </Link>
             <span className='text-xl text-gray-400'>{" | "}</span>
             {/* <Button style={{ backgroundColor: "rgb(67, 179,141)" }} className="px-3 py-2 rounded-md"> */}
-            <Link to="/dashboard" className="text-gray-600  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">
+            <Link to="/dashboard" className="font-bold text-gray-600  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">
               ✨ AI Assistance
             </Link>
             {/* </Button> */}

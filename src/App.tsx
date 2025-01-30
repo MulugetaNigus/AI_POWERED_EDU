@@ -22,6 +22,14 @@ import SignInPage from './auth/SignIn';
 import ForgotPasswordPage from './auth/ForgotPasswordPage';
 import ResetPasswordPage from './auth/ResetPasswordPage';
 import { useUser } from '@clerk/clerk-react';
+import Root from './NationalExams/QuestionApps';
+import PageNotFound from './components/PageNotFound';
+import DisplayQuestions from './Exam/DIsplayQuestions';
+import DummyQuestions from './Exam/DummyQuestions';
+import ExamApp from './Exam/ExamApp';
+import CommunityPage from './Community/CommunityPage';
+import MyPost from './Community/MyPost/MyPost';
+import img1 from './Assets/girl1.webp'
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -65,6 +73,22 @@ Here's a breakdown of the main points, along with some additional insights:
 **Key takeaway:**
 
 Flutter is a powerful and rapidly evolving framework that offers a streamlined, efficient, and performant way to build beautiful and engaging mobile apps. It's a great choice for developers looking to create cross-platform applications with a modern and reactive approach.`;
+
+// Sample data for demonstration
+const samplePosts = [
+    {
+        username: "mullerking",
+        content: "this is muller king and his post here",
+        title: "AI-revolution",
+        status: "approved"
+    },
+    {
+        username: "mullerking",
+        content: "this is muller king and his post here",
+        title: "AI-revolution",
+        status: "pending"
+    },
+];
 
 function App() {
 
@@ -160,6 +184,36 @@ function App() {
                         <Route path="/payment-callback" element={
                             // <ProtectedRoute2>
                             <PaymentCallback />
+                            // {/* </ProtectedRoute2> */}
+                        } />
+                        <Route path="/exam" element={
+                            <ProtectedRoute2>
+                                <ExamApp />
+                            </ProtectedRoute2>
+                        } />
+
+                        <Route path='/community' element={
+                            <ProtectedRoute2>
+                                <CommunityPage />
+                            </ProtectedRoute2>
+                        } />
+
+                        <Route path='/community/myPost' element={
+                            <ProtectedRoute2>
+                                <MyPost
+                                    profilePicture={img1}
+                                    name="Sample User"
+                                    email="sample@example.com"
+                                    posts={samplePosts}
+                                />
+                            </ProtectedRoute2>
+                        } >
+
+                        </Route>
+                        {/* FOR 404 */}
+                        <Route path="*" element={
+                            // <ProtectedRoute2>
+                            <PageNotFound />
                             // {/* </ProtectedRoute2> */}
                         } />
                     </Routes>
