@@ -77,7 +77,7 @@ export default function Hero() {
             <p className="text-xl font-normal text-gray-600 dark:text-gray-300 mt-6 max-w-2xl">
               Are you a student in Ethiopia looking for a better way to prepare for your national entrance exam? With{' '}
               <span className="font-semibold text-blue-600 dark:text-blue-400">ExtreamX</span>, crush your national exam 
-              confidently using personalized study materials, organized exam resources, and interactive learning tools.
+              confidently.
             </p>
 
             <motion.div
