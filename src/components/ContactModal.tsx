@@ -13,13 +13,14 @@ const ContactModal = ({ isOpen, onClose }) => {
 
   // ge the current user email using clek user object
   const { user } = useUser();
+  // console.log(user?.emailAddresses[0].emailAddress);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setsendLoading(true);
     try {
       const user_cred = {
-        email,
+        email: user?.emailAddresses[0].emailAddress,
         message,
       };
       await axios

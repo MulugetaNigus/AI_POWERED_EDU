@@ -24,12 +24,6 @@ const Navigation: React.FC<NavigationProps> = ({ postCreationModal, setpostCreat
             highlight: false 
         },
         { 
-            icon: Users, 
-            label: 'My Groups', 
-            path: '/community/myGroup',
-            highlight: false 
-        },
-        { 
             icon: BookOpen, 
             label: 'Resources', 
             path: '/resources',
