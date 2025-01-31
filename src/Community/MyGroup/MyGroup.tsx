@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import Header from '../../components/Header';
-import { Eye, Trash } from 'lucide-react';
+import { Eye, Trash, GanttChartSquareIcon, BookmarkCheck, CircleDashed, Loader2, Users, MessageSquare, Settings, ChevronRight, Plus, Search } from 'lucide-react';
 import img1 from '../Assets/p4.png';
 import PopularGroups from '../PopularGroups';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MyGroupProps {
     groupName: string;
@@ -44,6 +45,18 @@ const MyGroup: React.FC<MyGroupProps> = ({ groupName, groupDescription, groupPic
         // Add your view more logic here
     };
 
+    const groups: Group[] = [
+        {
+            id: '1',
+            name: 'Mathematics Study Group',
+            description: 'A group dedicated to helping each other with mathematics problems and concepts.',
+            members: 156,
+            topics: 45,
+            lastActive: '2 hours ago'
+        },
+        // Add more dummy groups as needed
+    ];
+
     return (
         <div className={`flex flex-col min-h-screen dark:bg-gray-700 text-gray-800 dark:text-white`}>
             {/* Header Placeholder */}
@@ -68,17 +81,90 @@ const MyGroup: React.FC<MyGroupProps> = ({ groupName, groupDescription, groupPic
 
                     <h3 className="text-2xl font-semibold mb-4">My Groups</h3>
 
-                    <div className="mb-4 p-4 border-b border-gray-200 dark:border-gray-700">
-                        <div className="mb-4 p-4 border-b border-gray-200 dark:border-gray-700">
-                            {/* image with info here */}
-                            <div className='flex flex-row items-center justify-start gap-3'>
-                                <img src={img1} alt="profile_picture_here" width={60} height={60} />
-                                <div className='flex flex-col gap-1'>
-                                    <p className='text-gray-700 text-xl font-bold'>this is muller</p>
-                                    <p className='text-gray-700 text-base font-normal'>and this is his information</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Groups</h1>
+                            <p className="text-gray-600 dark:text-gray-400">Manage your study groups and discussions</p>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex gap-4"
+                        >
+                            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <Plus className="w-5 h-5" />
+                                Create Group
+                            </button>
+                        </motion.div>
+                    </div>
+
+                    {/* Search Bar */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative mb-8"
+                    >
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search your groups..."
+                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl
+                                focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                        />
+                    </motion.div>
+
+                    {/* Groups Grid */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <AnimatePresence>
+                            {groups.map((group) => (
+                                <motion.div
+                                    key={group.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                                        border border-gray-100 dark:border-gray-700 overflow-hidden group"
+                                >
+                                    <div className="p-6">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                                    <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{group.name}</h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{group.description}</p>
+                                                </div>
+                                            </div>
+                                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                                <Settings className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-6 pt-4 border-t dark:border-gray-700">
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                                    <Users className="w-5 h-5" />
+                                                    <span>{group.members} members</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                                    <MessageSquare className="w-5 h-5" />
+                                                    <span>{group.topics} topics</span>
+                                                </div>
+                                            </div>
+                                            <button className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
+                                                <span>View Group</span>
+                                                <ChevronRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
 
                 </div>

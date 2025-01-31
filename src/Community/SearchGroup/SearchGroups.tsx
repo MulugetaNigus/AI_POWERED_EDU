@@ -25,6 +25,7 @@ const MyGroups: React.FC = () => {
 
     return (
         <div className="dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
+
             <h2 className="text-xl font-semibold mb-4">My Groups</h2>
             <ul className="space-y-4">
                 {myGroupsList.map((group) => (
@@ -52,6 +53,37 @@ const MyGroups: React.FC = () => {
                     </li>
                 ))}
             </ul>
+
+            <h2 className="text-xl font-semibold mb-4 mt-8">Others Groups</h2>
+            <ul className="space-y-4">
+                {myGroupsList.map((group) => (
+                    <li key={group.id} className="flex items-center space-x-3 dark:hover:bg-gray-700 hover:bg-gray-200 cursor-pointer p-2 rounded-lg">
+                        <img
+                            src={group.imageUrl}
+                            alt={group.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="flex-grow">
+                            <h3 className="font-medium">{group.name}</h3>
+                            <p className="text-sm text-gray-500">{group.members} members</p>
+                        </div>
+                        {group.status === 'approved' ? (
+                            <Link to="chat">
+                                <button className="px-4 py-2 bg-blue-500 text-white text-sm rounded-full cursor-pointer hover:bg-blue-400 transition ease-out duration-125">
+                                    Chat
+                                </button>
+                            </Link>
+                        ) : (
+                            <Link to="chat">
+                                <button className="px-4 py-2 bg-blue-500 text-white text-sm rounded-full cursor-pointer hover:bg-blue-400 transition ease-out duration-125">
+                                    Chat
+                                </button>
+                            </Link>
+                        )}
+                    </li>
+                ))}
+            </ul>
+
         </div>
     );
 };
@@ -78,9 +110,6 @@ const SearchGroups: React.FC = () => {
             </div>
             <main className="flex flex-1">
                 <div className="w-3/4 dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 m-4">
-                    {/* My Groups Section */}
-                    <MyGroups />
-
                     {/* Search bar and button */}
                     <p className='text-xl font-bold text-gray-500 dark:text-white mb-3'>Search Groups Here</p>
                     <div className="flex space-x-2 mb-4">
@@ -128,7 +157,10 @@ const SearchGroups: React.FC = () => {
                     {!loading && groups.length === 0 && searchQuery && (
                         <div className="text-center py-4">No groups found.</div>
                     )}
+                    {/* My Groups Section */}
+                    <MyGroups />
                 </div>
+
                 {/* Right side content */}
                 <div className="w-1/4 p-4 bg-gray-50 dark:bg-gray-900">
                     <PopularGroups />

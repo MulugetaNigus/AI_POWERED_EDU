@@ -5,51 +5,114 @@ import Navigation from './Navigation';
 import PostCreation from './PostCreation';
 import Feed from './Feed';
 import PopularGroups from './PopularGroups';
-import TrendingTopics from './TrendingTopics';
 import Header from '../components/Header';
 import CreateGroupForm from './CreateGroupForm';
+import { motion } from 'framer-motion';
+import { Bell, MessageCircle, Users } from 'lucide-react';
 
 const CommunityPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'chat'>('feed');
     const [postCreationModal, setpostCreationModal] = useState(false);
 
+    const containerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.4,
+                when: "beforeChildren",
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
+
     return (
-        <div className="mx-auto px-4 py-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
             <div className="w-full mb-24">
                 <Header />
             </div>
 
             {/* Main Content Area */}
-            <div className="flex">
-                {/* Left Sidebar - Fixed User Profile & Navigation */}
-                <div className="w-1/4 pr-4">
-                    <div className="fixed top-24 left-4 w-1/4">
+            <motion.div
+                className="container mx-auto px-4 flex flex-col md:flex-row gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+                {/* Left Sidebar */}
+                <motion.div
+                    className="md:w-1/4"
+                    variants={itemVariants}
+                >
+                    <div className="sticky top-24">
                         <UserProfile />
-                        <Navigation postCreationModal={postCreationModal} setpostCreationModal={setpostCreationModal} />
+                        <Navigation
+                            postCreationModal={postCreationModal}
+                            setpostCreationModal={setpostCreationModal}
+                        />
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Center - Scrollable Main Content */}
-                <div className="w-2/4 px-4 overflow-y-auto h-screen">
+                {/* Center Content */}
+                <motion.div
+                    className="md:w-1/2"
+                    variants={itemVariants}
+                >
+                    {/* Simple Tab Navigation */}
+                    {/* <div className="mb-6 flex rounded-lg bg-white dark:bg-gray-800 p-1">
+                        {[
+                            { id: 'feed', icon: Bell, label: 'Feed' },
+                            { id: 'groups', icon: Users, label: 'Groups' },
+                            { id: 'chat', icon: MessageCircle, label: 'Chat' }
+                        ].map((tab) => (
+                            t<button
+                                tkey={tab.id}
+                                onClick={() => setActiveTab(tab.id as 'feed' | 'groups' | 'chat')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                                    activeTab === tab.id 
+                                        ? 'bg-blue-100 text-blue-600 dark:bg-gray-700 dark:text-blue-400' 
+                                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                                }`}
+                            >
+                                <tab.icon className="w-4 h-4" />
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div> */}
+
                     {postCreationModal ? (
-                        <CreateGroupForm />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                        >
+                            <CreateGroupForm />
+                        </motion.div>
                     ) : (
                         <>
                             <PostCreation />
                             <Feed />
                         </>
                     )}
-                </div>
+                </motion.div>
 
-                {/* Right Sidebar - Fixed Popular Groups & Trending Topics */}
-                <div className="w-1/4 pl-4">
-                    <div className="fixed top-24 right-4 w-1/4">
+                {/* Right Sidebar */}
+                <motion.div
+                    className="md:w-1/4"
+                    variants={itemVariants}
+                >
+                    <div className="sticky top-24">
                         <PopularGroups />
-                        {/* <TrendingTopics /> */}
                     </div>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 };

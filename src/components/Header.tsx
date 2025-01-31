@@ -114,7 +114,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
               </span>
               Prizes
             </Link> */}
-            <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+            <Link to="/resources" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
               <span className='w-5 h-2 mr-3'>
                 <Link2 />
               </span>

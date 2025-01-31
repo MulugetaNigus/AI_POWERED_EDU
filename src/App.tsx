@@ -33,6 +33,7 @@ import img1 from './Assets/girl1.webp'
 import MyGroup from './Community/MyGroup/MyGroup';
 import SearchGroups from './Community/SearchGroup/SearchGroups';
 import Chat from './Community/Chat/Chat';
+import Resources from './Community/Resources/Resources';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -263,6 +264,11 @@ function App() {
                         <Route path="/search-groups/chat" element={
                             <ProtectedRoute2>
                                 <Chat />
+                            </ProtectedRoute2>
+                        } />
+                        <Route path="/resources" element={
+                            <ProtectedRoute2>
+                                <Resources />
                             </ProtectedRoute2>
                         } />
 

@@ -1,4 +1,11 @@
-const DummyQuestions = [
+interface Question {
+  question: string;
+  alternatives: string[];
+  answer: string;
+  answerDetail: string;
+}
+
+const DummyQuestions: Question[] = [
     {
       question: "What is Flutter?",
       alternatives: [
@@ -8,7 +15,7 @@ const DummyQuestions = [
         "D. A database management system"
       ],
       answer: "B. A UI toolkit for building natively compiled applications",
-      answerDetail: "Flutter is an open-source UI toolkit created by Google for building natively compiled applications for mobile, web, and desktop from a single codebase. Flutter is an open-source UI toolkit created by Google for building natively compiled applications for mobile, web, and desktop from a single codebase. Flutter is an open-source UI toolkit created by Google for building natively compiled applications for mobile, web, and desktop from a single codebase.Flutter is an open-source UI toolkit created by Google for building natively compiled applications for mobile, web, and desktop from a single codebase."
+      answerDetail: "Flutter is an open-source UI toolkit created by Google for building natively compiled applications for mobile, web, and desktop from a single codebase. It enables developers to create beautiful, native applications for multiple platforms using a single codebase, significantly reducing development time and costs."
     },
     {
       question: "Which programming language is used to write Flutter apps?",
