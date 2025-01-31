@@ -16,11 +16,12 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
       {/* Modal Container */}
-      <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 p-6 rounded-lg shadow-xl transform transition-all w-3/6">
+      <div className="p-6 rounded-lg shadow-xl transform transition-all w-3/6">
         <div className="p-6 rounded-lg">
-          <h2 className="text-3xl mb-6 text-white font-normal border-b-2 dark:text-white text-start">
+          
+          <h2 className="text-2xl mb-6 text-white font-normal dark:text-white text-center">
             Select Exam Details
           </h2>
 

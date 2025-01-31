@@ -83,7 +83,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
   }
 
   return (
-    <header className="fixed top-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm z-50">
+    <header className="fixed top-0 w-full m-2 rounded-md bg-white/0 dark:bg-gray-900/0 backdrop-blur-md shadow-sm z-50">
       <nav className="container mx-auto px-4 py-5">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
@@ -108,12 +108,12 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
               </span>
               Community
             </Link>
-            <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+            {/* <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
               <span className='w-5 h-2 mr-3'>
                 <Trophy />
               </span>
               Prizes
-            </Link>
+            </Link> */}
             <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
               <span className='w-5 h-2 mr-3'>
                 <Link2 />

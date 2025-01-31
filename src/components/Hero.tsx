@@ -47,8 +47,14 @@ export default function Hero() {
             className="flex-1 text-center md:text-left"
             variants={itemVariants}
           >
-            <h1 className="font-['Poppins'] text-5xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-              <TypeAnimation
+            <h1 className="font-['Poppins'] text-5xl md:text-5xl lg:text-6xl font-normal text-gray-900 dark:text-white leading-tight">
+
+              <p className='mb-4'>
+                <span className='text-yellow-500 font-bold'>Ace</span> National
+                Entrance Exam With <br />
+                <span className='text-yellow-500 font-bold'>Confidence!</span>
+              </p>
+              {/* <TypeAnimation
                 sequence={[
                   'Excel in Your Studies',
                   2000,
@@ -79,16 +85,19 @@ export default function Hero() {
                 speed={50}
                 repeat={Infinity}
                 className="text-blue-600 dark:text-blue-400"
-              />
-              <motion.span
+              /> */}
+              {/* <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.8 }}
-                className="block mt-10 text-xl md:text-2xl text-gray-600 dark:text-gray-300"
+                className="block mt-10 text-xl md:text-4xl text-yellow-500 dark:text-gray-300"
               >
-                <span className='text-3xl'>🔥</span> AI-Powered Learning
-              </motion.span>
+                <span className='text-5xl'>🔥</span> AI-Powered Learning
+              </motion.span> */}
             </h1>
+            <p className='text-xl font-normal text-gray-500'>
+              Are you a student in Ethiopia looking for a better way to prepare for your national entrance exam? With <b>ExtreamX</b>, crush your national exam confidently using personalized study materials, organized exam resources, and interactive learning tools.
+            </p>
 
             <motion.div
               className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
@@ -145,8 +154,8 @@ export default function Hero() {
                 src={img}
                 alt="Students_learning_png"
                 // className="rounded-xl"
-                width={500}
-                // height={550}
+                width={550}
+              // height={550}
               />
             </motion.div>
 
