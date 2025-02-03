@@ -5,8 +5,10 @@ import './index.css';
 import { ClerkProvider, RedirectToSignIn, RedirectToSignUp, BrowserRouter } from "@clerk/clerk-react";
 
 // Your Clerk frontend API key
-const frontendApi = "https://secure-foal-32.clerk.accounts.dev";
-const publishableKey = "pk_test_c2VjdXJlLWZvYWwtMzIuY2xlcmsuYWNjb3VudHMuZGV2JA"
+const frontendApi = "https://evolving-treefrog-26.clerk.accounts.dev";
+// const publishableKey = "pk_test_c2VjdXJlLWZvYWwtMzIuY2xlcmsuYWNjb3VudHMuZGV2JA"
+const publishableKey ="pk_test_ZXZvbHZpbmctdHJlZWZyb2ctMjYuY2xlcmsuYWNjb3VudHMuZGV2JA"
+
 
 // new = sk_test_j7jHt16WOVIv7XkrlSqEfZX6NOwL5Nm6hIK2lBghfV
 // const publishableKey = "pk_test_cmVzb2x2ZWQtcm9kZW50LTYyLmNsZXJrLmFjY291bnRzLmRldiQ"

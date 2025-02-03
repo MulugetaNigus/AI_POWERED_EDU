@@ -189,7 +189,7 @@ function App() {
                                 <OnboardingFlow />
                             // {/* </ProtectedRoute> */}
                         } />
-                        <Route path="/signin" element={
+                        <Route path="/signin/*" element={
                             // <SignIn />
                             <SignInPage />
                         } />
