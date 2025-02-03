@@ -78,7 +78,8 @@ const Feed: React.FC = () => {
 
             {/* Content */}
             <p className="text-gray-800 dark:text-gray-300 mb-4">
-              {post.content.slice(0, 100)}
+              {/* {post.content.slice(0, 100)} */}
+              {post.content}
               {post.content.length > 100 && "..."}
             </p>
 

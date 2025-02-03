@@ -23,6 +23,7 @@ interface MyPostProps {
 }
 
 const MyPost: React.FC<MyPostProps> = () => {
+  
   const { user } = useUser();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,9 +33,23 @@ const MyPost: React.FC<MyPostProps> = () => {
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await axios.get('http://localhost:8888/api/v1/getPost');
-        setPosts(response.data);
+        const response = await axios.get('http://localhost:8888/api/v1/getPost'); // Fetch all posts
+        const allPosts = response.data;
+        const userEmail = user?.emailAddresses[0]?.emailAddress;
+
+        if (!userEmail) {
+          setError('User email not found. Please sign in.');
+          setLoading(false);
+          return;
+        }
+
+        // Filter posts to include only those created by the current user
+        const userPosts = allPosts.filter((post: Post) => post.userID === userEmail);
+        setPosts(userPosts);
+
       } catch (err) {
         setError('Failed to fetch posts');
         console.error('Error fetching posts:', err);
@@ -44,7 +59,7 @@ const MyPost: React.FC<MyPostProps> = () => {
     };
 
     fetchPosts();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     // Load liked posts from localStorage on component mount

@@ -267,6 +267,8 @@ function App() {
                             </ProtectedRoute2>
                         } />
 
+                        <Route path="/chat" element={<Chat />} />
+
                         {/* FOR 404 */}
                         <Route path="*" element={
                             // <ProtectedRoute2>
