@@ -1,23 +1,126 @@
-import React from 'react';
-import img1 from '../Assets/p10.png';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useUser } from '@clerk/clerk-react';
 import Header from '../../components/Header';
 import { Eye, Trash, Clock, MessageCircle, Share2, ThumbsUp } from 'lucide-react';
 
+// Define interfaces based on your DB schema
 interface Post {
-  id: string;
-  title: string;
+  _id: string;
+  userID: string;
   content: string;
-  author: string;
-  date: string;
+  tags: string[];
   likes: number;
-  comments: number;
-  timeToRead: string;
-  status: string;
+  approved: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const MyPost: React.FC<MyPostProps> = ({ profilePicture, name, email, posts }) => {
+interface MyPostProps {
+  profilePicture?: string;
+  name?: string;
+  email?: string;
+}
+
+const MyPost: React.FC<MyPostProps> = () => {
   const { user } = useUser();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get('http://localhost:8888/api/v1/getPost');
+        setPosts(response.data);
+      } catch (err) {
+        setError('Failed to fetch posts');
+        console.error('Error fetching posts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    // Load liked posts from localStorage on component mount
+    const savedLikedPosts = localStorage.getItem('likedPosts');
+    if (savedLikedPosts) {
+      setLikedPosts(new Set(JSON.parse(savedLikedPosts)));
+    }
+  }, []);
+
+  const handleLike = async (postId: string) => {
+    // Prevent multiple clicks
+    if (pendingLikes.has(postId) || likedPosts.has(postId)) return;
+
+    setPendingLikes(prev => new Set([...prev, postId]));
+
+    try {
+      // Get the current post first
+      const currentPost = posts.find(p => p._id === postId);
+      if (!currentPost) return;
+
+      // Make the backend call
+      const response = await axios.post(`http://localhost:8888/api/v1/updateLikes/${postId}`, {
+        increment: 1,
+        currentLikes: currentPost.likes // Send current likes count to backend
+      });
+
+      if (!response.data?.data?.likes) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Update posts with the exact likes count from server
+      setPosts(prevPosts => prevPosts.map(post => 
+        post._id === postId 
+          ? { ...post, likes: response.data.data.likes }
+          : post
+      ));
+
+      // Update liked state
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        newSet.add(postId);
+        localStorage.setItem('likedPosts', JSON.stringify([...newSet]));
+        return newSet;
+      });
+
+    } catch (err) {
+      console.error('Error updating likes:', err);
+      // Refresh the posts to get the correct state
+      const refreshResponse = await axios.get('http://localhost:8888/api/v1/getPost');
+      setPosts(refreshResponse.data);
+    } finally {
+      setPendingLikes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+    }
+  };
+
+  // Add this to the button's className to show loading state
+  const getLikeButtonClasses = (postId: string) => `
+    flex items-center gap-2 transition-colors
+    ${pendingLikes.has(postId) ? 'opacity-50 cursor-not-allowed' : ''}
+    ${likedPosts.has(postId)
+      ? 'text-blue-600 dark:text-blue-400'
+      : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+    }
+  `;
+
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
@@ -45,49 +148,46 @@ const MyPost: React.FC<MyPostProps> = ({ profilePicture, name, email, posts }) =
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">My Posts</h3>
 
           {/* Posts List */}
-          {posts.map((post, index) => (
-            <div key={index} 
+          {posts.map((post) => (
+            <div key={post._id} 
               className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{post.title}</h4>
+                  <div className="flex items-center gap-2">
+                    {post.tags.map((tag, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium
-                    ${post.status === 'approved' 
+                    ${post.approved 
                       ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' 
                       : 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'
                     }`}>
-                    {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+                    {post.approved ? 'Approved' : 'Pending'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-gray-600 dark:text-gray-300">
-                    {post.content.length > 50
-                      ? post.content.substring(0, 50) + '...'
-                      : post.content}
+                    {post.content.slice(0, 100) + "..."}
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                       <Clock className="w-4 h-4" />
-                      <span className="text-sm">2 hours ago</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <MessageCircle className="w-4 h-4" />
-                      <span className="text-sm">5 comments</span>
+                      <span className="text-sm">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-4 pt-4 border-t dark:border-gray-700">
                   <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors">
-                      <ThumbsUp className="w-4 h-4" />
-                      <span className="text-sm">12 Likes</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors">
-                      <Share2 className="w-4 h-4" />
-                      <span className="text-sm">Share</span>
-                    </button>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                      <MessageCircle className="w-4 h-4" />
+                      <span className="text-sm">{post.userID}</span>
+                    </div>
                   </div>
-                  <span className="text-gray-500 dark:text-gray-400 text-sm">{user?.fullName}</span>
                 </div>
               </div>
             </div>
@@ -99,13 +199,13 @@ const MyPost: React.FC<MyPostProps> = ({ profilePicture, name, email, posts }) =
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Approved Posts</h3>
           <div className="space-y-4">
             {posts
-              .filter(post => post.status === 'approved')
-              .map((post, index) => (
-                <div key={index} 
+              .filter(post => post.approved)
+              .map((post) => (
+                <div key={post._id} 
                   className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-semibold text-gray-900 dark:text-white mb-1">{user?.fullName}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white mb-1">{post.userID}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {post.content.length > 50
                           ? post.content.substring(0, 50) + '...'

@@ -249,16 +249,11 @@ function App() {
                             </ProtectedRoute2>
                         } />
                         <Route path='/community/myGroup' element={
-                            <MyGroup
-                                groupName="Sample Group"
-                                groupDescription="This is a sample group for demonstration"
-                                groupPicture={img1}
-                                members={sampleMembers}
-                            />
+                            <MyGroup />
                         } />
                         <Route path="/search-groups" element={
                             <ProtectedRoute2>
-                                <SearchGroups />
+                                <MyGroup />
                             </ProtectedRoute2>
                         } />
                         <Route path="/search-groups/chat" element={
