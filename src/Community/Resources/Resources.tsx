@@ -77,6 +77,7 @@ const dummyResources: Resource[] = [
 ];
 
 const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUploaded }) => {
+
     const [title, setTitle] = useState('');
     const [type, setType] = useState<'document' | 'video' | 'book'>('document');
     const [subject, setSubject] = useState('');
@@ -131,6 +132,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
         }
     };
 
+    // to reset our form after successfully upload 
     const resetForm = () => {
         setTitle('');
         setType('document');
