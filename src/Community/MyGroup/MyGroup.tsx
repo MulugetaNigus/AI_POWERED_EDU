@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import Header from '../../components/Header';
-import { Eye, Trash, Users, MessageSquare, Settings, ChevronRight, Plus, Search, Calendar } from 'lucide-react';
+import { Eye, Trash, Users, MessageSquare, Settings, ChevronRight, Plus, Search, Calendar, Check } from 'lucide-react';
 import PopularGroups from '../PopularGroups';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -31,6 +31,9 @@ const MyGroup: React.FC = () => {
     const [theme, setTheme] = useState('light');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState<Group | null>(null);
+    const [groupID, setgroupID] = useState<string | undefined>();
+    const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
+    const [joiningInProgress, setJoiningInProgress] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -104,6 +107,38 @@ const MyGroup: React.FC = () => {
         } finally {
             setIsDeleteModalOpen(false); // Close modal after action
             setGroupToDelete(null); // Reset group to delete
+        }
+    };
+
+    const handleJoinGroup = async (groupId: string) => {
+        const userEmail = user?.emailAddresses[0]?.emailAddress;
+        if (!userEmail) return;
+
+        setJoiningInProgress(prev => new Set(prev).add(groupId));
+
+        try {
+            const response = await axios.post('http://localhost:8888/api/v1/add-member', {
+                groupId: groupId,
+                memberEmail: userEmail
+            });
+
+            if (response.status === 200) {
+                setJoinedGroups(prev => new Set(prev).add(groupId));
+                toast.success('Successfully joined the group!', {
+                    theme: theme === 'light' ? 'light' : 'dark'
+                });
+            }
+        } catch (error) {
+            console.error('Error joining group:', error);
+            toast.error('Failed to join the group. Please try again.', {
+                theme: theme === 'light' ? 'light' : 'dark'
+            });
+        } finally {
+            setJoiningInProgress(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(groupId);
+                return newSet;
+            });
         }
     };
 
@@ -186,15 +221,41 @@ const MyGroup: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            {group.approval ? (
-                                <Link to="/chat" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md">
-                                    <MessageSquare className="w-5 h-5 mr-2 inline-block" />
-                                    Chat
-                                </Link>
+                            {isOwner ? (
+                                group.approval ? (
+                                    <Link to="/chat" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md">
+                                        <MessageSquare className="w-5 h-5 mr-2 inline-block" />
+                                        Chat
+                                    </Link>
+                                ) : (
+                                    <span className="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-sm">
+                                        Pending
+                                    </span>
+                                )
                             ) : (
-                                <span className="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-sm">
-                                    Pending
-                                </span>
+                                <button
+                                    onClick={() => handleJoinGroup(group._id)}
+                                    disabled={joinedGroups.has(group._id) || joiningInProgress.has(group._id)}
+                                    className={`px-4 py-2 rounded-lg transition-colors shadow-sm hover:shadow-md flex items-center
+                                        ${joinedGroups.has(group._id) 
+                                            ? 'bg-green-600 hover:bg-green-700' 
+                                            : 'bg-blue-600 hover:bg-blue-700'} 
+                                        text-white ${(joinedGroups.has(group._id) || joiningInProgress.has(group._id)) && 'opacity-75 cursor-not-allowed'}`}
+                                >
+                                    {joiningInProgress.has(group._id) ? (
+                                        <span>Joining...</span>
+                                    ) : joinedGroups.has(group._id) ? (
+                                        <>
+                                            <Check className="w-5 h-5 mr-2" />
+                                            Joined
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="w-5 h-5 mr-2" />
+                                            Join Group
+                                        </>
+                                    )}
+                                </button>
                             )}
                         </div>
                     </div>

@@ -22,7 +22,6 @@ import SignInPage from './auth/SignIn';
 import ForgotPasswordPage from './auth/ForgotPasswordPage';
 import ResetPasswordPage from './auth/ResetPasswordPage';
 import { useUser } from '@clerk/clerk-react';
-import Root from './NationalExams/QuestionApps';
 import PageNotFound from './components/PageNotFound';
 import DisplayQuestions from './Exam/DIsplayQuestions';
 import DummyQuestions from './Exam/DummyQuestions';
@@ -34,6 +33,9 @@ import MyGroup from './Community/MyGroup/MyGroup';
 import SearchGroups from './Community/SearchGroup/SearchGroups';
 import Chat from './Community/Chat/Chat';
 import Resources from './Community/Resources/Resources';
+
+// tour guide packages
+import Joyride, { CallBackProps } from 'react-joyride';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -134,7 +136,59 @@ function App() {
 
     // to know wether the user login or not
     const { isSignedIn } = useUser();
-    const [dislayOnBoarding, setdislayOnBoarding] = useState<string | undefined>()
+    const [dislayOnBoarding, setdislayOnBoarding] = useState<string | undefined>();
+    const [runTour, setRunTour] = useState(false);
+
+    // Add tour steps
+    const steps = [
+        {
+            target: '.home-link',
+            content: 'Welcome to our platform! This is your home page. Click here to go to the home page.',
+            disableBeacon: true,
+        },
+        {
+            target: '.dashboard-link',
+            content: 'View your personalized dashboard here to see your progress and learning materials.',
+        },
+        {
+            target: '.community-link',
+            content: 'Connect with other learners in our community section. Share your thoughts and collaborate!',
+        },
+        {
+            target: '.exam',
+            content: 'Welcome to the community page! Here you can interact with other users.',
+        },
+        {
+            target: '.resources',
+            content: 'Explore our resources section for valuable learning materials.',
+        },
+        {
+            target: '.light-dark',
+            content: 'Adjust your theme to your liking with our light and dark mode options.',
+        },        {
+            target: '.user-profile',
+            content: 'Manage your profile and settings to personalize your experience.',
+        },
+    ];
+
+    // Handle tour callbacks
+    const handleJoyrideCallback = (data: CallBackProps) => {
+        const { status } = data;
+        if (['finished', 'skipped'].includes(status)) {
+            setRunTour(false);
+            localStorage.setItem('TOUR_COMPLETED', 'true');
+        }
+    };
+
+    useEffect(() => {
+        // ... existing useEffect code ...
+
+        // Check if tour has been completed
+        const tourCompleted = localStorage.getItem('TOUR_COMPLETED');
+        if (!tourCompleted && isSignedIn) {
+            setRunTour(true);
+        }
+    }, [isSignedIn]);
 
     useEffect(() => {
 
@@ -178,7 +232,21 @@ function App() {
 
         <BrowserRouter>
             <ThemeProvider>
-                <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+                <Joyride
+                    steps={steps}
+                    run={runTour}
+                    continuous={true}
+                    showSkipButton={true}
+                    showProgress={true}
+                    styles={{
+                        options: {
+                            primaryColor: '#4338ca',
+                            zIndex: 10000,
+                        },
+                    }}
+                    callback={handleJoyrideCallback}
+                />
+                <div className="home-link min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
                     <Routes>
                         <Route path="/" element={
                             // <ProtectedRoute>
@@ -244,7 +312,6 @@ function App() {
                                     profilePicture={img1}
                                     name="Sample User"
                                     email="sample@example.com"
-                                    posts={samplePosts}
                                 />
                             </ProtectedRoute2>
                         } />

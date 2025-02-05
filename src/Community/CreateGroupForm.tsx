@@ -68,7 +68,8 @@ const CreateGroupForm: React.FC = () => {
                 groupMember: "0",
                 groupCreator: user?.emailAddresses[0].emailAddress,
                 profilePicture: selectedImage,
-                approval: false
+                approval: false,
+                members: []
             }, {
                 headers: {
                     'Content-Type': 'application/json',

@@ -96,13 +96,13 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
             {/* <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a> */}
             {/* <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a> */}
             {/* <span className='text-xl text-gray-400'>{" | "}</span> */}
-            <Link to="/exam" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+            <Link to="/exam" className="exam flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
               <span className='w-5 h-2 mr-3'>
                 <BookOpenCheck />
               </span>
               Exam
             </Link>
-            <Link to="/community" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+            <Link to="/community" className="community-link flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
               <span className='w-5 h-2 mr-3'>
                 <Users />
               </span>
@@ -114,7 +114,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
               </span>
               Prizes
             </Link> */}
-            <Link to="/resources" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
+            <Link to="/resources" className="resources flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
               <span className='w-5 h-2 mr-3'>
                 <Link2 />
               </span>
@@ -122,14 +122,16 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
             </Link>
             <span className='text-xl text-gray-400'>{" | "}</span>
             {/* <Button style={{ backgroundColor: "rgb(67, 179,141)" }} className="px-3 py-2 rounded-md"> */}
-            <Link to="/dashboard" className="font-bold text-gray-600  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">
+            <Link to="/dashboard" className="dashboard-link font-bold text-gray-600  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">
               ✨ AI Assistance
             </Link>
             {/* </Button> */}
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <ThemeToggle />
+            <div className='light-dark'>
+              <ThemeToggle />
+            </div>
             {
               isSignedIn ? (
                 <>
@@ -145,7 +147,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                     SignOut
                   </p> */}
 
-                  <div>
+                  <div className='user-profile'>
                     <button onClick={handleLogout}>
                       <div>
                         {/* Show the Clerk user icon/avatar */}
