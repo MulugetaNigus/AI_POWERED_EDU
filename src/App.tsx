@@ -36,7 +36,6 @@ import Resources from './Community/Resources/Resources';
 
 // tour guide packages
 import Joyride, { CallBackProps } from 'react-joyride';
-import { GroupProvider } from './contexts/GroupContext';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -231,7 +230,6 @@ function App() {
         //     </SignedIn>
         // </header>
 
-        <GroupProvider>
             <BrowserRouter>
                 <ThemeProvider>
                     <Joyride
@@ -348,7 +346,6 @@ function App() {
                     </div>
                 </ThemeProvider>
             </BrowserRouter>
-        </GroupProvider>
     );
 }
 

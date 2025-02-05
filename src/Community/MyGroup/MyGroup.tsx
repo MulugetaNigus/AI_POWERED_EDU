@@ -17,10 +17,24 @@ interface Group {
     groupCreator: string;
     profilePicture: string;
     approval: boolean;
+    members: string[];
 }
 
 interface GroupCardProps extends Group {
     isOwner: boolean;
+}
+
+interface UpdateGroupModalProps {
+    group: Group | null;
+    isOpen: boolean;
+    onClose: () => void;
+    onUpdate: (groupData: UpdateGroupData) => void;
+}
+
+interface UpdateGroupData {
+    groupName: string;
+    groupDescription: string;
+    profilePicture: string;
 }
 
 const MyGroup: React.FC = () => {
@@ -35,6 +49,8 @@ const MyGroup: React.FC = () => {
     const [groupID, setgroupID] = useState<string | undefined>();
     const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
     const [joiningInProgress, setJoiningInProgress] = useState<Set<string>>(new Set());
+    const [updateModalOpen, setUpdateModalOpen] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
     const fetchGroups = async () => {
         setLoading(true);
@@ -78,43 +94,20 @@ const MyGroup: React.FC = () => {
         document.documentElement.classList.toggle('dark');
     };
 
-    const handleDeleteGroup = async () => {
-        if (!groupToDelete) return;
-
-        try {
-            // Here you would typically call your API to delete the group
-            // await axios.delete(`/api/groups/${groupToDelete._id}`); // Example API call
-            console.log(`Deleting group: ${groupToDelete.groupName} (ID: ${groupToDelete._id})`); // Placeholder delete action
-
-            // After successful deletion (or placeholder success), update group lists
-            setMyGroups(myGroups.filter(group => group._id !== groupToDelete._id));
-            setOtherGroups(otherGroups.filter(group => group._id !== groupToDelete._id));
-
-            toast.success(`Group "${groupToDelete.groupName}" deleted successfully!`, { // Success toast
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: theme === 'light' ? 'light' : 'dark',
-            });
-        } catch (error) {
-            console.error("Error deleting group:", error);
-            toast.error(`Failed to delete group "${groupToDelete.groupName}".`, {  // Error toast
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: theme === 'light' ? 'light' : 'dark',
-            });
-        } finally {
-            setIsDeleteModalOpen(false); // Close modal after action
-            setGroupToDelete(null); // Reset group to delete
+    const handleDeleteGroup = async (groupId: string, groupName: string) => {
+        if (window.confirm(`Are you sure you want to delete "${groupName}"? This action cannot be undone.`)) {
+            try {
+                const response = await axios.delete(`http://localhost:8888/api/v1/delete-group/${groupId}`);
+                
+                if (response.status === 200) {
+                    // Remove the deleted group from the list
+                    setMyGroups(myGroups.filter(group => group._id !== groupId));
+                    toast.success('Group deleted successfully!');
+                }
+            } catch (error) {
+                console.error('Error deleting group:', error);
+                toast.error('Failed to delete group. Please try again.');
+            }
         }
     };
 
@@ -152,8 +145,28 @@ const MyGroup: React.FC = () => {
         }
     };
 
+    const handleUpdateGroup = async (groupData: UpdateGroupData) => {
+        try {
+            const response = await axios.put(`http://localhost:8888/api/v1/edit-group/${selectedGroup?._id}`, groupData);
+            
+            if (response.status === 200) {
+                // Update the groups list with the updated group
+                const updatedGroups = myGroups.map(group => 
+                    group._id === selectedGroup?._id ? { ...group, ...groupData } : group
+                );
+                setMyGroups(updatedGroups);
+                
+                toast.success('Group updated successfully!');
+                setUpdateModalOpen(false);
+            }
+        } catch (error) {
+            console.error('Error updating group:', error);
+            toast.error('Failed to update group. Please try again.');
+        }
+    };
+
     const GroupCard: React.FC<GroupCardProps> = (props) => {
-        const { _id, groupName, groupDescription, groupMember, groupCreator, profilePicture, approval, isOwner } = props;
+        const { _id, groupName, groupDescription, groupMember, groupCreator, profilePicture, approval, isOwner, members } = props;
         const [showMenu, setShowMenu] = useState(false);
         const { user } = useUser();
 
@@ -193,7 +206,8 @@ const MyGroup: React.FC = () => {
                                         <div className="py-1">
                                             <button
                                                 onClick={() => {
-                                                    // Add edit functionality
+                                                    setSelectedGroup(props);
+                                                    setUpdateModalOpen(true);
                                                     setShowMenu(false);
                                                 }}
                                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 
@@ -203,11 +217,10 @@ const MyGroup: React.FC = () => {
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    setGroupToDelete({ _id, groupName, groupDescription, groupMember, groupCreator, profilePicture, approval });
-                                                    setIsDeleteModalOpen(true);
+                                                    handleDeleteGroup(_id, groupName);
                                                     setShowMenu(false);
                                                 }}
-                                                className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 
+                                                className="w-full px-4 py-2 text-left text-sm text-red-600 
                                                     hover:bg-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 Delete Group
@@ -229,7 +242,7 @@ const MyGroup: React.FC = () => {
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                                 <Users className="w-5 h-5" />
-                                <span>{groupMember} members</span>
+                                <span>{members?.length || 0} members</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -380,11 +393,117 @@ const MyGroup: React.FC = () => {
                             <button
                                 className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg ml-3 focus:outline-none focus:shadow-outline hover:bg-red-700 transition-colors duration-200"
                                 type="button"
-                                onClick={handleDeleteGroup}
+                                onClick={() => handleDeleteGroup(_id, groupName)}
                             >
                                 Delete Group
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Update Group Modal Component
+    const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, isOpen, onClose, onUpdate }) => {
+        const [formData, setFormData] = useState<UpdateGroupData>({
+            groupName: group?.groupName || '',
+            groupDescription: group?.groupDescription || '',
+            profilePicture: group?.profilePicture || ''
+        });
+
+        useEffect(() => {
+            if (group) {
+                setFormData({
+                    groupName: group.groupName,
+                    groupDescription: group.groupDescription,
+                    profilePicture: group.profilePicture
+                });
+            }
+        }, [group]);
+
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+            onUpdate(formData);
+        };
+
+        if (!isOpen) return null;
+
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden outline-none focus:outline-none bg-gray-500 bg-opacity-40 dark:bg-gray-800 dark:bg-opacity-60">
+                <div className="relative w-full max-w-2xl mx-auto my-6 px-4">
+                    <div className="relative flex flex-col w-full bg-white dark:bg-gray-900 rounded-lg shadow-lg">
+                        <div className="flex items-start justify-between p-5 border-b border-gray-200 dark:border-gray-700 rounded-t">
+                            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                                Update Group
+                            </h3>
+                            <button
+                                onClick={onClose}
+                                className="text-gray-400 hover:text-gray-500 focus:outline-none text-2xl font-semibold"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="p-8">
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Group Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.groupName}
+                                        onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 
+                                            dark:bg-gray-700 dark:text-white shadow-sm p-3 text-base"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        value={formData.groupDescription}
+                                        onChange={(e) => setFormData({ ...formData, groupDescription: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 
+                                            dark:bg-gray-700 dark:text-white shadow-sm p-3 text-base"
+                                        rows={4}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Profile Picture URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.profilePicture}
+                                        onChange={(e) => setFormData({ ...formData, profilePicture: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 
+                                            dark:bg-gray-700 dark:text-white shadow-sm p-3 text-base"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-8 flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 
+                                        hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-md"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-3 text-base font-medium text-white bg-blue-600 
+                                        hover:bg-blue-700 rounded-md"
+                                >
+                                    Update Group
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -473,10 +592,16 @@ const MyGroup: React.FC = () => {
                 </div>
 
                 {/* Right Sidebar */}
-                <div className="w-1/4 p-8 bg-gray-50 dark:bg-gray-900">
+                <div className="w-1/3 p-8 bg-gray-50 dark:bg-gray-900">
                     <PopularGroups />
                 </div>
                 <DeleteConfirmationModal />
+                <UpdateGroupModal
+                    group={selectedGroup}
+                    isOpen={updateModalOpen}
+                    onClose={() => setUpdateModalOpen(false)}
+                    onUpdate={handleUpdateGroup}
+                />
                 <ToastContainer
                     position="top-right"
                     autoClose={3000}

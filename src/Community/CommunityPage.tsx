@@ -51,7 +51,7 @@ const CommunityPage: React.FC = () => {
 
             {/* Main Content Area */}
             <motion.div
-                className="container mx-auto px-4 flex flex-col md:flex-row gap-6"
+                className="container mx-auto px-0 flex flex-col md:flex-row gap-6"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"

@@ -5,7 +5,7 @@ import axios from 'axios'; // Import axios
 import { useUser } from '@clerk/clerk-react'; // Import useUser from Clerk
 import { toast, ToastContainer } from 'react-toastify'; // Import toast and ToastContainer
 import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
-import { Group } from 'lucide-react';
+import { Group, MoreVertical } from 'lucide-react';
 
 interface Message {
     id: number;
@@ -21,10 +21,11 @@ interface Group {
     _id: string;
     groupName: string;
     groupDescription: string;
-    groupMember: string[];
+    groupMember: string;
     groupCreator: string;
     profilePicture: string;
     approval: boolean;
+    members: string[];    // Add this for the actual members array
 }
 
 const dummyGroups: Group[] = [
@@ -219,6 +220,76 @@ const Chat: React.FC = () => {
         }
     };
 
+    const handleLeaveGroup = async (groupId: string, groupName: string, groupCreator: string) => {
+        const userEmail = user?.emailAddresses[0]?.emailAddress;
+
+        // Check if user is the group creator
+        if (groupCreator === userEmail) {
+            toast.info("You cannot leave a group you created. You can delete it instead.", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: theme === 'light' ? 'light' : 'dark',
+            });
+            return;
+        }
+
+        try {
+            // Log the request data to verify
+            console.log('Leaving group with data:', {
+                groupID: groupId,
+                email: userEmail
+            });
+
+            // Make the request
+            const response = await axios.post('http://localhost:8888/api/v1/remove-member', {
+                groupID: groupId,
+                email: userEmail
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // Log the response
+            console.log('Leave group response:', response);
+
+            if (response.status === 200) {
+                // Remove the group from the local state
+                setGroups(prevGroups => prevGroups.filter(g => g._id !== groupId));
+                
+                // If the left group was selected, select another group
+                if (selectedGroup?._id === groupId) {
+                    const remainingGroups = groups.filter(g => g._id !== groupId);
+                    setSelectedGroup(remainingGroups[0] || null);
+                }
+
+                toast.success(`Successfully left ${groupName}`, {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: theme === 'light' ? 'light' : 'dark',
+                });
+            }
+        } catch (error: any) {
+            // Log the detailed error
+            console.error('Error leaving group:', error);
+            console.error('Error response:', error.response?.data);
+            
+            toast.error(error.response?.data?.message || 'Failed to leave the group. Please try again.', {
+                theme: theme === 'light' ? 'light' : 'dark'
+            });
+        }
+    };
+
     return (
         <div className="h-screen flex dark:bg-gray-900">
             {/* Header Placeholder */}
@@ -252,17 +323,67 @@ const Chat: React.FC = () => {
                                 {groups.map((group) => (
                                     <li
                                         key={group._id}
-                                        className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer 
+                                        className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 
                                             ${selectedGroup?._id === group._id ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
-                                        onClick={() => handleGroupChange(group)}
                                     >
-                                        <div className="flex items-center space-x-2">
-                                            <img
-                                                src={group.profilePicture}
-                                                alt={group.groupName}
-                                                className="w-8 h-8 rounded-full object-cover"
-                                            />
-                                            <span className="dark:text-white">{group.groupName}</span>
+                                        <div className="flex items-center justify-between">
+                                            <div 
+                                                className="flex items-center space-x-2 flex-1 cursor-pointer"
+                                                onClick={() => handleGroupChange(group)}
+                                            >
+                                                <img
+                                                    src={group.profilePicture}
+                                                    alt={group.groupName}
+                                                    className="w-8 h-8 rounded-full object-cover"
+                                                />
+                                                <span className="dark:text-white">{group.groupName}</span>
+                                            </div>
+                                            
+                                            {/* Dropdown Menu */}
+                                            <div className="relative group">
+                                                <button 
+                                                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        // Toggle dropdown
+                                                        const dropdown = e.currentTarget.nextElementSibling;
+                                                        dropdown?.classList.toggle('hidden');
+                                                    }}
+                                                >
+                                                    <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                </button>
+                                                
+                                                {/* Dropdown Content */}
+                                                <div className="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                                                    {group.groupCreator === user?.emailAddresses[0]?.emailAddress ? (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toast.info("To remove this group, use the delete option in the My Groups page", {
+                                                                    theme: theme === 'light' ? 'light' : 'dark'
+                                                                });
+                                                                e.currentTarget.parentElement?.classList.add('hidden');
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                                        >
+                                                            Manage Group
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (confirm(`Are you sure you want to leave "${group.groupName}"?`)) {
+                                                                    handleLeaveGroup(group._id, group.groupName, group.groupCreator);
+                                                                }
+                                                                e.currentTarget.parentElement?.classList.add('hidden');
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                                        >
+                                                            Leave Group
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </li>
                                 ))}
@@ -284,7 +405,9 @@ const Chat: React.FC = () => {
                                 />
                                 <div>
                                     <h2 className="text-xl font-bold dark:text-white">{selectedGroup?.groupName}</h2>
-                                    <p className="text-gray-500 dark:text-gray-400">{selectedGroup?.groupMember.length} members</p>
+                                    <p className="text-gray-500 dark:text-gray-400">
+                                        {selectedGroup?.members?.length || 0} members
+                                    </p>
                                 </div>
                             </div>
                         </div>

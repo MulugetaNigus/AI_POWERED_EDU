@@ -12,6 +12,7 @@ interface Group {
     groupCreator: string;
     profilePicture: string;
     approval: boolean;
+    members: string[];
 }
 
 const PopularGroups: React.FC = () => {
@@ -24,7 +25,7 @@ const PopularGroups: React.FC = () => {
             try {
                 const response = await axios.get('http://localhost:8888/api/v1/getGroup');
                 const sortedGroups = response.data
-                    .sort((a: Group, b: Group) => parseInt(b.groupMember) - parseInt(a.groupMember))
+                    .sort((a: Group, b: Group) => (b.members?.length || 0) - (a.members?.length || 0))
                     .slice(0, 5);
                 setGroups(sortedGroups);
             } catch (err) {
@@ -68,21 +69,27 @@ const PopularGroups: React.FC = () => {
     }
 
     return (
-        <div className="dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-4">Popular Groups</h2>
-            <ul className="space-y-4">
+        <div className="dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 
+            dark:border-gray-700 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-6">Popular Groups</h2>
+            <ul className="space-y-5">
                 {groups.map((group) => (
-                    <li key={group._id} className="flex items-center space-x-3 dark:hover:bg-gray-700 hover:bg-gray-200 cursor-pointer p-2 rounded-lg">
+                    <li key={group._id} 
+                        className="flex items-center space-x-4 dark:hover:bg-gray-700 hover:bg-gray-200 
+                            cursor-pointer p-3 rounded-lg transition-colors duration-200">
                         <img
                             src={group.profilePicture}
                             alt={group.groupName}
-                            className="w-10 h-10 rounded-full object-cover"
+                            className="w-12 h-12 rounded-full object-cover"
                         />
-                        <div className="flex-grow">
-                            <h3 className="font-medium">{group.groupName}</h3>
-                            <p className="text-sm text-gray-500">{group.groupMember} members</p>
+                        <div className="flex-grow min-w-0">
+                            <h3 className="font-medium text-base truncate">{group.groupName}</h3>
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <Users className="w-4 h-4" />
+                                <span>{group.members?.length || 0} members</span>
+                            </div>
                         </div>
-                        <span className={`px-3 py-1 text-sm rounded-full ${
+                        <span className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${
                             group.approval 
                                 ? 'bg-green-100 text-green-600'
                                 : 'bg-yellow-100 text-yellow-600'
@@ -93,7 +100,8 @@ const PopularGroups: React.FC = () => {
                 ))}
             </ul>
             <Link to="/search-groups">
-                <button className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition">
+                <button className="mt-6 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-500 
+                    transition-colors duration-200 font-medium">
                     See All Groups
                 </button>
             </Link>
