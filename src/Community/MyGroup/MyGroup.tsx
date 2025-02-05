@@ -7,6 +7,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+// import { useGroupContext } from '../../contexts/GroupContext';
 
 interface Group {
     _id: string;
@@ -35,35 +36,42 @@ const MyGroup: React.FC = () => {
     const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
     const [joiningInProgress, setJoiningInProgress] = useState<Set<string>>(new Set());
 
-    useEffect(() => {
-        const fetchGroups = async () => {
-            try {
-                const response = await axios.get('http://localhost:8888/api/v1/getGroup');
-                const allGroups = response.data;
+    const fetchGroups = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get('http://localhost:8888/api/v1/getGroup');
+            const allGroups = response.data;
+            const userEmail = user?.emailAddresses[0]?.emailAddress;
+            
+            const myGroups = allGroups.filter((group: Group) =>
+                group.groupCreator === userEmail
+            );
+            const otherGroups = allGroups.filter((group: Group) =>
+                group.groupCreator !== userEmail
+            );
 
-                // Separate groups based on creator
-                const userEmail = user?.emailAddresses[0]?.emailAddress;
-                const myGroups = allGroups.filter((group: Group) =>
-                    group.groupCreator === userEmail
+            if (userEmail) {
+                const joinedGroupIds = new Set(
+                    allGroups
+                        .filter(group => group.members?.includes(userEmail))
+                        .map(group => group._id)
                 );
-                const otherGroups = allGroups.filter((group: Group) =>
-                    group.groupCreator !== userEmail
-                );
-
-                setMyGroups(myGroups);
-                setOtherGroups(otherGroups);
-                console.log("mine", myGroups)
-                console.log("mine", otherGroups)
-            } catch (err) {
-                setError('Failed to fetch groups');
-                console.error('Error fetching groups:', err);
-            } finally {
-                setLoading(false);
+                setJoinedGroups(joinedGroupIds);
             }
-        };
 
+            setMyGroups(myGroups);
+            setOtherGroups(otherGroups);
+        } catch (err) {
+            setError('Failed to fetch groups');
+            console.error('Error fetching groups:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchGroups();
-    }, []);
+    }, [user]);
 
     const toggleTheme = () => {
         setTheme(theme === 'light' ? 'dark' : 'light');
@@ -114,7 +122,8 @@ const MyGroup: React.FC = () => {
         const userEmail = user?.emailAddresses[0]?.emailAddress;
         if (!userEmail) return;
 
-        setJoiningInProgress(prev => new Set(prev).add(groupId));
+        const joiningGroupIds = JSON.parse(localStorage.getItem('joiningGroups') || '[]');
+        localStorage.setItem('joiningGroups', JSON.stringify([...joiningGroupIds, groupId]));
 
         try {
             const response = await axios.post('http://localhost:8888/api/v1/add-member', {
@@ -123,27 +132,30 @@ const MyGroup: React.FC = () => {
             });
 
             if (response.status === 200) {
-                setJoinedGroups(prev => new Set(prev).add(groupId));
-                toast.success('Successfully joined the group!', {
-                    theme: theme === 'light' ? 'light' : 'dark'
-                });
+                const savedJoinedGroups = JSON.parse(localStorage.getItem('joinedGroups') || '[]');
+                const newJoinedGroups = [...savedJoinedGroups, groupId];
+                localStorage.setItem('joinedGroups', JSON.stringify(newJoinedGroups));
+                
+                toast.success('Successfully joined the group!');
+                
+                // Refresh the groups data
+                fetchGroups();
             }
         } catch (error) {
             console.error('Error joining group:', error);
-            toast.error('Failed to join the group. Please try again.', {
-                theme: theme === 'light' ? 'light' : 'dark'
-            });
+            toast.error('Failed to join the group. Please try again.');
         } finally {
-            setJoiningInProgress(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(groupId);
-                return newSet;
-            });
+            const joiningGroupIds = JSON.parse(localStorage.getItem('joiningGroups') || '[]');
+            localStorage.setItem('joiningGroups', 
+                JSON.stringify(joiningGroupIds.filter((id: string) => id !== groupId))
+            );
         }
     };
 
-    const GroupCard: React.FC<GroupCardProps> = ({ group, isOwner }: GroupCardProps) => {
+    const GroupCard: React.FC<GroupCardProps> = (props) => {
+        const { _id, groupName, groupDescription, groupMember, groupCreator, profilePicture, approval, isOwner } = props;
         const [showMenu, setShowMenu] = useState(false);
+        const { user } = useUser();
 
         return (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md 
@@ -153,16 +165,16 @@ const MyGroup: React.FC = () => {
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-4">
                             <img
-                                src={group.profilePicture}
-                                alt={group.groupName}
+                                src={user?.imageUrl}
+                                alt={groupName}
                                 className="w-12 h-12 rounded-lg object-cover"
                             />
                             <div>
                                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {group.groupName}
+                                    {groupName}
                                 </h4>
                                 <span className="text-sm text-blue-600 dark:text-blue-400">
-                                    Created by: {group.groupCreator}
+                                    Created by: {groupCreator}
                                 </span>
                             </div>
                         </div>
@@ -191,7 +203,7 @@ const MyGroup: React.FC = () => {
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    setGroupToDelete(group);
+                                                    setGroupToDelete({ _id, groupName, groupDescription, groupMember, groupCreator, profilePicture, approval });
                                                     setIsDeleteModalOpen(true);
                                                     setShowMenu(false);
                                                 }}
@@ -209,7 +221,7 @@ const MyGroup: React.FC = () => {
 
                     {/* Group Description */}
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
-                        {group.groupDescription}
+                        {groupDescription}
                     </p>
 
                     {/* Group Stats */}
@@ -217,12 +229,12 @@ const MyGroup: React.FC = () => {
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                                 <Users className="w-5 h-5" />
-                                <span>{group.groupMember} members</span>
+                                <span>{groupMember} members</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             {isOwner ? (
-                                group.approval ? (
+                                approval ? (
                                     <Link to="/chat" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md">
                                         <MessageSquare className="w-5 h-5 mr-2 inline-block" />
                                         Chat
@@ -233,36 +245,70 @@ const MyGroup: React.FC = () => {
                                     </span>
                                 )
                             ) : (
-                                <button
-                                    onClick={() => handleJoinGroup(group._id)}
-                                    disabled={joinedGroups.has(group._id) || joiningInProgress.has(group._id)}
-                                    className={`px-4 py-2 rounded-lg transition-colors shadow-sm hover:shadow-md flex items-center
-                                        ${joinedGroups.has(group._id) 
-                                            ? 'bg-green-600 hover:bg-green-700' 
-                                            : 'bg-blue-600 hover:bg-blue-700'} 
-                                        text-white ${(joinedGroups.has(group._id) || joiningInProgress.has(group._id)) && 'opacity-75 cursor-not-allowed'}`}
-                                >
-                                    {joiningInProgress.has(group._id) ? (
-                                        <span>Joining...</span>
-                                    ) : joinedGroups.has(group._id) ? (
-                                        <>
-                                            <Check className="w-5 h-5 mr-2" />
-                                            Joined
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="w-5 h-5 mr-2" />
-                                            Join Group
-                                        </>
-                                    )}
-                                </button>
-                            )}
+                                joinedGroups.has(_id) ? (
+                                    <Link 
+                                        to="/chat" 
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md flex items-center"
+                                    >
+                                        <MessageSquare className="w-4 h-4 mr-1" />
+                                        Chat
+                                    </Link>
+                                ) : (
+                                    <button
+                                        onClick={() => handleJoinGroup(_id)}
+                                        disabled={joiningInProgress.has(_id)}
+                                        className={`px-4 py-2 text-white text-sm rounded-full cursor-pointer transition easy-out duration-125 flex items-center
+                                            bg-blue-500 hover:bg-blue-400
+                                            ${joiningInProgress.has(_id) && 'opacity-75 cursor-not-allowed'}`}
+                                    >
+                                        {joiningInProgress.has(_id) ? (
+                                            <span>Joining...</span>
+                                        ) : (
+                                            <>
+                                                <Plus className="w-4 h-4 mr-1" />
+                                                Join Group
+                                            </>
+                                        )}
+                                    </button>
+                                ))}
+
                         </div>
                     </div>
                 </div>
             </div>
         );
     };
+
+    const GroupCardSkeleton = () => (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="p-6 animate-pulse">
+                {/* Header Skeleton */}
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                        <div className="space-y-2">
+                            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+                            <div className="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Description Skeleton */}
+                <div className="space-y-2 mb-6">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+                </div>
+
+                {/* Stats Skeleton */}
+                <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+                    <div className="flex items-center gap-2">
+                        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                    </div>
+                    <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                </div>
+            </div>
+        </div>
+    );
 
     const GroupGrid = ({ groups, title }: { groups: Group[], title: string }) => {
         const { user } = useUser();
@@ -290,7 +336,7 @@ const MyGroup: React.FC = () => {
                     {groups.map((group) => (
                         <GroupCard 
                             key={group._id} 
-                            group={group} 
+                            {...group}
                             isOwner={group.groupCreator === userEmail}
                         />
                     ))}
@@ -386,10 +432,44 @@ const MyGroup: React.FC = () => {
                     </div>
 
                     {/* My Groups Section */}
-                    <GroupGrid groups={myGroups} title="My Groups" />
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold mb-4 dark:text-white">My Groups</h2>
+                        <div className="grid gap-4">
+                            {loading ? (
+                                [...Array(2)].map((_, index) => (
+                                    <GroupCardSkeleton key={index} />
+                                ))
+                            ) : (
+                                myGroups.map(group => (
+                                    <GroupCard
+                                        key={group._id}
+                                        {...group}
+                                        isOwner={true}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </div>
 
                     {/* Other Groups Section */}
-                    <GroupGrid groups={otherGroups} title="Other Groups" />
+                    <div>
+                        <h2 className="text-2xl font-bold mb-4 dark:text-white">Other Groups</h2>
+                        <div className="grid gap-4">
+                            {loading ? (
+                                [...Array(3)].map((_, index) => (
+                                    <GroupCardSkeleton key={index} />
+                                ))
+                            ) : (
+                                otherGroups.map(group => (
+                                    <GroupCard
+                                        key={group._id}
+                                        {...group}
+                                        isOwner={false}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Right Sidebar */}

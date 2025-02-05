@@ -18,11 +18,13 @@ interface Message {
 }
 
 interface Group {
-    id: number;
-    name: string;
-    description: string;
-    memberCount: number;
-    groupProfilePic: string;
+    _id: string;
+    groupName: string;
+    groupDescription: string;
+    groupMember: string[];
+    groupCreator: string;
+    profilePicture: string;
+    approval: boolean;
 }
 
 const dummyGroups: Group[] = [
@@ -66,22 +68,65 @@ const dummyMessages: Message[] = [
 ];
 
 const Chat: React.FC = () => {
-    const [messages, setMessages] = useState(dummyMessages);
+    const [groups, setGroups] = useState<Group[]>([]);
+    const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [selectedGroup, setSelectedGroup] = useState<Group>(dummyGroups[0]);
-    const [groups, setGroups] = useState<Group[]>(dummyGroups);
+    const [loading, setLoading] = useState(true);
+    const [loadingMessages, setLoadingMessages] = useState(false);
     const { user } = useUser();
     const theme = 'light';
-    const [loadingMessages, setLoadingMessages] = useState(false);
 
+    // Fetch groups and filter them based on rules
     useEffect(() => {
-        handleGroupChange(selectedGroup);
-    }, [])
+        const fetchGroups = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get('http://localhost:8888/api/v1/getGroup');
+                const allGroups = response.data;
+                const userEmail = user?.emailAddresses[0]?.emailAddress;
+
+                // Filter groups based on approval, membership, and creator
+                const filteredGroups = allGroups.filter((group: Group) => {
+                    // Rule 1: Group must be approved
+                    const isApproved = group.approval === true;
+                    
+                    // Rule 2: Current user must be a member
+                    const isMember = group.members?.includes(userEmail);
+
+                    // Rule 3: Current user is the group creator
+                    const isCreator = group.groupCreator === userEmail;
+
+                    // Group is shown if it's approved AND (user is a member OR is the creator)
+                    return isApproved && (isMember || isCreator);
+                });
+
+                setGroups(filteredGroups);
+                
+                // Set the first group as selected if available
+                if (filteredGroups.length > 0) {
+                    setSelectedGroup(filteredGroups[0]);
+                    handleGroupChange(filteredGroups[0]);
+                }
+            } catch (error) {
+                console.error("Error fetching groups:", error);
+                toast.error("Failed to fetch groups", {
+                    theme: theme === 'light' ? 'light' : 'dark'
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (user) {
+            fetchGroups();
+        }
+    }, [user]);
 
     const handleSendMessage = async () => {
         if (newMessage.trim()) {
             const userEmail = user?.emailAddresses[0]?.emailAddress;
-            const groupId = selectedGroup.name;
+            const groupId = selectedGroup?.groupName;
 
             if (!userEmail) {
                 toast.error("User email not found. Please sign in.", {
@@ -141,12 +186,12 @@ const Chat: React.FC = () => {
         setSelectedGroup(group);
         setLoadingMessages(true);
         try {
-            const response = await axios.get(`http://localhost:8888/api/v1/getGroupID?groupID=${group.name}`);
+            const response = await axios.get(`http://localhost:8888/api/v1/getGroupID?groupID=${group.groupName}`);
             if (response.status === 200) {
                 const fetchedMessages = response.data;
                 setMessages(fetchedMessages);
             } else {
-                toast.error(`Failed to fetch messages for ${group.name}. Please try again.`, {
+                toast.error(`Failed to fetch messages for ${group.groupName}. Please try again.`, {
                     position: "top-right",
                     autoClose: 3000,
                     hideProgressBar: false,
@@ -159,7 +204,7 @@ const Chat: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching messages:", error);
-            toast.error(`Failed to fetch messages for ${group.name}. Please try again.`, {
+            toast.error(`Failed to fetch messages for ${group.groupName}. Please try again.`, {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -185,25 +230,44 @@ const Chat: React.FC = () => {
                 {/* Group List Section */}
                 <aside className="w-full md:w-1/5 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-y-auto h-full md:h-[calc(100vh - 140px)]">
                     <div className="p-4">
-                        <h3 className="text-lg font-semibold dark:text-white mb-3">Groups</h3>
-                        <ul className="space-y-2">
-                            {groups.map((group) => (
-                                <li
-                                    key={group.id}
-                                    className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer ${selectedGroup.id === group.id ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
-                                    onClick={() => handleGroupChange(group)}
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <img
-                                            src={group.groupProfilePic}
-                                            alt={group.name}
-                                            className="w-8 h-8 rounded-full"
-                                        />
-                                        <span className="dark:text-white">{group.name}</span>
+                        <h3 className="text-lg font-semibold dark:text-white mb-3">My Groups</h3>
+                        {loading ? (
+                            // Add loading skeleton here
+                            <div className="space-y-2">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="animate-pulse">
+                                        <div className="flex items-center space-x-2 p-2">
+                                            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+                                        </div>
                                     </div>
-                                </li>
-                            ))}
-                        </ul>
+                                ))}
+                            </div>
+                        ) : groups.length === 0 ? (
+                            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                                No groups available
+                            </p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {groups.map((group) => (
+                                    <li
+                                        key={group._id}
+                                        className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer 
+                                            ${selectedGroup?._id === group._id ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
+                                        onClick={() => handleGroupChange(group)}
+                                    >
+                                        <div className="flex items-center space-x-2">
+                                            <img
+                                                src={group.profilePicture}
+                                                alt={group.groupName}
+                                                className="w-8 h-8 rounded-full object-cover"
+                                            />
+                                            <span className="dark:text-white">{group.groupName}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </aside>
 
@@ -214,19 +278,19 @@ const Chat: React.FC = () => {
                         <div className="flex flex-col md:flex-row items-center justify-between mb-2">
                             <div className="flex flex-col md:flex-row items-center">
                                 <img
-                                    src={selectedGroup.groupProfilePic}
+                                    src={selectedGroup?.profilePicture}
                                     alt="Group Profile"
                                     className="w-16 h-16 rounded-full mb-3 md:mb-0 md:mr-4"
                                 />
                                 <div>
-                                    <h2 className="text-xl font-bold dark:text-white">{selectedGroup.name}</h2>
-                                    <p className="text-gray-500 dark:text-gray-400">{selectedGroup.memberCount} members</p>
+                                    <h2 className="text-xl font-bold dark:text-white">{selectedGroup?.groupName}</h2>
+                                    <p className="text-gray-500 dark:text-gray-400">{selectedGroup?.groupMember.length} members</p>
                                 </div>
                             </div>
                         </div>
                         <div className="space-y-2">
                             <p className="dark:text-gray-300 text-sm">
-                                🧮 {selectedGroup.description}
+                                🧮 {selectedGroup?.groupDescription}
                             </p>
                             <div className="flex items-center space-x-2">
                                 <span className="dark:text-gray-400 text-sm">Created:</span>
@@ -271,7 +335,7 @@ const Chat: React.FC = () => {
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder={`Message ${selectedGroup.name}...`}
+                                    placeholder={`Message ${selectedGroup?.groupName}...`}
                                     className="flex-1 p-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
                                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                 />

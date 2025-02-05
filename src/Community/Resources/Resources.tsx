@@ -259,14 +259,18 @@ const Resources: React.FC = () => {
     const [selectedType, setSelectedType] = useState<'all' | 'document' | 'video' | 'book'>('all');
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [resources, setResources] = useState<Resource[]>(dummyResources);
+    const [loading, setLoading] = useState(true);
 
     const fetchResources = async () => {
+        setLoading(true);
         try {
             const response = await axios.get('http://localhost:8888/api/v1/getResources');
             setResources(response.data);
         } catch (error) {
             console.error("Error fetching resources:", error);
             toast.error("Failed to load resources.", { theme: 'light' });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -294,6 +298,36 @@ const Resources: React.FC = () => {
                 return <FileText className="w-6 h-6" />;
         }
     };
+
+    const ResourcesSkeleton = () => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md animate-pulse">
+                    <div className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded" />
+                            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+                        </div>
+
+                        <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                            </div>
+                            <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -348,67 +382,71 @@ const Resources: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredResources.map((resource) => (
-                        <div key={resource.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                            <div className="p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    {getIcon(resource.type)}
-                                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                        {resource.subject} • Grade {resource.grade}
-                                    </span>
-                                </div>
-
-                                <h3 className="text-lg font-semibold mb-2 dark:text-white">{resource.title}</h3>
-
-                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                    {resource.fileSize && (
-                                        <span className="flex items-center gap-1">
-                                            <BookOpen className="w-4 h-4" />
-                                            {resource.fileSize}
-                                        </span>
-                                    )}
-                                    {resource.duration && (
-                                        <span className="flex items-center gap-1">
-                                            <Clock className="w-4 h-4" />
-                                            {resource.duration}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                        <span className="flex items-center gap-1">
-                                            <Download className="w-4 h-4" />
-                                            {resource.downloads}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <ThumbsUp className="w-4 h-4" />
-                                            {resource.likes}
+                {loading ? (
+                    <ResourcesSkeleton />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredResources.map((resource) => (
+                            <div key={resource.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                                <div className="p-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        {getIcon(resource.type)}
+                                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                            {resource.subject} • Grade {resource.grade}
                                         </span>
                                     </div>
-                                    {resource.type === "video" || resource.type === 'document' || resource.type === 'book' ? (
-                                        <a
-                                            href={resource.fileUrl}
-                                            download={resource.title}
-                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
-                                        >
-                                            <Download className="w-4 h-4 mr-2" />
-                                            Download
-                                        </a>
-                                    ) : (
-                                        <button
-                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                            disabled
-                                        >
-                                            Download
-                                        </button>
-                                    )}
+
+                                    <h3 className="text-lg font-semibold mb-2 dark:text-white">{resource.title}</h3>
+
+                                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                        {resource.fileSize && (
+                                            <span className="flex items-center gap-1">
+                                                <BookOpen className="w-4 h-4" />
+                                                {resource.fileSize}
+                                            </span>
+                                        )}
+                                        {resource.duration && (
+                                            <span className="flex items-center gap-1">
+                                                <Clock className="w-4 h-4" />
+                                                {resource.duration}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                            <span className="flex items-center gap-1">
+                                                <Download className="w-4 h-4" />
+                                                {resource.downloads}
+                                            </span>
+                                            <span className="flex items-center gap-1">
+                                                <ThumbsUp className="w-4 h-4" />
+                                                {resource.likes}
+                                            </span>
+                                        </div>
+                                        {resource.type === "video" || resource.type === 'document' || resource.type === 'book' ? (
+                                            <a
+                                                href={resource.fileUrl}
+                                                download={resource.title}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
+                                            >
+                                                <Download className="w-4 h-4 mr-2" />
+                                                Download
+                                            </a>
+                                        ) : (
+                                            <button
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                                disabled
+                                            >
+                                                Download
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
                 <ShareModal
                     isOpen={isShareModalOpen}

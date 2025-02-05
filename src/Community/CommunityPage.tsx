@@ -1,5 +1,5 @@
 // CommunityPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserProfile from './UserProfile';
 import Navigation from './Navigation';
 import PostCreation from './PostCreation';
@@ -13,6 +13,7 @@ import { Bell, MessageCircle, Users } from 'lucide-react';
 const CommunityPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'chat'>('feed');
     const [postCreationModal, setpostCreationModal] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const containerVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -31,6 +32,15 @@ const CommunityPage: React.FC = () => {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 }
     };
+
+    useEffect(() => {
+        // Simulate loading time
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1500);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -52,10 +62,11 @@ const CommunityPage: React.FC = () => {
                     variants={itemVariants}
                 >
                     <div className="sticky top-24">
-                        <UserProfile />
+                        <UserProfile loading={loading} />
                         <Navigation
                             postCreationModal={postCreationModal}
                             setpostCreationModal={setpostCreationModal}
+                            loading={loading}
                         />
                     </div>
                 </motion.div>

@@ -36,6 +36,7 @@ import Resources from './Community/Resources/Resources';
 
 // tour guide packages
 import Joyride, { CallBackProps } from 'react-joyride';
+import { GroupProvider } from './contexts/GroupContext';
 
 // Sample markdown text
 const sampleMarkdown = `## Flutter: A Comprehensive Introduction
@@ -230,122 +231,124 @@ function App() {
         //     </SignedIn>
         // </header>
 
-        <BrowserRouter>
-            <ThemeProvider>
-                <Joyride
-                    steps={steps}
-                    run={runTour}
-                    continuous={true}
-                    showSkipButton={true}
-                    showProgress={true}
-                    styles={{
-                        options: {
-                            primaryColor: '#4338ca',
-                            zIndex: 10000,
-                        },
-                    }}
-                    callback={handleJoyrideCallback}
-                />
-                <div className="home-link min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
-                    <Routes>
-                        <Route path="/" element={
-                            // <ProtectedRoute>
-                            dislayOnBoarding?.length
-                                ?
-                                <Home />
-                                :
-                                <OnboardingFlow />
-                            // {/* </ProtectedRoute> */}
-                        } />
-                        <Route path="/signin/*" element={
-                            // <SignIn />
-                            <SignInPage />
-                        } />
-                        <Route path="/signup" element={
-                            // <SignUp /> 
-                            <SignUpPage />
-                        } />
+        <GroupProvider>
+            <BrowserRouter>
+                <ThemeProvider>
+                    <Joyride
+                        steps={steps}
+                        run={runTour}
+                        continuous={true}
+                        showSkipButton={true}
+                        showProgress={true}
+                        styles={{
+                            options: {
+                                primaryColor: '#4338ca',
+                                zIndex: 10000,
+                            },
+                        }}
+                        callback={handleJoyrideCallback}
+                    />
+                    <div className="home-link min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+                        <Routes>
+                            <Route path="/" element={
+                                // <ProtectedRoute>
+                                dislayOnBoarding?.length
+                                    ?
+                                    <Home />
+                                    :
+                                    <OnboardingFlow />
+                                // {/* </ProtectedRoute> */}
+                            } />
+                            <Route path="/signin/*" element={
+                                // <SignIn />
+                                <SignInPage />
+                            } />
+                            <Route path="/signup" element={
+                                // <SignUp /> 
+                                <SignUpPage />
+                            } />
 
-                        <Route path='forgot-password' element={<ForgotPasswordPage />} />
-                        <Route path='reset-password' element={<ResetPasswordPage />} />
+                            <Route path='forgot-password' element={<ForgotPasswordPage />} />
+                            <Route path='reset-password' element={<ResetPasswordPage />} />
 
-                        <Route path='/quize-and-progress' element={
-                            // this is the route
-                            <ProtectedRoute2>
-                                <Apps />
-                            </ProtectedRoute2>
-                        } />
-                        <Route path='/on-boarding' element={<OnboardingFlow />} />
-                        <Route
-                            path="/dashboard"
-                            element={
+                            <Route path='/quize-and-progress' element={
+                                // this is the route
                                 <ProtectedRoute2>
-                                    <Dashboard />
+                                    <Apps />
                                 </ProtectedRoute2>
-                            }
-                        />
-                        <Route path="/subscription" element={
-                            <ProtectedRoute2>
-                                <Subscription />
-                            </ProtectedRoute2>
-                        } />
-                        <Route path="/payment-callback" element={
-                            // <ProtectedRoute2>
-                            <PaymentCallback />
-                            // {/* </ProtectedRoute2> */}
-                        } />
-                        <Route path="/exam" element={
-                            <ProtectedRoute2>
-                                <ExamApp />
-                            </ProtectedRoute2>
-                        } />
+                            } />
+                            <Route path='/on-boarding' element={<OnboardingFlow />} />
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    <ProtectedRoute2>
+                                        <Dashboard />
+                                    </ProtectedRoute2>
+                                }
+                            />
+                            <Route path="/subscription" element={
+                                <ProtectedRoute2>
+                                    <Subscription />
+                                </ProtectedRoute2>
+                            } />
+                            <Route path="/payment-callback" element={
+                                // <ProtectedRoute2>
+                                <PaymentCallback />
+                                // {/* </ProtectedRoute2> */}
+                            } />
+                            <Route path="/exam" element={
+                                <ProtectedRoute2>
+                                    <ExamApp />
+                                </ProtectedRoute2>
+                            } />
 
-                        <Route path='/community' element={
-                            <ProtectedRoute2>
-                                <CommunityPage />
-                            </ProtectedRoute2>
-                        } />
+                            <Route path='/community' element={
+                                <ProtectedRoute2>
+                                    <CommunityPage />
+                                </ProtectedRoute2>
+                            } />
 
-                        <Route path='/community/myPost' element={
-                            <ProtectedRoute2>
-                                <MyPost
-                                    profilePicture={img1}
-                                    name="Sample User"
-                                    email="sample@example.com"
-                                />
-                            </ProtectedRoute2>
-                        } />
-                        <Route path='/community/myGroup' element={
-                            <MyGroup />
-                        } />
-                        <Route path="/search-groups" element={
-                            <ProtectedRoute2>
+                            <Route path='/community/myPost' element={
+                                <ProtectedRoute2>
+                                    <MyPost
+                                        profilePicture={img1}
+                                        name="Sample User"
+                                        email="sample@example.com"
+                                    />
+                                </ProtectedRoute2>
+                            } />
+                            <Route path='/community/myGroup' element={
                                 <MyGroup />
-                            </ProtectedRoute2>
-                        } />
-                        <Route path="/search-groups/chat" element={
-                            <ProtectedRoute2>
-                                <Chat />
-                            </ProtectedRoute2>
-                        } />
-                        <Route path="/resources" element={
-                            <ProtectedRoute2>
-                                <Resources />
-                            </ProtectedRoute2>
-                        } />
+                            } />
+                            <Route path="/search-groups" element={
+                                <ProtectedRoute2>
+                                    <MyGroup />
+                                </ProtectedRoute2>
+                            } />
+                            <Route path="/search-groups/chat" element={
+                                <ProtectedRoute2>
+                                    <Chat />
+                                </ProtectedRoute2>
+                            } />
+                            <Route path="/resources" element={
+                                <ProtectedRoute2>
+                                    <Resources />
+                                </ProtectedRoute2>
+                            } />
 
-                        <Route path="/chat" element={<Chat />} />
+                            <Route path="/chat" element={<Chat />} />
 
-                        {/* FOR 404 */}
-                        <Route path="*" element={
-                            // <ProtectedRoute2>
-                            <PageNotFound />
-                            // {/* </ProtectedRoute2> */}
-                        } />
-                    </Routes>
-                </div>
-            </ThemeProvider>
-        </BrowserRouter>
+                            {/* FOR 404 */}
+                            <Route path="*" element={
+                                // <ProtectedRoute2>
+                                <PageNotFound />
+                                // {/* </ProtectedRoute2> */}
+                            } />
+                        </Routes>
+                    </div>
+                </ThemeProvider>
+            </BrowserRouter>
+        </GroupProvider>
     );
 }
 
