@@ -33,6 +33,7 @@ import MyGroup from './Community/MyGroup/MyGroup';
 import SearchGroups from './Community/SearchGroup/SearchGroups';
 import Chat from './Community/Chat/Chat';
 import Resources from './Community/Resources/Resources';
+import LiveSessions from './Community/LiveSessions/LiveSessions';
 
 // tour guide packages
 import Joyride, { CallBackProps } from 'react-joyride';
@@ -335,6 +336,12 @@ function App() {
                             } />
 
                             <Route path="/chat" element={<Chat />} />
+
+                            <Route path="/live-sessions" element={
+                                <ProtectedRoute2>
+                                    <LiveSessions />
+                                </ProtectedRoute2>
+                            } />
 
                             {/* FOR 404 */}
                             <Route path="*" element={

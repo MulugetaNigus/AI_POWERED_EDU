@@ -445,30 +445,30 @@ export default function Dashboard() {
   };
 
   // sample payment test
-  const handlePayment = async () => {
-    try {
-      const response = await axios.post('http://localhost:8888/api/v1/initialize',
-        {
-          amount: "5000",
-          currency: "ETB",
-          email: "sample@gmail.com",
-          tx_ref: "test" + new Date().getMilliseconds().toString(),
-          callback_url: "https://www.google.com",
-          return_url: "https://www.google.com"
-        }
-      );
+  // const handlePayment = async () => {
+  //   try {
+  //     const response = await axios.post('http://localhost:8888/api/v1/initialize',
+  //       {
+  //         amount: "5000",
+  //         currency: "ETB",
+  //         email: "sample@gmail.com",
+  //         tx_ref: "test" + new Date().getMilliseconds().toString(),
+  //         callback_url: "https://www.google.com",
+  //         return_url: "https://www.google.com"
+  //       }
+  //     );
 
-      // Check if we have a successful response with checkout URL
-      if (response.data.status === 'success' && response.data.data.checkout_url) {
-        // Redirect to the checkout URL
-        window.location.href = response.data.data.checkout_url;
-      } else {
-        console.error('Payment initialization failed:', response.data);
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-    }
-  }
+  //     // Check if we have a successful response with checkout URL
+  //     if (response.data.status === 'success' && response.data.data.checkout_url) {
+  //       // Redirect to the checkout URL
+  //       window.location.href = response.data.data.checkout_url;
+  //     } else {
+  //       console.error('Payment initialization failed:', response.data);
+  //     }
+  //   } catch (error) {
+  //     console.error('Payment error:', error);
+  //   }
+  // }
 
   const toggleUsernameVisibility = () => {
     setIsUsernameVisible(!isUsernameVisible);
@@ -550,7 +550,7 @@ export default function Dashboard() {
                   <p>Take a quize</p>
                   <Rocket className="ml-3 w-5 h-5" />
                 </Link>
-                <button onClick={handlePayment}>pay</button>
+                {/* <button onClick={handlePayment}>pay</button> */}
                 <br />
                 <hr className="text-gray-600 font-light" />
                 {/* icons to show the chat history and pdf chat */}

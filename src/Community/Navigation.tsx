@@ -7,7 +7,8 @@ import {
     Users, 
     PlusCircle, 
     BookOpen,
-    MessageCircle 
+    MessageCircle,
+    Video
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -35,7 +36,13 @@ const Navigation: React.FC<NavigationProps> = ({ postCreationModal, setpostCreat
             label: 'Chat', 
             path: '/search-groups/chat',
             highlight: false 
-        }
+        },
+        // { 
+        //     icon: Video, 
+        //     label: 'Live Sessions', 
+        //     path: '/live-sessions',
+        //     highlight: false 
+        // }
     ];
 
     const NavigationSkeleton = () => (

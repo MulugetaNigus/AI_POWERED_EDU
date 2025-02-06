@@ -70,7 +70,7 @@ const PopularGroups: React.FC = () => {
 
     return (
         <div className="dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 
-            dark:border-gray-700 rounded-lg p-6 w-full max-w-md">
+            dark:border-gray-700 rounded-lg p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-semibold mb-6">Popular Groups</h2>
             <ul className="space-y-5">
                 {groups.map((group) => (
@@ -86,7 +86,7 @@ const PopularGroups: React.FC = () => {
                             <h3 className="font-medium text-base truncate">{group.groupName}</h3>
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                                 <Users className="w-4 h-4" />
-                                <span>{group.members?.length || 0} members</span>
+                                <span>{group.members?.length || 0} M..</span>
                             </div>
                         </div>
                         <span className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${
