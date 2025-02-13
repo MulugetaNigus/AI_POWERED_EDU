@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/Header';
-import axios from 'axios'; // Import axios
-import { useUser } from '@clerk/clerk-react'; // Import useUser from Clerk
-import { toast, ToastContainer } from 'react-toastify'; // Import toast and ToastContainer
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import axios from 'axios';
+import { useUser } from '@clerk/clerk-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Group, MoreVertical } from 'lucide-react';
+import ReportModal from '../../components/ReportModal';
 
 interface Message {
     id: number;
@@ -75,8 +76,12 @@ const Chat: React.FC = () => {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
+    const [loadingInitialMessages, setLoadingInitialMessages] = useState(true);
     const { user } = useUser();
     const theme = 'light';
+    const [reportModalOpen, setReportModalOpen] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+    const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
     // Fetch groups and filter them based on rules
     useEffect(() => {
@@ -186,6 +191,7 @@ const Chat: React.FC = () => {
     const handleGroupChange = async (group: Group) => {
         setSelectedGroup(group);
         setLoadingMessages(true);
+        setMessages([]); // Clear existing messages while loading
         try {
             const response = await axios.get(`http://localhost:8888/api/v1/getGroupID?groupID=${group.groupName}`);
             if (response.status === 200) {
@@ -193,30 +199,17 @@ const Chat: React.FC = () => {
                 setMessages(fetchedMessages);
             } else {
                 toast.error(`Failed to fetch messages for ${group.groupName}. Please try again.`, {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: theme === 'light' ? 'light' : 'dark',
+                    theme: theme === 'light' ? 'light' : 'dark'
                 });
             }
         } catch (error) {
             console.error("Error fetching messages:", error);
             toast.error(`Failed to fetch messages for ${group.groupName}. Please try again.`, {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: theme === 'light' ? 'light' : 'dark',
+                theme: theme === 'light' ? 'light' : 'dark'
             });
         } finally {
             setLoadingMessages(false);
+            setLoadingInitialMessages(false);
         }
     };
 
@@ -287,6 +280,43 @@ const Chat: React.FC = () => {
             toast.error(error.response?.data?.message || 'Failed to leave the group. Please try again.', {
                 theme: theme === 'light' ? 'light' : 'dark'
             });
+        }
+    };
+
+    const handleReport = async (reason: string, details: string) => {
+        setIsSubmittingReport(true);
+        try {
+            await axios.post('http://localhost:8888/api/v1/reportSpam', {
+                spamMessage: selectedMessage?.content,
+                reason: reason,
+                description: details,
+                applyerUserId: user?.emailAddresses[0]?.emailAddress,
+                spammerUserId: selectedMessage?.userID,
+            });
+            toast.success('Spam report submitted successfully', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: theme === 'light' ? 'light' : 'dark',
+            });
+        } catch (error) {
+            console.error('Error submitting spam report:', error);
+            toast.error('Failed to submit spam report', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: theme === 'light' ? 'light' : 'dark',
+            });
+        } finally {
+            setIsSubmittingReport(false);
         }
     };
 
@@ -426,7 +456,17 @@ const Chat: React.FC = () => {
                     <div className="flex-1 flex flex-col dark:bg-gray-800 bg-white shadow-lg rounded-lg overflow-hidden">
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {loadingMessages ? (
-                                <div className="text-center dark:text-white">Loading messages...</div>
+                                <div className="flex flex-col items-center justify-center h-full space-y-4">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                                    <p className="text-gray-500 dark:text-gray-400">Loading messages...</p>
+                                </div>
+                            ) : messages.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-full space-y-4">
+                                    <div className="text-6xl">💭</div>
+                                    <p className="text-gray-500 dark:text-gray-400 text-center">
+                                        No messages yet. Be the first to start the conversation!
+                                    </p>
+                                </div>
                             ) : (
                                 messages.map((message) => (
                                     <div key={message.id} className="flex items-start space-x-3">
@@ -437,10 +477,36 @@ const Chat: React.FC = () => {
                                         />
                                         <div className="flex-1">
                                             <div className="flex items-baseline justify-between mb-1">
-                                                <div>
+                                                <div className="flex items-center space-x-2">
                                                     <span className="font-medium dark:text-white">{message.userID}</span>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{new Date(message.createdAt).toLocaleString()}</span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {new Date(message.createdAt).toLocaleString()}
+                                                    </span>
                                                 </div>
+                                                <button
+                                                    onClick={() => {
+                                                        // Check if the message is from the current user
+                                                        if (message.userID === user?.emailAddresses[0]?.emailAddress) {
+                                                            toast.info("You cannot report your own message", {
+                                                                position: "top-right",
+                                                                autoClose: 3000,
+                                                                theme: theme === 'light' ? 'light' : 'dark',
+                                                            });
+                                                            return;
+                                                        }
+                                                        setSelectedMessage(message);
+                                                        setReportModalOpen(true);
+                                                    }}
+                                                    className={`p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full ${
+                                                        message.userID === user?.emailAddresses[0]?.emailAddress ? 'opacity-50 cursor-not-allowed' : ''
+                                                    }`}
+                                                    disabled={message.userID === user?.emailAddresses[0]?.emailAddress}
+                                                    title={message.userID === user?.emailAddresses[0]?.emailAddress ? 
+                                                        'Cannot report own message' : 
+                                                        'Report message'}
+                                                >
+                                                    <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                </button>
                                             </div>
                                             <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                                 <p className="dark:text-gray-200">{message.content}</p>
@@ -458,13 +524,18 @@ const Chat: React.FC = () => {
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder={`Message ${selectedGroup?.groupName}...`}
+                                    placeholder={loadingMessages ? 'Loading...' : `Message ${selectedGroup?.groupName}...`}
                                     className="flex-1 p-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
                                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    disabled={loadingMessages}
                                 />
                                 <button
                                     onClick={handleSendMessage}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                                    disabled={loadingMessages}
+                                    className={`px-4 py-2 bg-blue-500 text-white rounded-lg transition
+                                        ${loadingMessages 
+                                            ? 'opacity-50 cursor-not-allowed' 
+                                            : 'hover:bg-blue-600'}`}
                                 >
                                     Send
                                 </button>
@@ -474,6 +545,16 @@ const Chat: React.FC = () => {
                 </div>
             </main>
             <ToastContainer />
+            <ReportModal
+                isOpen={reportModalOpen}
+                onClose={() => {
+                    setReportModalOpen(false);
+                    setSelectedMessage(null);
+                }}
+                onSubmit={handleReport}
+                type="message"
+                isSubmitting={isSubmittingReport}
+            />
         </div>
     );
 };

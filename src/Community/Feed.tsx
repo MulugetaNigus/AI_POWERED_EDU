@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Clock, MessageCircle, User } from 'lucide-react';
+import { Clock, MessageCircle, User, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 import img1 from './Assets/HeroOne.png';
+import ReportModal from '../components/ReportModal';
+import { toast, ToastContainer } from 'react-toastify';
+import { useUser } from "@clerk/clerk-react";
 
 interface Post {
   _id: string;
@@ -19,6 +22,11 @@ const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const { user } = useUser();
+  const theme = 'light';
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -37,6 +45,43 @@ const Feed: React.FC = () => {
 
     fetchPosts();
   }, []);
+
+  const handleReport = async (reason: string, details: string) => {
+    setIsSubmittingReport(true);
+    try {
+      await axios.post('http://localhost:8888/api/v1/reportSpam', {
+        spamMessage: selectedPost?.content,
+        reason: reason,
+        description: details,
+        applyerUserId: user?.emailAddresses[0]?.emailAddress,
+        spammerUserId: selectedPost?.userID,
+      });
+      toast.success('Spam report submitted successfully', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: theme === 'light' ? 'light' : 'dark',
+      });
+    } catch (error) {
+      console.error('Error submitting spam report:', error);
+      toast.error('Failed to submit spam report', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: theme === 'light' ? 'light' : 'dark',
+      });
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -91,7 +136,7 @@ const Feed: React.FC = () => {
         <p className="text-gray-600 text-2xl font-bold">Community Posts</p>
       </div>
       {posts.map((post) => (
-        <div key={post._id} 
+        <div key={post._id}
           className="bg-white dark:bg-gray-900 shadow-lg rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 transition hover:shadow-xl">
           <div className="p-6">
             {/* User Profile Section */}
@@ -99,11 +144,35 @@ const Feed: React.FC = () => {
               <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900/30">
                 <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div>
+              <div className="flex-1">
                 <span className="font-medium text-gray-900 dark:text-white">
                   {post.userID.split('@')[0]} {/* Display username part of email */}
                 </span>
               </div>
+              <button
+                onClick={() => {
+                  // Check if the post is from the current user
+                  if (post.userID === user?.emailAddresses[0]?.emailAddress) {
+                    toast.info("You cannot report your own post", {
+                      position: "top-right",
+                      autoClose: 3000,
+                      theme: theme === 'light' ? 'light' : 'dark',
+                    });
+                    return;
+                  }
+                  setSelectedPost(post);
+                  setReportModalOpen(true);
+                }}
+                className={`p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full ${
+                  post.userID === user?.emailAddresses[0]?.emailAddress ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={post.userID === user?.emailAddresses[0]?.emailAddress}
+                title={post.userID === user?.emailAddresses[0]?.emailAddress ? 
+                  'Cannot report own post' : 
+                  'Report post'}
+              >
+                <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button>
             </div>
 
             {/* Tags */}
@@ -141,6 +210,17 @@ const Feed: React.FC = () => {
           </div>
         </div>
       ))}
+      <ToastContainer />
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => {
+          setReportModalOpen(false);
+          setSelectedPost(null);
+        }}
+        onSubmit={handleReport}
+        type="post"
+        isSubmitting={isSubmittingReport}
+      />
     </div>
   );
 };
