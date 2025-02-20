@@ -1,0 +1,40 @@
+[
+    {
+      "grade": "6",
+      "subject": "Mathematics",
+      "year": 2024,
+      "questions": [
+        {
+          "question": "If the sum of two consecutive odd numbers is 44, what are those numbers?",
+          "options": ["20 and 24", "21 and 23", "22 and 22", "19 and 25"],
+          "correctAnswer": 1,
+          "difficulty": "medium"
+        },
+        {
+          "question": "What is the value of 3² + 4²?",
+          "options": ["5", "7", "25", "9"],
+          "correctAnswer": 2,
+          "difficulty": "easy"
+        }
+      ]
+    },
+    {
+      "grade": "6",
+      "subject": "General Science",
+      "year": 2024,
+      "questions": [
+        {
+          "question": "What are the three states of matter?",
+          "options": ["Solid, Liquid, Gas", "Solid, Plasma, Gas", "Liquid, Plasma, Gas", "Solid, Liquid, Plasma"],
+          "correctAnswer": 0,
+          "difficulty": "easy"
+        },
+        {
+          "question": "Which of the following is an example of a gas?",
+          "options": ["Ice", "Water", "Air", "Wood"],
+          "correctAnswer": 2,
+          "difficulty": "easy"
+        }
+      ]
+    }
+  ]

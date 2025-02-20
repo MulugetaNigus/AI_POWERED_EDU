@@ -266,6 +266,7 @@ const Resources: React.FC = () => {
         try {
             const response = await axios.get('http://localhost:8888/api/v1/getResources');
             setResources(response.data);
+            console.log(response.data);
         } catch (error) {
             console.error("Error fetching resources:", error);
             toast.error("Failed to load resources.", { theme: 'light' });
