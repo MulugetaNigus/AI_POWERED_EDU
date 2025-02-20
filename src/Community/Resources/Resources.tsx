@@ -9,18 +9,18 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useUser } from '@clerk/clerk-react';
 
 interface Resource {
-    id: string;
-    title: string;
-    type: 'document' | 'video' | 'book';
-    subject: string;
-    grade: number;
-    downloads: number;
-    likes: number;
+    _id: string;
+    filename: string;
+    contentType: string;
+    length: number;
+    id: string; // GridFS file ID
     uploadDate: string;
-    fileSize?: string;
-    duration?: string;
-    thumbnail?: string;
-    fileUrl?: string;
+    metadata: {
+        title: string;
+        description: string;
+        uploadedBy: string;
+        downloads: number;
+    };
 }
 
 interface ShareModalProps {
@@ -28,53 +28,6 @@ interface ShareModalProps {
     onClose: () => void;
     onResourceUploaded: () => void;
 }
-
-const dummyResources: Resource[] = [
-    {
-        id: '1',
-        title: 'Grade 12 Physics Notes - Mechanics',
-        type: 'document',
-        subject: 'Physics',
-        grade: 12,
-        downloads: 156,
-        likes: 89,
-        uploadDate: '2024-03-15',
-        fileSize: '2.5 MB'
-    },
-    {
-        id: '2',
-        title: 'Mathematics Formula Sheet',
-        type: 'document',
-        subject: 'Mathematics',
-        grade: 12,
-        downloads: 234,
-        likes: 167,
-        uploadDate: '2024-03-14',
-        fileSize: '1.8 MB'
-    },
-    {
-        id: '3',
-        title: 'Biology Cell Structure Video Lesson',
-        type: 'video',
-        subject: 'Biology',
-        grade: 11,
-        downloads: 89,
-        likes: 45,
-        uploadDate: '2024-03-13',
-        duration: '15:30'
-    },
-    {
-        id: '4',
-        title: 'Chemistry Complete Study Guide',
-        type: 'book',
-        subject: 'Chemistry',
-        grade: 12,
-        downloads: 312,
-        likes: 198,
-        uploadDate: '2024-03-12',
-        fileSize: '5.2 MB'
-    }
-];
 
 const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUploaded }) => {
 
@@ -84,6 +37,10 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
     const [grade, setGrade] = useState<number | null>(null);
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
+
+    const [resources, setResources] = useState<Resource[]>([]);
+    const [loading, setLoading] = useState(false);
+
     const { user } = useUser();
     const theme = 'light';
 
@@ -93,28 +50,20 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
             toast.error("Please select a file to upload.", { theme: theme === 'light' ? 'light' : 'dark' });
             return;
         }
-        if (!title || !subject || !grade) {
-            toast.error("Please fill in all fields.", { theme: theme === 'light' ? 'light' : 'dark' });
+        if (!title) {
+            toast.error("Please provide a title.", { theme: theme === 'light' ? 'light' : 'dark' });
             return;
         }
 
         setUploading(true);
         try {
             const formData = new FormData();
+            formData.append('file', file);
             formData.append('title', title);
-            formData.append('type', type);
-            formData.append('subject', subject);
-            formData.append('grade', String(grade));
-            formData.append('resourceFile', file);
+            formData.append('description', `${subject} - Grade ${grade}`);
             formData.append('userID', user?.emailAddresses[0]?.emailAddress || 'unknown-user');
 
-            const response = await axios.post('http://localhost:8888/api/v1/uploadResource', formData,
-                // {
-                //     headers: {
-                //         'Content-Type': 'multipart/form-data',
-                //     },
-                // }
-            );
+            const response = await axios.post('http://localhost:8888/api/v1/uploadResource', formData);
 
             if (response.status === 200) {
                 toast.success("Resource uploaded successfully!", { theme: theme === 'light' ? 'light' : 'dark' });
@@ -132,7 +81,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
         }
     };
 
-    // to reset our form after successfully upload 
     const resetForm = () => {
         setTitle('');
         setType('document');
@@ -238,11 +186,23 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
                                     Cancel
                                 </button>
                                 <button
-                                    className={`bg-blue-600 text-white font-bold py-2 px-4 rounded-lg ml-3 focus:outline-none focus:shadow-outline hover:bg-blue-700 transition-colors duration-200 ${uploading ? 'opacity-50 cursor-wait' : ''}`}
+                                    className={`bg-blue-600 text-white font-bold py-2 px-4 rounded-lg ml-3 focus:outline-none focus:shadow-outline hover:bg-blue-700 transition-colors duration-200 inline-flex items-center ${
+                                        uploading ? 'opacity-75 cursor-wait' : ''
+                                    }`}
                                     type="submit"
                                     disabled={uploading}
                                 >
-                                    {uploading ? 'Uploading...' : 'Upload Resource'}
+                                    {uploading ? (
+                                        <>
+                                            <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Uploading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="w-4 h-4 mr-2" />
+                                            Upload Resource
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -258,15 +218,15 @@ const Resources: React.FC = () => {
     const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
     const [selectedType, setSelectedType] = useState<'all' | 'document' | 'video' | 'book'>('all');
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [resources, setResources] = useState<Resource[]>(dummyResources);
+    const [resources, setResources] = useState<Resource[]>([]);
     const [loading, setLoading] = useState(true);
+    const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
     const fetchResources = async () => {
         setLoading(true);
         try {
             const response = await axios.get('http://localhost:8888/api/v1/getResources');
             setResources(response.data);
-            console.log(response.data);
         } catch (error) {
             console.error("Error fetching resources:", error);
             toast.error("Failed to load resources.", { theme: 'light' });
@@ -279,12 +239,38 @@ const Resources: React.FC = () => {
         fetchResources();
     }, []);
 
+    const handleDownload = async (resource: Resource) => {
+        setDownloadingId(resource._id);
+        try {
+            const response = await axios.get(
+                `http://localhost:8888/api/v1/resource/${resource.id}`,
+                { responseType: 'blob' }
+            );
+
+            // Create blob URL and trigger download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', resource.filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Download started!", { theme: 'light' });
+        } catch (error) {
+            console.error("Download error:", error);
+            toast.error("Failed to download file.", { theme: 'light' });
+        } finally {
+            setDownloadingId(null);
+        }
+    };
+
     const filteredResources = resources.filter(resource => {
-        const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            resource.subject.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesGrade = selectedGrade ? resource.grade === selectedGrade : true;
-        const matchesType = selectedType === 'all' ? true : resource.type === selectedType;
-        return matchesSearch && matchesGrade && matchesType;
+        const matchesSearch = (resource.metadata.title.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+            (resource.metadata.description.toLowerCase() || '').includes(searchQuery.toLowerCase());
+        const matchesType = selectedType === 'all' ? true : resource.contentType.includes(selectedType);
+        return matchesSearch && matchesType;
     });
 
     const getIcon = (type: string) => {
@@ -388,60 +374,56 @@ const Resources: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredResources.map((resource) => (
-                            <div key={resource.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                            <div key={resource._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                                 <div className="p-6">
                                     <div className="flex items-center gap-3 mb-4">
-                                        {getIcon(resource.type)}
+                                        {getIcon(resource.contentType)}
                                         <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                            {resource.subject} • Grade {resource.grade}
+                                            {resource.metadata.description}
                                         </span>
                                     </div>
 
-                                    <h3 className="text-lg font-semibold mb-2 dark:text-white">{resource.title}</h3>
+                                    <h3 className="text-lg font-semibold mb-2 dark:text-white">
+                                        {resource.metadata.title}
+                                    </h3>
 
                                     <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                        {resource.fileSize && (
-                                            <span className="flex items-center gap-1">
-                                                <BookOpen className="w-4 h-4" />
-                                                {resource.fileSize}
-                                            </span>
-                                        )}
-                                        {resource.duration && (
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-4 h-4" />
-                                                {resource.duration}
-                                            </span>
-                                        )}
+                                        <span className="flex items-center gap-1">
+                                            <BookOpen className="w-4 h-4" />
+                                            {(resource.length / 1024 / 1024).toFixed(2)} MB
+                                        </span>
                                     </div>
 
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                             <span className="flex items-center gap-1">
                                                 <Download className="w-4 h-4" />
-                                                {resource.downloads}
+                                                {resource.metadata.downloads}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <ThumbsUp className="w-4 h-4" />
-                                                {resource.likes}
+                                                <Clock className="w-4 h-4" />
+                                                {new Date(resource.uploadDate).toLocaleDateString()}
                                             </span>
                                         </div>
-                                        {resource.type === "video" || resource.type === 'document' || resource.type === 'book' ? (
-                                            <a
-                                                href={resource.fileUrl}
-                                                download={resource.title}
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
-                                            >
-                                                <Download className="w-4 h-4 mr-2" />
-                                                Download
-                                            </a>
-                                        ) : (
-                                            <button
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                                disabled
-                                            >
-                                                Download
-                                            </button>
-                                        )}
+                                        <button
+                                            onClick={() => handleDownload(resource)}
+                                            disabled={downloadingId === resource._id}
+                                            className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center ${
+                                                downloadingId === resource._id ? 'opacity-75 cursor-wait' : ''
+                                            }`}
+                                        >
+                                            {downloadingId === resource._id ? (
+                                                <>
+                                                    <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    Downloading...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Download className="w-4 h-4 mr-2" />
+                                                    Download
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -464,7 +446,6 @@ const Resources: React.FC = () => {
                     pauseOnFocusLoss
                     draggable
                     pauseOnHover
-                // theme={theme === 'light' ? 'light' : 'dark'}
                 />
             </main>
         </div>
