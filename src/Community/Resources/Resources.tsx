@@ -15,6 +15,7 @@ interface Resource {
     length: number;
     id: string; // GridFS file ID
     uploadDate: string;
+    approved: boolean;
     metadata: {
         title: string;
         description: string;
@@ -28,6 +29,38 @@ interface ShareModalProps {
     onClose: () => void;
     onResourceUploaded: () => void;
 }
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+
+// Add file type mappings for each document type
+const FILE_TYPE_MAPPINGS = {
+    document: {
+        types: {
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-powerpoint': '.ppt',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+            'application/vnd.ms-excel': '.xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+            'text/plain': '.txt'
+        },
+        description: 'Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT'
+    },
+    video: {
+        types: {
+            'video/mp4': '.mp4'
+        },
+        description: 'Supported format: MP4'
+    },
+    book: {
+        types: {
+            'application/pdf': '.pdf',
+            'application/epub+zip': '.epub'
+        },
+        description: 'Supported formats: PDF, EPUB'
+    }
+};
 
 const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUploaded }) => {
 
@@ -44,6 +77,39 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
     const { user } = useUser();
     const theme = 'light';
 
+    const validateFile = (file: File): boolean => {
+        // Check file size
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error(`File size must be less than 10MB. Current file size: ${(file.size / 1024 / 1024).toFixed(2)}MB`, {
+                theme: theme === 'light' ? 'light' : 'dark'
+            });
+            return false;
+        }
+
+        // Check if file type matches the selected document type
+        const allowedTypes = FILE_TYPE_MAPPINGS[type].types;
+        if (!Object.keys(allowedTypes).includes(file.type)) {
+            toast.error(`Invalid file type for ${type}. ${FILE_TYPE_MAPPINGS[type].description}`, {
+                theme: theme === 'light' ? 'light' : 'dark'
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            if (validateFile(selectedFile)) {
+                setFile(selectedFile);
+            } else {
+                e.target.value = ''; // Reset file input
+                setFile(null);
+            }
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!file) {
@@ -52,6 +118,11 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
         }
         if (!title) {
             toast.error("Please provide a title.", { theme: theme === 'light' ? 'light' : 'dark' });
+            return;
+        }
+        
+        // Double-check file size and type before upload
+        if (!validateFile(file)) {
             return;
         }
 
@@ -93,7 +164,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden outline-none focus:outline-none bg-gray-500 bg-opacity-40 dark:bg-gray-800 dark:bg-opacity-60">
-            <div className="relative w-auto max-w-md mx-auto my-6">
+            <div className="relative w-full max-w-2xl mx-auto my-6">
                 <motion.div
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -111,51 +182,72 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
                             <X className="w-5 h-5" />
                         </button>
                     </div>
-                    <div className="relative p-6 flex-auto">
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="relative p-8">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <label htmlFor="title" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Title</label>
+                                <label htmlFor="title" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     id="title"
                                     type="text"
                                     placeholder="Resource Title"
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+                                    className={`shadow appearance-none border ${
+                                        title === '' ? 'border-red-500' : 'border-gray-200'
+                                    } rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline`}
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     required
                                 />
                             </div>
                             <div>
-                                <label htmlFor="type" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Type</label>
+                                <label htmlFor="type" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    Type <span className="text-red-500">*</span>
+                                </label>
                                 <select
                                     id="type"
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
                                     value={type}
-                                    onChange={(e) => setType(e.target.value as 'document' | 'video' | 'book')}
+                                    onChange={(e) => {
+                                        setType(e.target.value as 'document' | 'video' | 'book');
+                                        // Reset file when type changes
+                                        setFile(null);
+                                        const fileInput = document.getElementById('file') as HTMLInputElement;
+                                        if (fileInput) fileInput.value = '';
+                                    }}
                                     required
                                 >
+                                    <option value="">Select Type</option>
                                     <option value="document">Document</option>
                                     <option value="video">Video</option>
                                     <option value="book">Book</option>
                                 </select>
                             </div>
                             <div>
-                                <label htmlFor="subject" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Subject</label>
+                                <label htmlFor="subject" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    Subject <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     id="subject"
                                     type="text"
                                     placeholder="Subject"
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+                                    className={`shadow appearance-none border ${
+                                        subject === '' ? 'border-red-500' : 'border-gray-200'
+                                    } rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline`}
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
                                     required
                                 />
                             </div>
                             <div>
-                                <label htmlFor="grade" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Grade</label>
+                                <label htmlFor="grade" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    Grade <span className="text-red-500">*</span>
+                                </label>
                                 <select
                                     id="grade"
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+                                    className={`shadow appearance-none border ${
+                                        grade === null ? 'border-red-500' : 'border-gray-200'
+                                    } rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline`}
                                     value={grade !== null ? String(grade) : ''}
                                     onChange={(e) => setGrade(e.target.value ? Number(e.target.value) : null)}
                                     required
@@ -167,16 +259,26 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
                                 </select>
                             </div>
                             <div>
-                                <label htmlFor="file" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">File Upload</label>
-                                <input
-                                    id="file"
-                                    type="file"
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
-                                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                    required
-                                />
+                                <label htmlFor="file" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    File Upload (Max 10MB) <span className="text-red-500">*</span>
+                                </label>
+                                <div className="space-y-2">
+                                    <input
+                                        id="file"
+                                        type="file"
+                                        className={`shadow appearance-none border ${
+                                            !file ? 'border-red-500' : 'border-gray-200'
+                                        } rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline`}
+                                        onChange={handleFileChange}
+                                        accept={type ? Object.values(FILE_TYPE_MAPPINGS[type].types).join(',') : ''}
+                                        required
+                                    />
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        {type ? FILE_TYPE_MAPPINGS[type].description : 'Please select a document type first'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="flex items-center justify-end p-6 rounded-b-xl">
+                            <div className="flex items-center justify-end pt-6 border-t border-gray-200 dark:border-gray-700 rounded-b">
                                 <button
                                     className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
                                     type="button"
@@ -190,7 +292,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
                                         uploading ? 'opacity-75 cursor-wait' : ''
                                     }`}
                                     type="submit"
-                                    disabled={uploading}
+                                    disabled={uploading || !title || !subject || grade === null || !file}
                                 >
                                     {uploading ? (
                                         <>
@@ -240,6 +342,11 @@ const Resources: React.FC = () => {
     }, []);
 
     const handleDownload = async (resource: Resource) => {
+        if (!resource.approved) {
+            toast.info("This resource is pending approval from administrators. Please check back later.", { theme: 'light' });
+            return;
+        }
+
         setDownloadingId(resource._id);
         try {
             const response = await axios.get(
@@ -408,7 +515,11 @@ const Resources: React.FC = () => {
                                         <button
                                             onClick={() => handleDownload(resource)}
                                             disabled={downloadingId === resource._id}
-                                            className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center ${
+                                            className={`px-4 py-2 ${
+                                                resource.approved 
+                                                    ? 'bg-blue-600 hover:bg-blue-700' 
+                                                    : 'bg-gray-400 cursor-not-allowed'
+                                            } text-white rounded-lg transition-colors inline-flex items-center ${
                                                 downloadingId === resource._id ? 'opacity-75 cursor-wait' : ''
                                             }`}
                                         >
@@ -420,11 +531,16 @@ const Resources: React.FC = () => {
                                             ) : (
                                                 <>
                                                     <Download className="w-4 h-4 mr-2" />
-                                                    Download
+                                                    {resource.approved ? 'Download' : 'Pending Approval'}
                                                 </>
                                             )}
                                         </button>
                                     </div>
+                                    {!resource.approved && (
+                                        <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+                                            This resource is pending administrator approval
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ))}
