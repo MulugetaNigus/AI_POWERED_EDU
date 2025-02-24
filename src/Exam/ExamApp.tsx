@@ -1,19 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormModal from './FormModal';
 import DisplayQuestions from './DIsplayQuestions';
 import DummyQuestions from './DummyQuestions';
 import ExamHeader from './ExamHeader';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, Award } from 'lucide-react';
-
-interface ExamDetails {
-  subject: string;
-  period: string;
-}
+import { ExamDetails, ExamQuestion } from './types';
 
 const ExamApp: React.FC = () => {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [examDetails, setExamDetails] = useState<ExamDetails | null>(null);
+    const [questions, setQuestions] = useState<ExamQuestion[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (examDetails) {
+            fetchQuestions();
+        }
+    }, [examDetails]);
+
+    const fetchQuestions = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('http://localhost:8888/api/v1/getAllExamQuestions');
+            const data = await response.json();
+            
+            const filteredQuestions = data.filter((q: ExamQuestion) => 
+                q.subject === examDetails?.subject && 
+                q.grade === examDetails?.grade &&
+                q.year.toString() === examDetails?.period
+            );
+
+            if (filteredQuestions.length === 0) {
+                setError('No questions found for the selected criteria');
+                return;
+            }
+
+            // Transform the questions into the required format
+            const transformedQuestions = filteredQuestions[0].questions.map(q => ({
+                question: q.question,
+                alternatives: q.options,
+                answer: q.options[q.correctAnswer],
+                answerDetail: `The correct answer is: ${q.options[q.correctAnswer]}`
+            }));
+
+            setQuestions(transformedQuestions);
+        } catch (err) {
+            setError('Failed to fetch questions');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleStartClick = () => {
         setIsFormModalOpen(true);
@@ -27,6 +66,21 @@ const ExamApp: React.FC = () => {
     const handleFormClose = () => {
         setIsFormModalOpen(false);
     };
+
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        </div>;
+    }
+
+    if (error) {
+        return <div className="min-h-screen flex flex-col items-center justify-center">
+            <div className="bg-green-500 text-white rounded-lg p-4 text-xl">
+                {error}
+            </div>
+            <button onClick={() => window.location.href = "/"} className="mt-4 px-4 py-2 bg-white text-green-500 rounded hover:bg-green-500 hover:text-white transition-colors duration-300">Return to Home Page</button>
+        </div>;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -91,7 +145,15 @@ const ExamApp: React.FC = () => {
                     </div>
                 </div>
             ) : (
-                <DisplayQuestions questions={DummyQuestions} />
+                <>
+                    {questions.length > 0 ? (
+                        <DisplayQuestions questions={questions} />
+                    ) : (
+                        <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-gray-300">
+                            No questions available for the selected criteria
+                        </div>
+                    )}
+                </>
             )}
 
             <FormModal

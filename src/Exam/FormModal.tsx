@@ -5,19 +5,20 @@ import { X, BookOpen, Calendar } from "lucide-react";
 interface FormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (details: { subject: string; period: string }) => void;
+  onSubmit: (details: ExamDetails) => void;
 }
 
 const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [subject, setSubject] = useState("");
   const [period, setPeriod] = useState("");
+  const [grade, setGrade] = useState("");
 
   const subjects = ["Mathematics", "Physics", "Biology", "Chemistry", "History", "Computer Science"];
   const periods = ["2020", "2021", "2022", "2023", "2024"];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ subject, period });
+    onSubmit({ subject, period, grade });
   };
 
   return (
@@ -91,6 +92,23 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, onSubmit }) => {
                         {yr}
                       </option>
                     ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Grade
+                  </label>
+                  <select
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg 
+                      focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent
+                      text-gray-900 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Grade</option>
+                    <option value="12">Grade 12</option>
                   </select>
                 </div>
               </div>

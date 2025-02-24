@@ -12,8 +12,15 @@ interface Question {
   answerDetail: string;
 }
 
+interface TransformedQuestion {
+  question: string;
+  alternatives: string[];
+  answer: string;
+  answerDetail: string;
+}
+
 interface DisplayQuestionsProps {
-  questions: Question[];
+  questions: TransformedQuestion[];
 }
 
 const DisplayQuestions: React.FC<DisplayQuestionsProps> = ({ questions }) => {
@@ -27,6 +34,14 @@ const DisplayQuestions: React.FC<DisplayQuestionsProps> = ({ questions }) => {
   const [progress, setProgress] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showResultModal, setShowResultModal] = useState(false);
+
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 dark:text-gray-300">No questions available</p>
+      </div>
+    );
+  }
 
   const currentQuestion = questions[currentQuestionIndex];
 

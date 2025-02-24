@@ -485,12 +485,12 @@ const Resources: React.FC = () => {
                                 <div className="p-6">
                                     <div className="flex items-center gap-3 mb-4">
                                         {getIcon(resource.contentType)}
-                                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                        <span className={`text-sm font-medium text-blue-600 dark:text-blue-400 ${!resource.approved ? 'blur-sm' : ''}`}>
                                             {resource.metadata.description}
                                         </span>
                                     </div>
 
-                                    <h3 className="text-lg font-semibold mb-2 dark:text-white">
+                                    <h3 className={`text-lg font-semibold mb-2 dark:text-white ${!resource.approved ? 'blur-sm' : ''}`}>
                                         {resource.metadata.title}
                                     </h3>
 
