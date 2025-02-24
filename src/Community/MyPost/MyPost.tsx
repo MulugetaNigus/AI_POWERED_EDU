@@ -3,8 +3,10 @@ import axios from 'axios';
 import { useUser } from '@clerk/clerk-react';
 import Header from '../../components/Header';
 import { Eye, Trash, Clock, MessageCircle, Share2, ThumbsUp } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-// Define interfaces based on your DB schema
+
 interface Post {
   _id: string;
   userID: string;
@@ -22,6 +24,54 @@ interface MyPostProps {
   email?: string;
 }
 
+interface PostModalProps {
+  post: Post | null;
+  onClose: () => void;
+}
+
+const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
+  if (!post) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-2xl w-full mx-4">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Post Details</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex gap-2 flex-wrap">
+            {post.tags.map((tag, idx) => (
+              <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
+                {tag}
+              </span>
+            ))}
+          </div>
+          
+          <p className="text-gray-600 dark:text-gray-300">{post.content}</p>
+          
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>{new Date(post.createdAt).toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ThumbsUp className="w-4 h-4" />
+              <span>{post.likes} likes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MyPost: React.FC<MyPostProps> = () => {
   
   const { user } = useUser();
@@ -30,6 +80,7 @@ const MyPost: React.FC<MyPostProps> = () => {
   const [error, setError] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -129,6 +180,38 @@ const MyPost: React.FC<MyPostProps> = () => {
     }
   `;
 
+  const handleDelete = async (postId: string) => {
+    toast.info(
+      <div>
+        <p>Are you sure you want to delete this post?</p>
+        <div className="flex justify-end gap-2 mt-2">
+          <button
+            className="px-3 py-1 bg-gray-200 rounded-md"
+            onClick={() => toast.dismiss()}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-3 py-1 bg-red-500 text-white rounded-md"
+            onClick={async () => {
+              try {
+                await axios.delete(`http://localhost:8888/api/v1/deletePost/${postId}`);
+                setPosts(posts.filter(post => post._id !== postId));
+                toast.success('Post deleted successfully');
+              } catch (error) {
+                console.error('Error deleting post:', error);
+                toast.error('Failed to delete post');
+              }
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      </div>,
+      { autoClose: false }
+    );
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -139,6 +222,13 @@ const MyPost: React.FC<MyPostProps> = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <ToastContainer position="top-center" />
+      {selectedPost && (
+        <PostModal
+          post={selectedPost}
+          onClose={() => setSelectedPost(null)}
+        />
+      )}
       {/* Header Placeholder */}
       <div className="w-full h-20 flex items-center justify-center">
         <Header />
@@ -228,10 +318,16 @@ const MyPost: React.FC<MyPostProps> = () => {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => handleDelete(post._id)}
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                      >
                         <Trash className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => setSelectedPost(post)}
+                        className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
                     </div>
