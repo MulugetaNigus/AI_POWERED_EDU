@@ -192,8 +192,8 @@ export default function Dashboard() {
       courses: [
         { name: "flutter", icon: "🔢" },
         { name: "embedded", icon: "🧪" },
-        { name: "Physics", icon: "⚡" },
-        { name: "Biology", icon: "🧬" },
+        { name: "grade6amharic", icon: "⚡" },
+        { name: "grade6envscience", icon: "🧬" },
         { name: "Geography", icon: "🗺️" },
         { name: "Agriculture", icon: "📝" },
         { name: "Economics", icon: "📝" },
@@ -230,11 +230,12 @@ export default function Dashboard() {
 
       // before calling my ai endpoint for getting a respnse i just want you to add a little bit checking for the user credit > 0 using the local state  = userCurrentCredit
       // if the userCurrentCredit is less than 0 i want to show the modal to the user to subscribe if user say yes i want to redirect to the subscription page unless stay here 
-      if (Number(userCurrentCredit) <= 0) {
-        setShowSubscriptionModal(true);
-        setIsLoading(false);
-        return;
-      }
+      
+      // if (Number(userCurrentCredit) <= 0) {
+      //   setShowSubscriptionModal(true);
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       try {
         // const response = await axios.post(
@@ -253,7 +254,8 @@ export default function Dashboard() {
         // https://python-gemini-doc-backend.onrender.com
         // Ngrok endpoints to tunnel = https://8d30-102-213-69-44.ngrok-free.app
         const response = await axios.post(
-          "http://127.0.0.1:8000/process_pdf",
+          // "http://127.0.0.1:8000/process_pdf",
+          "http://localhost:3000/api/tuned-model/generate",
           {
             subject: selectedCourse?.course,
             question: input,

@@ -35,8 +35,9 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
         const userData = response.data;
         // Filter the user data to find the current user's credit
         const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+        console.log("user credit info: ", response);
         if (currentUserData) {
-          setCreditBalance(currentUserData.credit || 0);
+          setCreditBalance(currentUserData.credit);
         } else {
           setCreditBalance(0);
         }
