@@ -18,6 +18,10 @@ import {
   Trash2,
   BadgeAlert,
   RotateCw,
+  FileText,
+  X,
+  SidebarClose,
+  SidebarOpen,
 } from "lucide-react";
 
 import { motion } from 'framer-motion';
@@ -37,6 +41,7 @@ import { v4 as uuidv4 } from "uuid";
 import SubscriptionModal from "../components/SubscriptionModal";
 // cleck importations
 import { UserButton, useUser } from '@clerk/clerk-react';
+import PDFPreview from "../components/PDFPreview";
 
 
 interface ChatHistory {
@@ -98,6 +103,10 @@ export default function Dashboard() {
   const [isUsernameVisible, setIsUsernameVisible] = useState(false);
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [selectedPDF, setSelectedPDF] = useState<File | null>(null);
+  const [pdfURL, setPdfURL] = useState<string | null>(null);
+  const [showPDFSidebar, setShowPDFSidebar] = useState(true);
 
   // const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
   // const userCurrentCreditRef = useRef<string>("");
@@ -403,6 +412,7 @@ export default function Dashboard() {
         isAI: true,
       },
     ]);
+    setShowPDFPreview(true);
   };
 
   // Function to handle logout
@@ -476,6 +486,34 @@ export default function Dashboard() {
     setIsUsernameVisible(!isUsernameVisible);
   };
 
+  // PDF handling functions
+  const handlePDFSelect = (file: File) => {
+    setSelectedPDF(file);
+    const url = URL.createObjectURL(file);
+    setPdfURL(url);
+  };
+
+  const handleClosePDFPreview = () => {
+    if (pdfURL) {
+      URL.revokeObjectURL(pdfURL);
+    }
+    setShowPDFPreview(false);
+    setSelectedPDF(null);
+    setPdfURL(null);
+  };
+
+  const togglePDFSidebar = () => {
+    setShowPDFSidebar(!showPDFSidebar);
+  };
+
+  // Cleanup URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfURL) {
+        URL.revokeObjectURL(pdfURL);
+      }
+    };
+  }, [pdfURL]);
 
   return (
     <>
@@ -486,9 +524,7 @@ export default function Dashboard() {
       >
         <BotMessageSquareIcon className="w-6 h-6 cursor-pointer hover:animate-spin" />
       </a>
-      {/* header component */}
       <Header creditVisibility={creditVisibility} RerenderToUpdateCredit={renderNewCreditValue} />
-      {/* the rest of the dashboard code here */}
       <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900">
         <div className="flex h-[calc(100vh-4rem)]">
           {/* Sidebar */}
@@ -654,183 +690,197 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-gray-800">
-            {/* Selected Course Header */}
-            {selectedCourse && (
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {selectedCourse.course}
-                </h2>
-              </div>
-            )}
-
-            {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${message.isAI ? "justify-start" : "justify-end"
-                    }`}
-                >
-                  <div className="max-w-[80%]">
-                    <div
-                      className={`mt-5 p-4 rounded-lg ${message.isAI
-                        ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                        : "bg-blue-600 text-white"
-                        }`}
-                    >
-                      <MarkdownDisplay markdownText={message.text} />
-                    </div>
-
-                    {/* response from the  */}
-                    {message.isAI && (
-                      <div className="flex items-center space-x-2 mt-2">
-                        <button
-                          onClick={() =>
-                            handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))
-                          }
-                          onDoubleClick={() => handleStopSpeak()}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                          title="Listen or double click to stop"
-                        >
-                          <Volume2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                        </button>
-                        <button
-                          onClick={() => handleCopyText(message.text)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                          title="Copy"
-                        >
-                          <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                        </button>
-                        <button
-                          onClick={() => handleRegenerateResponse()}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                          title="Regenerate"
-                        >
-                          <RefreshCw className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                        </button>
-                        {/* <p className="text-xs text-gray-500 dark:text-gray-400">0.76s</p> */}
-                      </div>
-                    )}
-                  </div>
-                  {/* <div className="w-80 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
-                    <ChatHistory history={chatHistory} />
-                  </div> */}
+          {/* Main Chat Area */}
+          <div className="flex-1 flex">
+            <div className={`flex-1 flex flex-col bg-white dark:bg-gray-800 ${showPDFPreview && showPDFSidebar ? 'mr-96' : ''} transition-all duration-300`}>
+              {/* Selected Course Header */}
+              {selectedCourse && (
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {selectedCourse.course}
+                  </h2>
                 </div>
-              ))}
-
-              {/* loading state for the AI */}
-              {isLoading && (
-
-                <div className="max-w-[60%]">
-                  <div className="animate-pulse flex space-x-4">
-                    <div className="flex-1 space-y-6 py-1">
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-4 gap-4">
-                          <div className="h-4 bg-slate-700 rounded col-span-1"></div>
-                          <div className="h-4 bg-slate-700 rounded col-span-2"></div>
-                          <div className="h-4 bg-slate-700 rounded col-span-1"></div>
-                          <div className="h-4 bg-slate-700 rounded col-span-2"></div>
-                          <div className="h-4 bg-slate-700 rounded col-span-2"></div>
-                        </div>
-                        <div className="h-4 bg-slate-700 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                // <div className="flex justify-start">
-                //   <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
-                //     <div className="flex items-center space-x-2">
-                //       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                //       <span className="text-gray-800 dark:text-gray-200">
-                //         AI is thinking...
-                //       </span>
-                //     </div>
-                //   </div>
-                // </div>
-
               )}
+
+              {/* Messages */}
+              <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.isAI ? "justify-start" : "justify-end"
+                      }`}
+                  >
+                    <div className="max-w-[80%]">
+                      <div
+                        className={`mt-5 p-4 rounded-lg ${message.isAI
+                          ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                          : "bg-blue-600 text-white"
+                          }`}
+                      >
+                        <MarkdownDisplay markdownText={message.text} />
+                      </div>
+
+                      {/* response from the  */}
+                      {message.isAI && (
+                        <div className="flex items-center space-x-2 mt-2">
+                          <button
+                            onClick={() =>
+                              handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))
+                            }
+                            onDoubleClick={() => handleStopSpeak()}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            title="Listen or double click to stop"
+                          >
+                            <Volume2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                          </button>
+                          <button
+                            onClick={() => handleCopyText(message.text)}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            title="Copy"
+                          >
+                            <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                          </button>
+                          <button
+                            onClick={() => handleRegenerateResponse()}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            title="Regenerate"
+                          >
+                            <RefreshCw className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                          </button>
+                          {/* <p className="text-xs text-gray-500 dark:text-gray-400">0.76s</p> */}
+                        </div>
+                      )}
+                    </div>
+                    {/* <div className="w-80 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
+                      <ChatHistory history={chatHistory} />
+                    </div> */}
+                  </div>
+                ))}
+
+                {/* loading state for the AI */}
+                {isLoading && (
+
+                  <div className="max-w-[60%]">
+                    <div className="animate-pulse flex space-x-4">
+                      <div className="flex-1 space-y-6 py-1">
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-4 gap-4">
+                            <div className="h-4 bg-slate-700 rounded col-span-1"></div>
+                            <div className="h-4 bg-slate-700 rounded col-span-2"></div>
+                            <div className="h-4 bg-slate-700 rounded col-span-1"></div>
+                            <div className="h-4 bg-slate-700 rounded col-span-2"></div>
+                            <div className="h-4 bg-slate-700 rounded col-span-2"></div>
+                          </div>
+                          <div className="h-4 bg-slate-700 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  // <div className="flex justify-start">
+                  //   <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
+                  //     <div className="flex items-center space-x-2">
+                  //       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                  //       <span className="text-gray-800 dark:text-gray-200">
+                  //         AI is thinking...
+                  //       </span>
+                  //     </div>
+                  //   </div>
+                  // </div>
+
+                )}
+              </div>
+
+              {/* chat window */}
+              {showPDFChat && (
+                <PDFChat
+                  onClose={() => setShowPDFChat(false)}
+                  onMessageSent={handlePDFMessage}
+                />
+              )}
+
+              {/* Image Upload Area */}
+              {showImageUpload && (
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                  <ImageUpload
+                    onAnalysisComplete={handleImageAnalysis}
+                    isLoading={isLoading}
+                    setIsLoading={setIsLoading}
+                  />
+                </div>
+              )}
+
+              {/* Input Area */}
+              <form
+                onSubmit={handleSend}
+                className="border-t border-gray-200 dark:border-gray-700 p-4"
+              >
+                <div className="flex space-x-4">
+                  <div className="p-4 border-gray-200 dark:border-gray-700">
+                    {/* <button
+                      onClick={() => setShowPDFChat(true)}
+                      className="w-full flex items-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                    >
+                      <FileText className="h-5 w-5" />
+                    </button> */}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowImageUpload(!showImageUpload)}
+                    className="px-3 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    title="Upload image"
+                  >
+                    <ImageIcon className="h-5 w-5" />
+                  </button>
+                  {/* <p>here is the sample content goes...</p> */}
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={
+                      selectedCourse
+                        ? "Ask anything about this course..."
+                        : "Select a course to start chatting..."
+                    }
+                    disabled={!selectedCourse || isLoading}
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!selectedCourse || isLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span>Send</span>
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
 
-            {/* chat window */}
-            {showPDFChat && (
-              <PDFChat
-                onClose={() => setShowPDFChat(false)}
-                onMessageSent={handlePDFMessage}
-              />
-            )}
-
-            {/* Image Upload Area */}
-            {showImageUpload && (
-              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                <ImageUpload
-                  onAnalysisComplete={handleImageAnalysis}
-                  isLoading={isLoading}
-                  setIsLoading={setIsLoading}
-                />
-              </div>
-            )}
-
-            {/* Input Area */}
-            <form
-              onSubmit={handleSend}
-              className="border-t border-gray-200 dark:border-gray-700 p-4"
-            >
-              <div className="flex space-x-4">
-                <div className="p-4 border-gray-200 dark:border-gray-700">
-                  {/* <button
-                    onClick={() => setShowPDFChat(true)}
-                    className="w-full flex items-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+            {/* PDF Preview Sidebar */}
+            {showPDFPreview && (
+              <div className={`fixed right-0 top-16 bottom-0 w-96 transform transition-transform duration-300 ${showPDFSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="relative h-full">
+                  <button
+                    onClick={togglePDFSidebar}
+                    className="absolute -left-8 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700"
                   >
-                    <FileText className="h-5 w-5" />
-                  </button> */}
+                    {showPDFSidebar ? <SidebarClose className="h-4 w-4" /> : <SidebarOpen className="h-4 w-4" />}
+                  </button>
+                  <PDFPreview
+                    onClose={handleClosePDFPreview}
+                    onFileSelect={handlePDFSelect}
+                    selectedFile={selectedPDF}
+                    pdfURL={pdfURL}
+                  />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowImageUpload(!showImageUpload)}
-                  className="px-3 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  title="Upload image"
-                >
-                  <ImageIcon className="h-5 w-5" />
-                </button>
-                {/* <p>here is the sample content goes...</p> */}
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={
-                    selectedCourse
-                      ? "Ask anything about this course..."
-                      : "Select a course to start chatting..."
-                  }
-                  disabled={!selectedCourse || isLoading}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <button
-                  type="submit"
-                  disabled={!selectedCourse || isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span>Send</span>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </button>
               </div>
-            </form>
+            )}
           </div>
-
-          {/* chat window */}
-          {showPDFChat && (
-            <PDFChat
-              onClose={() => setShowPDFChat(false)}
-              onMessageSent={handlePDFMessage}
-            />
-          )}
 
           {/* subscribe modal here */}
           <SubscriptionModal
@@ -839,7 +889,7 @@ export default function Dashboard() {
             remainingCredits={Number(userCurrentCredit)}
           />
         </div>
-      </div >
+      </div>
     </>
   );
 }

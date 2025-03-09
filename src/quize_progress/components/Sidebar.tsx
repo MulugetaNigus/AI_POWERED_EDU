@@ -26,7 +26,7 @@ const grades = [
   },
   {
     grade: "12",
-    subjects: ["flutter", "embedded", "English", "Biology"],
+    subjects: ["flutter", "embedded", "English", "grade6english"],
     icon: <GraduationCap className="w-5 h-5" />,
   },
 ];

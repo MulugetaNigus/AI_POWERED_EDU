@@ -173,7 +173,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
 
         // Axios post request to send feedback info to the server
         await axios.post("http://localhost:8888/api/v1/enhancement", {
-          email: user_email.email + "-" + uuidv4(),
+          email: userEmail + "-" + uuidv4(),
           recommendations: personalizedFeedback.recommendations,
           strengths: personalizedFeedback.strengths,
           weaknesses: personalizedFeedback.weaknesses,

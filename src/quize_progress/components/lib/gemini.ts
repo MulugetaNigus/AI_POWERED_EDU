@@ -1,7 +1,8 @@
 import axios from 'axios';
 // import { useState } from 'react';
 
-const API_URL = 'http://127.0.0.1:8000';
+// const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'http://localhost:3000';
 // const API_URL = 'https://python-gemini-doc-backend.onrender.com';
 // const [selectedSubject, setselectedSubject] = useState("");
 
@@ -114,7 +115,7 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
     `;
     
 
-    const response = await axios.post(`${API_URL}/process_pdf`, {
+    const response = await axios.post(`${API_URL}/api/tuned-model/generate`, {
       question: prompt,
       subject: subject // Sending subject name directly
     });
@@ -150,7 +151,7 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
   }
 }
 
-export async function generatePersonalizedFeedback(answers: any[], topics: string[]) {
+export async function generatePersonalizedFeedback(answers: any[], topics: string[], subject: string) {
   try {
     const prompt = `
 Based on the provided quiz answers and topics, analyze the user's performance to offer personalized learning feedback. Identify strengths and weaknesses. For each weakness, generate specific improvement actions and recommend relevant online resources such as websites and YouTube links. If no weaknesses are found, add an encouraging narrative in the strengths section to motivate the user.
@@ -175,11 +176,13 @@ Topics: ${JSON.stringify(topics)}
 `;
 
 
-    const response = await axios.post(`${API_URL}/process_pdf`, {
+    const response = await axios.post(`${API_URL}/api/tuned-model/generate`, {
       question: prompt,
       answers: answers,
       topics: topics,
-      subject: "flutter"
+      // subject: subject
+      subject: "grade6english"
+      // grade6english
     });
 
     if (!response.data || !response.data.answer) {

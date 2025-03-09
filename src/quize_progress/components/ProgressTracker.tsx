@@ -53,7 +53,9 @@ export default function ProgressTracker() {
 
   // Clerk current user email
   const { user } = useUser();
-  const userEmail = user?.emailAddresses[0].emailAddress;
+  // useEffect(() => {
+  //   const userEmail = user?.emailAddresses[0].emailAddress;
+  // }, [])
 
   useEffect(() => {
     fetchData();
@@ -72,7 +74,7 @@ export default function ProgressTracker() {
         });
 
         // Filter to include only the feedback that matches userEmail
-        const matchedFeedback = cleanedFeedback.filter(feedback => feedback.email === userEmail);
+        const matchedFeedback = cleanedFeedback.filter(feedback => feedback.email === user?.emailAddresses[0].emailAddress);
 
         setFeedback(matchedFeedback);
         console.log("Matched feedbacks from db: ", matchedFeedback);
