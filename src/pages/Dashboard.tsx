@@ -22,6 +22,7 @@ import {
   X,
   SidebarClose,
   SidebarOpen,
+  Plus,
 } from "lucide-react";
 
 import { motion } from 'framer-motion';
@@ -61,6 +62,17 @@ interface chatH {
   prompt: string;
   data: string;
   timestamp: string;
+}
+
+// Add new interface for course data
+interface CourseData {
+  _id: string;
+  grade: string;
+  courseName: string;
+  accuracy: string;
+  courseDescription: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function Dashboard() {
@@ -107,6 +119,7 @@ export default function Dashboard() {
   const [selectedPDF, setSelectedPDF] = useState<File | null>(null);
   const [pdfURL, setPdfURL] = useState<string | null>(null);
   const [showPDFSidebar, setShowPDFSidebar] = useState(true);
+  const [courses, setCourses] = useState<CourseData[]>([]);
 
   // const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
   // const userCurrentCreditRef = useRef<string>("");
@@ -114,6 +127,16 @@ export default function Dashboard() {
   // clerk config
   const { isSignedIn, user, signOut } = useUser();
   // console.log("may be this is the username: ", user?.emailAddresses[0].emailAddress);
+
+  // fetch the users grade using useEffect from localStorage
+  useEffect(() => {
+    // get user grade level to render the courses crosponding go user onboarding data
+    const user_current_grade = JSON.parse(
+      localStorage.getItem("user") as string
+    );
+    setuser_current_grade(user_current_grade.user_grade_level);
+  }, [])
+
 
 
   // handle to get the user info
@@ -124,12 +147,6 @@ export default function Dashboard() {
 
     // invok this function to get the current user id
     getCurrentUserId();
-
-    // get user grade level to render the courses crosponding go user onboarding data
-    const user_current_grade = JSON.parse(
-      localStorage.getItem("user") as string
-    );
-    setuser_current_grade(user_current_grade.user_grade_level);
 
     // get the history from localstorage and set for "setOChatHistory" when the page start in this useEffect hook
     const user_History = JSON.parse(
@@ -172,45 +189,44 @@ export default function Dashboard() {
       });
   };
 
+  // Add useEffect to fetch courses
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get('http://localhost:8888/api/v1/getAllCourses');
+        if (response.data.message === 'success') {
+          setCourses(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
 
-  const user_gradeLevel = user_current_grade || 6;
-  const grades = [
-    {
-      level: 6,
-      courses: [
-        { name: "Mathematics", icon: "📐" },
-        { name: "English", icon: "📚" },
-        { name: "Social Studies", icon: "🌍" },
-        { name: "Civics and Ethics", icon: "🔬" },
-      ],
-    },
-    {
-      level: 8,
-      courses: [
-        { name: "Mathematics", icon: "📊" },
-        { name: "Chemistry", icon: "⚗️" },
-        { name: "Physics", icon: "📖" },
-        { name: "Civics", icon: "🏛️" },
-        { name: "Social Studies", icon: "💻" },
-        { name: "Biology", icon: "🌱" },
-        { name: "English", icon: "📖" },
-      ],
-    },
-    {
-      level: 12,
-      courses: [
-        { name: "flutter", icon: "🔢" },
-        { name: "embedded", icon: "🧪" },
-        { name: "grade6amharic", icon: "⚡" },
-        { name: "grade6envscience", icon: "🧬" },
-        { name: "Geography", icon: "🗺️" },
-        { name: "Agriculture", icon: "📝" },
-        { name: "Economics", icon: "📝" },
-        { name: "History", icon: "📝" },
-        { name: "IT", icon: "📝" },
-      ],
-    },
-  ];
+    fetchCourses();
+  }, []);
+
+  const user_gradeLevel = user_current_grade || "grade6";
+
+  // Filter and group courses by grade
+  const groupedCourses = courses.reduce((acc, course) => {
+    const grade = course.grade; // Don't parse as integer, keep as string
+    if (!acc[grade]) {
+      acc[grade] = [];
+    }
+    acc[grade].push({
+      name: course.courseName,
+      icon: "📚", // Default icon, you can customize based on subject
+      description: course.courseDescription,
+      accuracy: course.accuracy
+    });
+    return acc;
+  }, {} as Record<string, Array<{ name: string; icon: string; description: string; accuracy: string }>>);
+
+  // Create grades array from grouped courses
+  const grades = Object.keys(groupedCourses).map(grade => ({
+    level: grade, // Keep as string
+    courses: groupedCourses[grade]
+  }));
 
   const toggleSideAI = () => {
     setShowSideAI(!showSideAI);
@@ -239,12 +255,12 @@ export default function Dashboard() {
 
       // before calling my ai endpoint for getting a respnse i just want you to add a little bit checking for the user credit > 0 using the local state  = userCurrentCredit
       // if the userCurrentCredit is less than 0 i want to show the modal to the user to subscribe if user say yes i want to redirect to the subscription page unless stay here 
-      
-      // if (Number(userCurrentCredit) <= 0) {
-      //   setShowSubscriptionModal(true);
-      //   setIsLoading(false);
-      //   return;
-      // }
+
+      if (Number(userCurrentCredit) <= 0) {
+        setShowSubscriptionModal(true);
+        setIsLoading(false);
+        return;
+      }
 
       try {
         // const response = await axios.post(
@@ -264,10 +280,12 @@ export default function Dashboard() {
         // Ngrok endpoints to tunnel = https://8d30-102-213-69-44.ngrok-free.app
         const response = await axios.post(
           // "http://127.0.0.1:8000/process_pdf",
-          "http://localhost:3000/api/tuned-model/generate",
+          "http://localhost:9000/api/tuned-model/generate",
           {
             subject: selectedCourse?.course,
             question: input,
+            grade: user_gradeLevel
+
           }
         );
 
@@ -408,7 +426,7 @@ export default function Dashboard() {
     setSelectedCourse({ grade, course });
     setMessages([
       {
-        text: `Welcome to Grade ${grade} ${course}! How can I help you today?`,
+        text: `Welcome to Grade ${grade.toString().replace("grade", "")} ${course}! How can I help you today?`,
         isAI: true,
       },
     ]);
@@ -515,6 +533,19 @@ export default function Dashboard() {
     };
   }, [pdfURL]);
 
+  // Function to handle starting a new chat
+  const handleNewChat = () => {
+    if (selectedCourse) {
+      setMessages([
+        {
+          text: `Welcome to Grade ${selectedCourse.grade} ${selectedCourse.course}! How can I help you today?`,
+          isAI: true,
+        },
+      ]);
+      setInput("");
+    }
+  };
+
   return (
     <>
       {showSideAI && <SideAI onClose={() => setShowSideAI(false)} />}
@@ -538,7 +569,7 @@ export default function Dashboard() {
               <div className="space-y-2">
                 {grades.map(
                   (g) =>
-                    g.level == user_gradeLevel && (
+                    g.level === user_gradeLevel && (
                       <div key={g.level} className="rounded-lg overflow-hidden">
                         <button
                           onClick={() =>
@@ -548,7 +579,9 @@ export default function Dashboard() {
                           }
                           className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         >
-                          <span className="font-medium">Grade {g.level}</span>
+                          <span className="font-medium">
+                            Grade {g.level.replace('grade', '')}
+                          </span>
                           {expandedGrade === g.level ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
@@ -564,14 +597,18 @@ export default function Dashboard() {
                                   handleCourseSelect(g.level, course.name);
                                   console.log(course.name);
                                 }}
-                                className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${selectedCourse?.grade === g.level &&
+                                className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                                  selectedCourse?.grade === g.level &&
                                   selectedCourse?.course === course.name
-                                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                                  : "text-gray-700 dark:text-gray-300"
-                                  }`}
+                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                    : "text-gray-700 dark:text-gray-300"
+                                }`}
                               >
                                 <span>{course.icon}</span>
                                 <span>{course.name}</span>
+                                <span className="ml-auto text-xs text-gray-500">
+                                  {course.accuracy}%
+                                </span>
                               </button>
                             ))}
                           </div>
@@ -831,6 +868,15 @@ export default function Dashboard() {
                     title="Upload image"
                   >
                     <ImageIcon className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNewChat}
+                    className="px-3 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    title="Start new chat"
+                    disabled={!selectedCourse}
+                  >
+                    <Plus className="h-5 w-5" />
                   </button>
                   {/* <p>here is the sample content goes...</p> */}
                   <input

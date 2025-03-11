@@ -2,9 +2,24 @@ import axios from 'axios';
 // import { useState } from 'react';
 
 // const API_URL = 'http://127.0.0.1:8000';
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:9000';
 // const API_URL = 'https://python-gemini-doc-backend.onrender.com';
 // const [selectedSubject, setselectedSubject] = useState("");
+
+// implement useEffect here to fetch the users grade level from localstorage here
+// Get user grade level from localStorage
+let userGradeLevel: number;
+try {
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    const parsedUser = JSON.parse(userData);
+    userGradeLevel = parsedUser.user_grade_level;
+  }
+} catch (error) {
+  console.error("Error getting user grade level from localStorage:", error);
+  userGradeLevel = 12; // Default to grade 12 if there's an error
+}
+
 
 function cleanJsonResponse(response: string): string {
   let cleaned = response.replace(/```json\n?|\n?```/g, '');
@@ -88,7 +103,7 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
 
     const prompt = `
     Generate a unique and varity set of questions for ${subject} with a specified difficulty level ${difficulty} your questions generation is based on the provided difficulty:${difficulty} , every time this function is called. Ensure that:
-    1. Each set includes 5 multiple choice questions with diverse topics, question types, and difficulty levels.
+    1. Each set includes 5 multiple choice questions with diverse topics, question types, and difficulty levels and make sure each question have four choices.
     2. Provide detailed explanations for each correct answer.
     3. Cover key topics related to the subject, ensuring no repetition of questions from previous sets.
     4. Identify areas for improvement based on content complexity and include relevant suggestions.
@@ -117,7 +132,8 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
 
     const response = await axios.post(`${API_URL}/api/tuned-model/generate`, {
       question: prompt,
-      subject: subject // Sending subject name directly
+      subject: subject,
+      grade: userGradeLevel // Sending subject name directly
     });
 
     if (!response.data || !response.data.answer) {
@@ -181,8 +197,8 @@ Topics: ${JSON.stringify(topics)}
       answers: answers,
       topics: topics,
       // subject: subject
-      subject: "grade6english"
-      // grade6english
+      subject: subject,
+      grade: userGradeLevel 
     });
 
     if (!response.data || !response.data.answer) {

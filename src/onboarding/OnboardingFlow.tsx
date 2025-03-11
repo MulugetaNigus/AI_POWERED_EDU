@@ -89,7 +89,7 @@ export default function OnboardingFlow() {
   const handleFinish = async () => {
     setsaveOnBoardingLoading(true);
     const userInfo = {
-      email: user?.emailAddresses[0].emailAddress,
+      email: user?.emailAddresses[0].emailAddress || "",
       grade: usergrade,
       source: usersource,
       background: userbackground,
@@ -151,7 +151,7 @@ export default function OnboardingFlow() {
               </h2>
             </div>
 
-            {["6", "8", "12"].map((grade) => (
+            {["grade6", "grade8", "grade12"].map((grade) => (
               <button
                 key={grade}
                 onClick={() => {
@@ -166,7 +166,7 @@ export default function OnboardingFlow() {
                   }`}
               >
                 <span className="font-medium text-gray-900 dark:text-white">
-                  Grade {grade}
+                  {grade}
                 </span>
               </button>
             ))}

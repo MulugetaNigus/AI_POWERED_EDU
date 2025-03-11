@@ -161,7 +161,8 @@ export default function Quiz({ subject, grade }: QuizProps) {
       try {
         const personalizedFeedback = await generatePersonalizedFeedback(
           newAnswers,
-          topics
+          topics,
+          subject
         );
         const score = newAnswers.filter((a) => a.correct).length;
         addQuizResult(subject, score, questions.length, personalizedFeedback);

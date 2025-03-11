@@ -9,7 +9,7 @@ interface ChapterModalProps {
   grade: string;
 }
 
-const DIFFICULTY_LEVELS = ['easy', 'medium', 'hard'];
+const DIFFICULTY_LEVELS = ['easy'];
 
 export default function ChapterModal({ isOpen, onClose, onStartQuiz, subject, grade }: ChapterModalProps) {
   const [difficulty, setDifficulty] = useState<string>('');

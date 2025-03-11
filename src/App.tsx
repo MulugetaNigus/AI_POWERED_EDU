@@ -87,7 +87,7 @@ function App() {
                         <Route path="/quize-and-progress" element={<ProtectedRoute2><Apps /></ProtectedRoute2>} />
                         <Route path="/on-boarding" element={<OnboardingFlow />} />
                         <Route path="/dashboard" element={<ProtectedRoute2><Dashboard /></ProtectedRoute2>} />
-                        <Route path="/subscription" element={<ProtectedRoute2><Subscription /></ProtectedRoute2>} />
+                        <Route path="/subscription" element={<Subscription />} />
                         <Route path="/payment-callback" element={<PaymentCallback />} />
                         <Route path="/exam" element={<ProtectedRoute2><ExamApp /></ProtectedRoute2>} />
                         <Route path="/community" element={<ProtectedRoute2><CommunityPage /></ProtectedRoute2>} />
