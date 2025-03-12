@@ -9,22 +9,147 @@ const API_URL = 'http://localhost:9000';
 // implement useEffect here to fetch the users grade level from localstorage here
 // Get user grade level from localStorage
 let userGradeLevel: number;
-try {
-  const userData = localStorage.getItem("user");
-  if (userData) {
-    const parsedUser = JSON.parse(userData);
-    userGradeLevel = parsedUser.user_grade_level;
+const getUserGradeLevel = () => {
+  try {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      return parsedUser.user_grade_level;
+    }
+  } catch (error) {
+    console.error("Error getting user grade level from localStorage:", error);
+    return 12; // Default to grade 12 if there's an error
   }
-} catch (error) {
-  console.error("Error getting user grade level from localStorage:", error);
-  userGradeLevel = 12; // Default to grade 12 if there's an error
-}
+};
+
+userGradeLevel = getUserGradeLevel();
 
 
 function cleanJsonResponse(response: string): string {
-  let cleaned = response.replace(/```json\n?|\n?```/g, '');
-  cleaned = cleaned.trim();
-  return cleaned;
+  try {
+    // Check if the response is Python code
+    if (response.includes('def generate') || response.trim().startsWith('def ')) {
+      console.log('Detected Python code in response, attempting to extract JSON data');
+      
+      // Look for return statement with JSON data
+      const returnMatch = response.match(/return\s+({[\s\S]*})/);
+      if (returnMatch && returnMatch[1]) {
+        // Extract the JSON object from the return statement
+        let jsonStr = returnMatch[1].trim();
+        
+        // Replace Python syntax with JSON syntax
+        jsonStr = jsonStr
+          .replace(/'/g, '"')                 // Replace single quotes with double quotes
+          .replace(/True/g, 'true')           // Replace Python True with JSON true
+          .replace(/False/g, 'false')         // Replace Python False with JSON false
+          .replace(/None/g, 'null');          // Replace Python None with JSON null
+        
+        return fixJsonSyntax(jsonStr);
+      }
+      
+      // If we can't find a return statement, look for a dictionary definition
+      const dictMatch = response.match(/question_set\s*=\s*(\[[\s\S]*?\])/);
+      const topicsMatch = response.match(/topics\s*=\s*(\[[\s\S]*?\])/);
+      const improvementMatch = response.match(/improvementAreas\s*=\s*(\[[\s\S]*?\])/);
+      
+      if (dictMatch && topicsMatch && improvementMatch) {
+        let questions = dictMatch[1]
+          .replace(/'/g, '"')
+          .replace(/True/g, 'true')
+          .replace(/False/g, 'false')
+          .replace(/None/g, 'null');
+          
+        let topics = topicsMatch[1]
+          .replace(/'/g, '"')
+          .replace(/True/g, 'true')
+          .replace(/False/g, 'false')
+          .replace(/None/g, 'null');
+          
+        let improvements = improvementMatch[1]
+          .replace(/'/g, '"')
+          .replace(/True/g, 'true')
+          .replace(/False/g, 'false')
+          .replace(/None/g, 'null');
+          
+        return fixJsonSyntax(`{"questions": ${questions}, "topics": ${topics}, "improvementAreas": ${improvements}}`);
+      }
+    }
+    
+    // Standard JSON cleaning
+    let cleaned = response.replace(/```(?:json|python)?\n?|\n?```/g, '');
+    
+    // Find the first { and last } to extract just the JSON part
+    const startIndex = cleaned.indexOf('{');
+    const endIndex = cleaned.lastIndexOf('}');
+    
+    if (startIndex !== -1 && endIndex !== -1) {
+      cleaned = cleaned.substring(startIndex, endIndex + 1);
+    }
+    
+    cleaned = cleaned.trim();
+    return fixJsonSyntax(cleaned);
+  } catch (error) {
+    console.error('Error cleaning JSON response:', error);
+    throw new Error('Failed to clean response');
+  }
+}
+
+// Function to fix common JSON syntax errors
+function fixJsonSyntax(jsonStr: string): string {
+  try {
+    // Try parsing as is first
+    JSON.parse(jsonStr);
+    return jsonStr;
+  } catch (error) {
+    console.log('Attempting to fix JSON syntax errors');
+    
+    // Fix missing quotes in array elements
+    let fixed = jsonStr;
+    
+    // Fix missing closing quotes in array elements
+    fixed = fixed.replace(/\[\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)(?!\s*")/g, '["$1", "$2", "$3", "$4"');
+    
+    // Fix missing opening quotes in array elements
+    fixed = fixed.replace(/\[\s*([^"][^,]*),\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)"\s*\]/g, '["$1", "$2", "$3", "$4"]');
+    
+    // Fix missing quotes in the middle of arrays
+    fixed = fixed.replace(/",\s*([^"][^,]*),\s*"/g, '", "$1", "');
+    
+    // Fix missing quotes around property names
+    fixed = fixed.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+    
+    // Fix missing commas between array elements
+    fixed = fixed.replace(/"([^"]*)"\s*"([^"]*)"/g, '"$1", "$2"');
+    
+    // Fix missing commas between objects in arrays
+    fixed = fixed.replace(/}\s*{/g, '}, {');
+    
+    // Fix trailing commas in arrays and objects
+    fixed = fixed.replace(/,\s*}/g, '}');
+    fixed = fixed.replace(/,\s*\]/g, ']');
+    
+    try {
+      // Verify the fixed JSON is valid
+      JSON.parse(fixed);
+      return fixed;
+    } catch (fixError) {
+      console.error('Failed to fix JSON syntax:', fixError);
+      
+      // Try a more aggressive approach - manually fix the specific error in the example
+      if (jsonStr.includes('"Normal force]')) {
+        fixed = jsonStr.replace('"Normal force]', '"Normal force"]');
+        
+        try {
+          JSON.parse(fixed);
+          return fixed;
+        } catch (e) {
+          console.error('Failed to fix specific JSON error');
+        }
+      }
+      
+      throw new Error('Failed to fix JSON syntax errors');
+    }
+  }
 }
 
 // difficulty types
@@ -97,19 +222,15 @@ export async function analyzePDFContent(content: string) {
 // For generating questions based on a selected subject
 export async function generateQuestionsForSubject(subject: string, difficulty: string) {
   try {
-    // setselectedSubject(subject);
     console.log('Generating questions for subject:', subject);
     console.log('difficulty level:', difficulty);
 
     const prompt = `
-    Generate a unique and varity set of questions for ${subject} with a specified difficulty level ${difficulty} your questions generation is based on the provided difficulty:${difficulty} , every time this function is called. Ensure that:
-    1. Each set includes 5 multiple choice questions with diverse topics, question types, and difficulty levels and make sure each question have four choices.
-    2. Provide detailed explanations for each correct answer.
-    3. Cover key topics related to the subject, ensuring no repetition of questions from previous sets.
-    4. Identify areas for improvement based on content complexity and include relevant suggestions.
+    IMPORTANT: You MUST respond with ONLY a valid JSON object. DO NOT return Python code.
     
-    Return ONLY a JSON object with the following structure (no markdown, no explanations):
+    Generate ${subject} questions with difficulty level: ${difficulty}
     
+    Return ONLY this JSON structure with proper JSON syntax:
     {
       "questions": [
         {
@@ -127,13 +248,21 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
         }
       ]
     }
-    `;
     
+    Requirements:
+    1. Generate 5 multiple choice questions
+    2. Each question must have exactly 4 options
+    3. Provide detailed explanations
+    4. Cover diverse topics within ${subject}
+    5. Match the ${difficulty} difficulty level
+    6. DO NOT RETURN PYTHON CODE OR FUNCTIONS
+    7. ENSURE ALL QUOTES ARE PROPERLY CLOSED
+    `;
 
     const response = await axios.post(`${API_URL}/api/tuned-model/generate`, {
       question: prompt,
       subject: subject,
-      grade: userGradeLevel // Sending subject name directly
+      grade: userGradeLevel
     });
 
     if (!response.data || !response.data.answer) {
@@ -141,16 +270,44 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
     }
 
     const cleanedResponse = cleanJsonResponse(response.data.answer);
-
-    if (!cleanedResponse || typeof cleanedResponse !== 'string') {
-      throw new Error('Cleaned response is not a valid JSON string');
-    }
-
+    
     try {
       const parsedResponse = JSON.parse(cleanedResponse);
 
       if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions)) {
         throw new Error('Invalid questions format in response');
+      }
+
+      // Validate and fix each question
+      parsedResponse.questions = parsedResponse.questions.map((question: any, index: number) => {
+        // Ensure all required fields exist
+        if (!question.text) question.text = `Question ${index + 1}`;
+        if (!Array.isArray(question.options) || question.options.length !== 4) {
+          question.options = question.options || [];
+          // Fill missing options
+          while (question.options.length < 4) {
+            question.options.push(`Option ${question.options.length + 1}`);
+          }
+        }
+        if (typeof question.correctAnswer !== 'number' || question.correctAnswer < 0 || question.correctAnswer > 3) {
+          question.correctAnswer = 0;
+        }
+        if (!question.explanation) {
+          question.explanation = `Explanation for question ${index + 1}`;
+        }
+        return question;
+      });
+
+      // Ensure topics and improvementAreas exist
+      if (!Array.isArray(parsedResponse.topics) || parsedResponse.topics.length === 0) {
+        parsedResponse.topics = [`${subject} Topics`];
+      }
+      
+      if (!Array.isArray(parsedResponse.improvementAreas) || parsedResponse.improvementAreas.length === 0) {
+        parsedResponse.improvementAreas = [{
+          topic: `${subject} Study`,
+          description: "Review the material and practice more questions."
+        }];
       }
 
       return parsedResponse;

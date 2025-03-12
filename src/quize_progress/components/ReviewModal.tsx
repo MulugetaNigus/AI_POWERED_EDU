@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { X, BookOpen, Target, CheckCircle2 } from 'lucide-react';
+import { X, BookOpen, Target, CheckCircle2, Youtube, Globe } from 'lucide-react';
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -16,6 +16,27 @@ interface ReviewModalProps {
     }[];
   };
 }
+
+// Helper function to check if a string is a YouTube link
+const isYoutubeLink = (url: string): boolean => {
+  return url.toLowerCase().includes('youtube.com') || url.toLowerCase().includes('youtu.be');
+};
+
+// Helper function to extract YouTube video ID
+const getYoutubeVideoId = (url: string): string | null => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
+// Helper function to open a URL in a new tab
+const openUrl = (url: string) => {
+  // Add https:// if the URL doesn't have a protocol
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
 
 export default function ReviewModal({ isOpen, onClose, feedbacker }: ReviewModalProps) {
 
@@ -103,7 +124,26 @@ export default function ReviewModal({ isOpen, onClose, feedbacker }: ReviewModal
                   <h6 className="font-medium text-blue-800 dark:text-blue-200 mb-1">Resources:</h6>
                   <ul className="list-disc list-inside space-y-1">
                     {rec.resources.map((resource, i) => (
-                      <li key={i} className="text-blue-600 dark:text-blue-400">{resource}</li>
+                      <li key={i} className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                        <span className="truncate">{resource}</span>
+                        {isYoutubeLink(resource) ? (
+                          <button 
+                            onClick={() => openUrl(resource)}
+                            className="p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            title="Open YouTube video"
+                          >
+                            <Youtube className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => openUrl(resource)}
+                            className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                            title="Open website"
+                          >
+                            <Globe className="w-4 h-4" />
+                          </button>
+                        )}
+                      </li>
                     ))}
                   </ul>
                 </div>

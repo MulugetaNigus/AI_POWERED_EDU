@@ -49,6 +49,12 @@ function App() {
                         // navigate('/on-boarding');
                     } else {
                         setDisplayOnBoarding(false);
+                        // Store user data in localStorage with grade level
+                        const userData = {
+                            user_grade_level: userOnboardingData.grade,
+                            // Add any other user data you want to store
+                        };
+                        localStorage.setItem('user', JSON.stringify(userData));
                         // navigate('/');
                     }
                 } catch (error) {
