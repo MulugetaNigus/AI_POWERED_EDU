@@ -9,23 +9,26 @@ import MotivationalSection from '../components/MotivationalSection';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import Togather from '../components/Togather';
+import AIFeatures from '../components/AIFeatures';
+import CTASection from '../components/CTASection';
 
 export default function Home() {
-
   const creditVisibility: boolean = false;
 
   return (
-    <main>
+    <main className="overflow-hidden">
       <Header creditVisibility={creditVisibility} />
       <Hero />
       <Features />
+      <AIFeatures />
       <Subjects />
-      <CourseList />
-      <MotivationalSection />
       <Togather />
-      <FAQ />
+      <CourseList />
       <Testimonials />
-      <hr className="border-t border-gray-100 mt-28 pt-8" />
+      <MotivationalSection />
+      <CTASection />
+      <FAQ />
+      <hr className="border-t border-gray-100 dark:border-gray-800 mt-20" />
       <Footer />
     </main>
   );

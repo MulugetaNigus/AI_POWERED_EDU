@@ -1,77 +1,172 @@
 import React, { useState } from 'react';
-import { Facebook, Twitter, Instagram, Mail, Phone } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Mail, Phone, Heart, ArrowRight, Globe, BookOpen } from 'lucide-react';
 import ContactModal from './ContactModal';
 import { useUser } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export default function Footer() {
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isSignedIn } = useUser();
 
   const toggleModal = () => {
     if (!isSignedIn) {
-      return alert("please SignIn first");
+      return alert("Please sign in first");
     }
     setIsModalOpen(!isModalOpen);
   };
 
+  const footerLinks = [
+    { title: 'Quick Links', links: [
+      { name: 'Home', href: '/' },
+      { name: 'Features', href: '#features' },
+      { name: 'Subjects', href: '#subjects' },
+      { name: 'AI Assistance', href: '/dashboard' },
+    ]},
+    { title: 'Resources', links: [
+      { name: 'Blog', href: '#' },
+      { name: 'Help Center', href: '#' },
+      { name: 'Community', href: '/community' },
+      { name: 'Exam Prep', href: '/exam' },
+    ]},
+    { title: 'Legal', links: [
+      { name: 'Privacy Policy', href: '#' },
+      { name: 'Terms of Service', href: '#' },
+      { name: 'Cookie Policy', href: '#' },
+    ]},
+  ];
+
+  const socialLinks = [
+    { name: 'Facebook', icon: Facebook, href: '#', color: 'hover:text-blue-600 dark:hover:text-blue-400' },
+    { name: 'Twitter', icon: Twitter, href: '#', color: 'hover:text-blue-400 dark:hover:text-blue-300' },
+    { name: 'Instagram', icon: Instagram, href: '#', color: 'hover:text-pink-600 dark:hover:text-pink-400' },
+    { name: 'Website', icon: Globe, href: '#', color: 'hover:text-green-600 dark:hover:text-green-400' },
+  ];
+
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-xl font-bold text-white mb-4">ExtreamX</h3>
-            <p className="text-gray-400">
-              Empowering Ethiopian students to achieve academic excellence through AI-powered learning.
+    <footer className="bg-gray-900 text-gray-300 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-900/10 rounded-full blur-3xl" />
+      </div>
+      
+      {/* Newsletter section */}
+      <div className="relative border-b border-gray-800">
+        <div className="container mx-auto px-4 py-12">
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 md:p-12">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="text-center md:text-left">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Stay Updated</h3>
+                <p className="text-gray-400 max-w-md">
+                  Subscribe to our newsletter for the latest updates, tips, and educational resources.
+                </p>
+              </div>
+              
+              <div className="w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    className="px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white w-full sm:w-64"
+                  />
+                  <motion.button 
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center font-medium transition-colors duration-200"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Subscribe
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main footer content */}
+      <div className="container mx-auto px-4 py-12 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          {/* Company info */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center space-x-2 mb-6">
+              <BookOpen className="h-8 w-8 text-blue-500" />
+              <span className="text-2xl font-bold text-white">
+                Extream<span className="text-blue-400">X</span>
+              </span>
+            </div>
+            <p className="text-gray-400 mb-6 max-w-md">
+              Empowering Ethiopian students to achieve academic excellence through AI-powered learning. Our platform is designed to help you prepare for national entrance exams with confidence.
             </p>
+            <div className="flex space-x-4">
+              {socialLinks.map((social, index) => (
+                <a 
+                  key={index}
+                  href={social.href} 
+                  className={`transition-colors duration-200 text-gray-400 ${social.color}`}
+                  aria-label={social.name}
+                >
+                  <social.icon className="h-6 w-6" />
+                </a>
+              ))}
+            </div>
           </div>
-
+          
+          {/* Links sections */}
+          {footerLinks.map((section, index) => (
+            <div key={index}>
+              <h4 className="text-lg font-semibold text-white mb-6">{section.title}</h4>
+              <ul className="space-y-3">
+                {section.links.map((link, linkIndex) => (
+                  <li key={linkIndex}>
+                    <a 
+                      href={link.href} 
+                      className="text-gray-400 hover:text-blue-400 transition-colors duration-200 flex items-center"
+                    >
+                      <span className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity">•</span>
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          
+          {/* Contact section */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li><a href="/" className="hover:text-blue-400 transition">Home</a></li>
-              <li><a href="#features" className="hover:text-blue-400 transition">Feature</a></li>
-              <li><a href="#subjects" className="hover:text-blue-400 transition">Subject</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Contact</h4>
-            <ul className="space-y-2">
-              <li className="flex items-center">
-                <Mail className="h-5 w-5 mr-2" />
+            <h4 className="text-lg font-semibold text-white mb-6">Contact</h4>
+            <ul className="space-y-4">
+              <li className="flex items-center text-gray-400">
+                <Mail className="h-5 w-5 mr-3 text-blue-400" />
                 support@ExtreamX.com
               </li>
-              <li className="flex items-center">
-                <Phone className="h-5 w-5 mr-2" />
+              <li className="flex items-center text-gray-400">
+                <Phone className="h-5 w-5 mr-3 text-blue-400" />
                 +251 11 234 5678
               </li>
               <li>
-                <p onClick={toggleModal} className="mt-5 text-white transition easy-out duration-120 cursor-pointer w-2/6 hover:bg-blue-600 border border-blue-700 bg-blue-700 p-2 rounded">
+                <motion.button
+                  onClick={toggleModal}
+                  className="mt-5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   Contact Us
-                </p>
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </motion.button>
               </li>
             </ul>
-          </div>
-
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Follow Us</h4>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-blue-400 transition">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="hover:text-blue-400 transition">
-                <Twitter className="h-6 w-6" />
-              </a>
-              <a href="#" className="hover:text-blue-400 transition">
-                <Instagram className="h-6 w-6" />
-              </a>
-            </div>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p>&copy; {new Date().getFullYear()} ExtreamX {" "}|{" "} All rights reserved. </p>
+          <p className="flex items-center justify-center text-gray-500">
+            &copy; {new Date().getFullYear()} ExtreamX {" "}|{" "} All rights reserved. 
+            <span className="ml-2 flex items-center">
+              Made with <Heart className="h-4 w-4 mx-1 text-red-500" /> in Ethiopia
+            </span>
+          </p>
         </div>
       </div>
       <ContactModal isOpen={isModalOpen} onClose={toggleModal} />

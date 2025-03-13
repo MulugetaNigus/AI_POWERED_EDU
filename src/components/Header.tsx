@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard, BookOpenCheck, Users, Trophy, Link2 } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard, BookOpenCheck, Users, Trophy, Link2, Sparkles } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 // import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
@@ -8,22 +8,37 @@ import axios from 'axios';
 import { Button } from '@headlessui/react';
 import { useUser, UserButton } from "@clerk/clerk-react";
 import { useClerk } from '@clerk/clerk-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const [userEmail, setUserEmail] = useState<string | undefined>("");
 
   const { isSignedIn, user, signOut } = useUser();
   const clerk = useClerk();
 
+  // Check if user has scrolled
   useEffect(() => {
-    // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    // setUserEmail(user.email);
-    setUserEmail(user?.emailAddresses[0].emailAddress);
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setUserEmail(user?.emailAddresses[0].emailAddress);
+  }, [user]);
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -33,9 +48,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
       try {
         const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
         const userData = response.data;
-        // Filter the user data to find the current user's credit
         const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
-        console.log("user credit info: ", response);
         if (currentUserData) {
           setCreditBalance(currentUserData.credit);
         } else {
@@ -50,7 +63,6 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     };
 
     fetchCredits();
-
   }, [userEmail, RerenderToUpdateCredit]);
 
   // Function to handle logout
@@ -63,154 +75,188 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     }
   };
 
-  // handle sing out
-  const handleLogOuts = async () => {
-    const user_confirmation = window.confirm("are you shure you want to logout?")
-    if (user_confirmation) {
-      try {
-        signOut(auth).then(async () => {
-          localStorage.setItem("user_info", "{}");
-          localStorage.removeItem('token');
-          navigate("/signin");
-        }).catch((error) => {
-          console.log(error);
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      null
-    }
-  }
+  // Check if a link is active
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  // Navigation links
+  const navLinks = [
+    { name: 'Exam', path: '/exam', icon: BookOpenCheck },
+    { name: 'Community', path: '/community', icon: Users },
+    { name: 'Resources', path: '/resources', icon: Link2 },
+  ];
 
   return (
-    <header className="fixed top-0 w-full m-2 rounded-md bg-white/0 dark:bg-gray-900/0 backdrop-blur-md shadow-sm z-50">
-      <nav className="container mx-auto px-4 py-5">
+    <header 
+      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md py-3' 
+          : 'bg-transparent py-5'
+      }`}
+    >
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-500" />
-            <span className="text-2xl font-bold text-gray-800 dark:text-white">ExtreamX</span>
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="relative">
+              <div className="absolute -inset-1 bg-blue-500/20 dark:bg-blue-500/30 rounded-full blur-md group-hover:bg-blue-500/30 dark:group-hover:bg-blue-500/40 transition-all duration-300"></div>
+              <BookOpen className="relative h-8 w-8 text-blue-600 dark:text-blue-500" />
+            </div>
+            <span className="text-2xl font-bold text-gray-800 dark:text-white">
+              Extream<span className="text-blue-600 dark:text-blue-400">X</span>
+            </span>
           </Link>
 
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {/* <Link to="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Home</Link> */}
-            {/* <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a> */}
-            {/* <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a> */}
-            {/* <span className='text-xl text-gray-400'>{" | "}</span> */}
-            <Link to="/exam" className="exam flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
-              <span className='w-5 h-2 mr-3'>
-                <BookOpenCheck />
-              </span>
-              Exam
+            {navLinks.map((link) => (
+              <Link 
+                key={link.name}
+                to={link.path} 
+                className={`flex items-center font-medium transition-colors duration-200 ${
+                  isActive(link.path) 
+                    ? 'text-blue-600 dark:text-blue-400' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
+                }`}
+              >
+                <link.icon className="w-5 h-5 mr-2" />
+                {link.name}
+                {isActive(link.path) && (
+                  <motion.div 
+                    layoutId="nav-indicator"
+                    className="absolute bottom-0 h-1 w-full bg-blue-600 dark:bg-blue-400 rounded-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                )}
+              </Link>
+            ))}
+            <div className="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
+            <Link 
+              to="/dashboard" 
+              className="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI Assistance
             </Link>
-            <Link to="/community" className="community-link flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
-              <span className='w-5 h-2 mr-3'>
-                <Users />
-              </span>
-              Community
-            </Link>
-            {/* <Link to="#subjects" className="flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
-              <span className='w-5 h-2 mr-3'>
-                <Trophy />
-              </span>
-              Prizes
-            </Link> */}
-            <Link to="/resources" className="resources flex font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">
-              <span className='w-5 h-2 mr-3'>
-                <Link2 />
-              </span>
-              Resources
-            </Link>
-            <span className='text-xl text-gray-400'>{" | "}</span>
-            {/* <Button style={{ backgroundColor: "rgb(67, 179,141)" }} className="px-3 py-2 rounded-md"> */}
-            <Link to="/dashboard" className="dashboard-link font-bold text-gray-600  dark:text-gray-200 hover:text-gray-300 dark:hover:text-gray-100 transition easy-in-out duration-125">
-              ✨ AI Assistance
-            </Link>
-            {/* </Button> */}
           </div>
 
+          {/* Right side - User controls */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className='light-dark'>
-              <ThemeToggle />
-            </div>
-            {
-              isSignedIn ? (
-                <>
-                  {creditVisibility && (
-                    <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg">
-                      <CreditCard className="w-5 h-5" />
-                      Credits: {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : creditBalance}
-                    </div>
-                  )}
-
-                  {/* <p style={{ backgroundColor: "rgb(67, 179,141)" }} onClick={() => handleLogOut()} className="flex cursor-pointer items-center px-4 py-2 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    SignOut
-                  </p> */}
-
-                  <div className='user-profile'>
-                    <button onClick={handleLogout}>
-                      <div>
-                        {/* Show the Clerk user icon/avatar */}
-                        <UserButton />
-                      </div>
-                    </button>
-                  </div>
-
-                </>
-              ) : (
-                <>
-
-                  {/* <button onClick={() => clerk.openSignIn({})}> */}
-                  {/* <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
-                    to="/signin"
-                    // to=""
-                    className="px-3 py-2 text-white rounded-lg transition"
+            <ThemeToggle />
+            
+            {isSignedIn ? (
+              <>
+                {creditVisibility && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg shadow-sm"
                   >
-                    Log In
-                  </Link> */}
-                  {/* </button> */}
+                    <CreditCard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <span className="font-medium">Credits:</span> 
+                    {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : creditBalance}
+                  </motion.div>
+                )}
 
-                  {/* <button onClick={() => clerk.openSignUp({})}> */}
-                  <Link style={{ backgroundColor: "rgb(67, 179,141)" }}
-                    to="/signin"
-                    // to=""
-                    className="flex items-center px-3 py-2 text-white rounded-lg transition"
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Log In
-                  </Link>
-                  {/* </button> */}
-                </>
-              )
-            }
+                <div className='user-profile'>
+                  <UserButton afterSignOutUrl="/signin" />
+                </div>
+              </>
+            ) : (
+              <Link 
+                to="/signin"
+                className="flex items-center px-4 py-2 rounded-lg bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Log In
+              </Link>
+            )}
           </div>
 
+          {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-4">
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500"
+              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+              aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile menu */}
+      {/* Mobile menu */}
+      <AnimatePresence>
         {isMenuOpen && (
-          <div className="md:hidden mt-4 py-4 border-t border-gray-100 dark:border-gray-800">
-            <div className="flex flex-col space-y-4">
-              <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Home</Link>
-              <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Features</a>
-              <a href="#subjects" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">Subjects</a>
-              <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-500 transition">AI Assistance</Link>
-              <Link to="/signin" className="text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition">Log In</Link>
-              <Link to="/signup" className="text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition">Sign Up</Link>
+          <motion.div 
+            className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 shadow-lg rounded-b-2xl overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="px-4 py-6 space-y-4">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.name}
+                  to={link.path} 
+                  className={`flex items-center p-3 rounded-lg font-medium ${
+                    isActive(link.path) 
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <link.icon className="w-5 h-5 mr-3" />
+                  {link.name}
+                </Link>
+              ))}
+              
+              <Link 
+                to="/dashboard" 
+                className="flex items-center p-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Sparkles className="w-5 h-5 mr-3" />
+                AI Assistance
+              </Link>
+              
+              {!isSignedIn && (
+                <Link 
+                  to="/signin" 
+                  className="flex items-center p-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LogIn className="w-5 h-5 mr-3" />
+                  Log In
+                </Link>
+              )}
+              
+              {isSignedIn && (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
+                  <div className="flex items-center">
+                    <UserButton />
+                    <span className="ml-3 font-medium text-gray-800 dark:text-gray-200">
+                      {user?.fullName || user?.emailAddresses[0].emailAddress}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
+          </motion.div>
         )}
-      </nav>
+      </AnimatePresence>
     </header>
   );
 }
