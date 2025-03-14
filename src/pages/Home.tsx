@@ -11,6 +11,7 @@ import Header from '../components/Header';
 import Togather from '../components/Togather';
 import AIFeatures from '../components/AIFeatures';
 import CTASection from '../components/CTASection';
+import ChatBot from '../components/ChatBot';
 
 export default function Home() {
   const creditVisibility: boolean = false;
@@ -30,6 +31,7 @@ export default function Home() {
       <FAQ />
       <hr className="border-t border-gray-100 dark:border-gray-800 mt-20" />
       <Footer />
+      <ChatBot />
     </main>
   );
 }
