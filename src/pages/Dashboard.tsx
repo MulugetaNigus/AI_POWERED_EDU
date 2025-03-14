@@ -120,6 +120,7 @@ export default function Dashboard() {
   const [pdfURL, setPdfURL] = useState<string | null>(null);
   const [showPDFSidebar, setShowPDFSidebar] = useState(true);
   const [courses, setCourses] = useState<CourseData[]>([]);
+  const [showChatHistory, setShowChatHistory] = useState(true);
 
   // const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
   // const userCurrentCreditRef = useRef<string>("");
@@ -556,40 +557,40 @@ export default function Dashboard() {
         <BotMessageSquareIcon className="w-6 h-6 cursor-pointer hover:animate-spin" />
       </a>
       <Header creditVisibility={creditVisibility} RerenderToUpdateCredit={renderNewCreditValue} />
-      <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="flex h-[calc(100vh-4rem)]">
           {/* Sidebar */}
-          <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+          <div className="w-64 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col shadow-lg">
             {/* Grade Levels and Courses Section */}
             <div className="flex-1 p-4 overflow-y-auto">
-              <h2 className="flex gap-2 items-center text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                <Layers3 className="w-5 h-5" />
+              <h2 className="flex gap-2 items-center text-base font-semibold text-gray-800 dark:text-white mb-4">
+                <Layers3 className="w-5 h-5 text-blue-500" />
                 Grade Levels
               </h2>
               <div className="space-y-2">
                 {grades.map(
                   (g) =>
                     g.level === user_gradeLevel && (
-                      <div key={g.level} className="rounded-lg overflow-hidden">
+                      <div key={g.level} className="rounded-lg overflow-hidden shadow-sm">
                         <button
                           onClick={() =>
                             setExpandedGrade(
                               expandedGrade === g.level ? null : g.level
                             )
                           }
-                          className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                          className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
                         >
-                          <span className="font-medium">
+                          <span className="font-medium text-sm text-gray-900 dark:text-white">
                             Grade {g.level.replace('grade', '')}
                           </span>
                           {expandedGrade === g.level ? (
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className="h-4 w-4 text-gray-500" />
                           ) : (
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-4 w-4 text-gray-500" />
                           )}
                         </button>
                         {expandedGrade === g.level && (
-                          <div className="pl-4">
+                          <div className="pl-3 py-1 bg-gray-50/50 dark:bg-gray-800/50">
                             {g.courses.map((course) => (
                               <button
                                 key={course.name}
@@ -597,16 +598,16 @@ export default function Dashboard() {
                                   handleCourseSelect(g.level, course.name);
                                   console.log(course.name);
                                 }}
-                                className={`w-full flex items-center space-x-2 p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                                className={`w-full flex items-center space-x-2 p-2 text-left rounded-md transition-all duration-200 ${
                                   selectedCourse?.grade === g.level &&
                                   selectedCourse?.course === course.name
-                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                                    : "text-gray-700 dark:text-gray-300"
+                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm"
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 }`}
                               >
-                                <span>{course.icon}</span>
-                                <span>{course.name}</span>
-                                <span className="ml-auto text-xs text-gray-500">
+                                <span className="text-base">{course.icon}</span>
+                                <span className="text-sm font-medium">{course.name}</span>
+                                <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                                   {course.accuracy}%
                                 </span>
                               </button>
@@ -617,123 +618,117 @@ export default function Dashboard() {
                     )
                 )}
 
-                {/* take a quize and progress page link */}
+                {/* Quiz and Progress Link */}
                 <Link
                   to="/quize-and-progress"
-                  className="flex items-center justify-start w-full h-12 bg-blue-600 text-white rounded-lg p-4 border-1 border-blue-600 dark:border-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 dark:hover:bg-blue-500"
+                  className="flex items-center justify-center w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5"
                 >
-                  <p>Take a quize</p>
-                  <Rocket className="ml-3 w-5 h-5" />
+                  <p className="text-sm font-medium">Take a Quiz</p>
+                  <Rocket className="ml-2 w-4 h-4" />
                 </Link>
-                {/* <button onClick={handlePayment}>pay</button> */}
-                <br />
-                <hr className="text-gray-600 font-light" />
-                {/* icons to show the chat history and pdf chat */}
-                <div className="flex items-center justify-between">
-                  <h2 className="ml-1 mt-1 flex gap-2 items-center text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                    <FolderClock className="h-5 w-5" />
-                    Chat history
-                  </h2>
-                  <RotateCw
-                    className="w-5 h-5 text-gray-600 dark:text-gray-400 cursor-pointer"
-                    onClick={() => handleRefreshChatHistory()}
-                  />
-                </div>
-                {/* ########################################################### */}
-                {OchatHistory?.map((his, index) => (
-                  <div
-                    key={his?.timestamp}
-                    className="rounded-lg overflow-hidden"
-                  >
-                    {/* <ol>
-                      <li>{his?.data.slice(0, 20) + "..."}</li>
-                    </ol> */}
-                    {/* in this btn i just want to add onclick event to show the selected chat history data to the main chat area */}
-                    {
-                      his?.email == currentUsername
-                      &&
-                      <button
-                        // onClick={() => alert(his?.prompt + "\n" + his?.data)}
-                        onClick={() => handleChatHistory(his)}
-                        className="w-full flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                      >
-                        {/* <UserRound className="h-5 w-5" /> */}
-                        <p className="text-gray-600 dark:text-gray-300 font-normal">
-                          {index + 1}
-                          {"."} {his?.data.slice(0, 10) + "..."}
-                        </p>
-                        <Trash2
-                          className="w-5 h-5 text-red-400"
-                          onClick={() => handleDeleteChatHistory(his)}
-                        />
-                      </button>
-                    }
-                  </div>
 
-                ))}
-                {/* add the message no history when the "OchatHistory" dont have any data */}
-                {OchatHistory?.length == 0 && (
-                  <div className="flex items-center justify-between w-full h-12 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border-1 border-gray-200 dark:border-gray-700">
-                    <p>No chat history found</p>
-                    <BadgeAlert className="w-5 h-5" />
-                  </div>
-                )}
-                {/* ########################################################### */}
-                {/* Add PDF Chat button */}
-                {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
                   <button
-                    onClick={() => setShowPDFChat(true)}
-                    className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                    onClick={() => setShowChatHistory(!showChatHistory)}
+                    className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg"
                   >
-                    <FileText className="h-4 w-4" />
-                    <span>Chat with PDF</span>
+                    <div className="flex items-center gap-2">
+                      <FolderClock className="h-5 w-5 text-blue-500" />
+                      <h2 className="text-base font-semibold text-gray-800 dark:text-white">
+                        Chat History
+                      </h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRefreshChatHistory();
+                        }}
+                        className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                      >
+                        <RotateCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      </button>
+                      {showChatHistory ? (
+                        <ChevronDown className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-gray-500" />
+                      )}
+                    </div>
                   </button>
-                </div> */}
+
+                  {showChatHistory && (
+                    <div className="mt-2 space-y-1.5">
+                      {OchatHistory?.map((his, index) => (
+                        his?.email === currentUsername && (
+                          <div
+                            key={his?.timestamp}
+                            className="group relative rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                          >
+                            <button
+                              onClick={() => handleChatHistory(his)}
+                              className="w-full flex items-center justify-between gap-2 p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
+                                {index + 1}. {his?.data.slice(0, 20)}...
+                              </p>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteChatHistory(his);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all duration-200"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-400" />
+                              </button>
+                            </button>
+                          </div>
+                        )
+                      ))}
+
+                      {OchatHistory?.length === 0 && (
+                        <div className="flex items-center justify-center w-full h-12 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200/50 dark:border-gray-700/50">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">No chat history found</p>
+                          <BadgeAlert className="w-4 h-4 ml-2 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-row items-center justify-between ml-5 gap-10 m-4">
-              {/* <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </button> */}
-              {isSignedIn && (
-                <div className="flex flex-row items-center justify-between gap-2">
-                  {/* user profile box */}
-                  <div>
-                    <button onClick={handleLogout}>
-                      <UserButton />
-                    </button>
-                  </div>
-                  {/* username of the current user */}
-                  <div className={`relative ${!isUsernameVisible ? 'blur-sm' : ''}`}>
-                    <span className="mr-8">{currentUsername}</span>
-                    <button
-                      className="absolute right-0 top-0"
-                      onClick={toggleUsernameVisibility}
-                    >
-                      {isUsernameVisible ? <EyeOff /> : <Eye />}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {/* <button
-                className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                onClick={handleLogouts}
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </button> */}
+            {/* User Profile Section */}
+            <div className="p-3 border-t border-gray-200/50 dark:border-gray-700/50">
+              <div className="flex items-center justify-between gap-2">
+                {isSignedIn && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <button onClick={handleLogout}>
+                        <UserButton />
+                      </button>
+                      <div className={`relative ${!isUsernameVisible ? 'blur-sm' : ''}`}>
+                        <span className="text-xs text-gray-700 dark:text-gray-300">{currentUsername}</span>
+                        <button
+                          className="absolute -right-5 top-0 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                          onClick={toggleUsernameVisibility}
+                        >
+                          {isUsernameVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Main Chat Area */}
           <div className="flex-1 flex">
-            <div className={`flex-1 flex flex-col bg-white dark:bg-gray-800 ${showPDFPreview && showPDFSidebar ? 'mr-96' : ''} transition-all duration-300`}>
+            <div className={`flex-1 flex flex-col bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm ${showPDFPreview && showPDFSidebar ? 'mr-96' : ''} transition-all duration-300`}>
               {/* Selected Course Header */}
               {selectedCourse && (
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     {selectedCourse.course}
                   </h2>
                 </div>
@@ -742,143 +737,91 @@ export default function Dashboard() {
               {/* Messages */}
               <div className="flex-1 p-4 overflow-y-auto space-y-4">
                 {messages.map((message, index) => (
-                  <div
+                  <motion.div
                     key={index}
-                    className={`flex ${message.isAI ? "justify-start" : "justify-end"
-                      }`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className={`flex ${message.isAI ? "justify-start" : "justify-end"}`}
                   >
                     <div className="max-w-[80%]">
                       <div
-                        className={`mt-5 p-4 rounded-lg ${message.isAI
-                          ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                          : "bg-blue-600 text-white"
-                          }`}
+                        className={`p-3 rounded-xl shadow-sm ${
+                          message.isAI
+                            ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                            : "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+                        }`}
                       >
                         <MarkdownDisplay markdownText={message.text} />
                       </div>
 
-                      {/* response from the  */}
                       {message.isAI && (
                         <div className="flex items-center space-x-2 mt-2">
                           <button
-                            onClick={() =>
-                              handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))
-                            }
+                            onClick={() => handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))}
                             onDoubleClick={() => handleStopSpeak()}
-                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
                             title="Listen or double click to stop"
                           >
-                            <Volume2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                            <Volume2 className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                           </button>
                           <button
                             onClick={() => handleCopyText(message.text)}
-                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
                             title="Copy"
                           >
-                            <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                            <Copy className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                           </button>
                           <button
                             onClick={() => handleRegenerateResponse()}
-                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
                             title="Regenerate"
                           >
-                            <RefreshCw className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                            <RefreshCw className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                           </button>
-                          {/* <p className="text-xs text-gray-500 dark:text-gray-400">0.76s</p> */}
                         </div>
                       )}
                     </div>
-                    {/* <div className="w-80 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
-                      <ChatHistory history={chatHistory} />
-                    </div> */}
-                  </div>
+                  </motion.div>
                 ))}
 
-                {/* loading state for the AI */}
                 {isLoading && (
-
                   <div className="max-w-[60%]">
-                    <div className="animate-pulse flex space-x-4">
-                      <div className="flex-1 space-y-6 py-1">
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-4 gap-4">
-                            <div className="h-4 bg-slate-700 rounded col-span-1"></div>
-                            <div className="h-4 bg-slate-700 rounded col-span-2"></div>
-                            <div className="h-4 bg-slate-700 rounded col-span-1"></div>
-                            <div className="h-4 bg-slate-700 rounded col-span-2"></div>
-                            <div className="h-4 bg-slate-700 rounded col-span-2"></div>
-                          </div>
-                          <div className="h-4 bg-slate-700 rounded"></div>
-                        </div>
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                      <div className="space-y-2">
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
                       </div>
                     </div>
                   </div>
-
-                  // <div className="flex justify-start">
-                  //   <div className="max-w-[80%] p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
-                  //     <div className="flex items-center space-x-2">
-                  //       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                  //       <span className="text-gray-800 dark:text-gray-200">
-                  //         AI is thinking...
-                  //       </span>
-                  //     </div>
-                  //   </div>
-                  // </div>
-
                 )}
               </div>
-
-              {/* chat window */}
-              {showPDFChat && (
-                <PDFChat
-                  onClose={() => setShowPDFChat(false)}
-                  onMessageSent={handlePDFMessage}
-                />
-              )}
-
-              {/* Image Upload Area */}
-              {showImageUpload && (
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                  <ImageUpload
-                    onAnalysisComplete={handleImageAnalysis}
-                    isLoading={isLoading}
-                    setIsLoading={setIsLoading}
-                  />
-                </div>
-              )}
 
               {/* Input Area */}
               <form
                 onSubmit={handleSend}
-                className="border-t border-gray-200 dark:border-gray-700 p-4"
+                className="border-t border-gray-200/50 dark:border-gray-700/50 p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
               >
-                <div className="flex space-x-4">
-                  <div className="p-4 border-gray-200 dark:border-gray-700">
-                    {/* <button
-                      onClick={() => setShowPDFChat(true)}
-                      className="w-full flex items-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
-                    >
-                      <FileText className="h-5 w-5" />
-                    </button> */}
-                  </div>
+                <div className="flex items-center space-x-3">
                   <button
                     type="button"
                     onClick={() => setShowImageUpload(!showImageUpload)}
-                    className="px-3 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     title="Upload image"
                   >
-                    <ImageIcon className="h-5 w-5" />
+                    <ImageIcon className="h-4 w-4" />
                   </button>
                   <button
                     type="button"
                     onClick={handleNewChat}
-                    className="px-3 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     title="Start new chat"
                     disabled={!selectedCourse}
                   >
-                    <Plus className="h-5 w-5" />
+                    <Plus className="h-4 w-4" />
                   </button>
-                  {/* <p>here is the sample content goes...</p> */}
                   <input
                     type="text"
                     value={input}
@@ -889,18 +832,18 @@ export default function Dashboard() {
                         : "Select a course to start chatting..."
                     }
                     disabled={!selectedCourse || isLoading}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                   />
                   <button
                     type="submit"
                     disabled={!selectedCourse || isLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
-                    <span>Send</span>
+                    <span className="text-sm font-medium">Send</span>
                     {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                      <Send className="h-4 w-4" />
+                      <Send className="h-3.5 w-3.5" />
                     )}
                   </button>
                 </div>
@@ -913,9 +856,9 @@ export default function Dashboard() {
                 <div className="relative h-full">
                   <button
                     onClick={togglePDFSidebar}
-                    className="absolute -left-8 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700"
+                    className="absolute -left-10 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-3 rounded-l-xl border border-r-0 border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-200"
                   >
-                    {showPDFSidebar ? <SidebarClose className="h-4 w-4" /> : <SidebarOpen className="h-4 w-4" />}
+                    {showPDFSidebar ? <SidebarClose className="h-5 w-5" /> : <SidebarOpen className="h-5 w-5" />}
                   </button>
                   <PDFPreview
                     onClose={handleClosePDFPreview}
@@ -928,7 +871,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* subscribe modal here */}
+          {/* Subscription Modal */}
           <SubscriptionModal
             isOpen={showSubscriptionModal}
             onClose={() => setShowSubscriptionModal(false)}
