@@ -143,7 +143,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center text-gray-400">
                 <Phone className="h-5 w-5 mr-3 text-blue-400" />
-                +251 11 234 5678
+                +251 9xxxxxxxx
               </li>
               <li>
                 <motion.button
