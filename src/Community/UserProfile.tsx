@@ -9,10 +9,9 @@ import {
   Award, 
   Users, 
   FileText, 
-  ChevronRight, 
-  Bookmark,
-  MessageSquare,
-  Heart
+  ExternalLink,
+  Heart,
+  MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -103,25 +102,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
-        <div className="p-6 animate-pulse">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Profile Skeleton */}
-            <div className="md:w-1/3 flex flex-col items-center md:items-start">
-              <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full mb-4" />
-              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-2" />
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-3" />
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-32" />
-            </div>
-            
-            {/* Stats and Activity Skeleton */}
-            <div className="md:w-2/3">
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-                <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-              </div>
-              <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-            </div>
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="p-4 animate-pulse">
+          {/* Profile Skeleton */}
+          <div className="flex flex-col items-center pb-4 mb-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full mb-3" />
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-2" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2" />
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-32" />
+          </div>
+          
+          {/* Stats Skeleton */}
+          <div className="flex justify-between mb-4">
+            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded w-[48%]" />
+            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded w-[48%]" />
+          </div>
+          
+          {/* Content Skeleton */}
+          <div className="space-y-3">
+            <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+            <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded w-full" />
           </div>
         </div>
       </div>
@@ -138,211 +138,181 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700 mb-6"
     >
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Profile Section */}
-          <div className="md:w-1/3 flex flex-col items-center md:items-start">
-            {user?.imageUrl ? (
-              <img 
-                src={user.imageUrl} 
-                alt="Profile" 
-                className="w-24 h-24 rounded-full border-4 border-purple-100 dark:border-purple-900/30 object-cover shadow-md mb-4" 
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full border-4 border-purple-100 dark:border-purple-900/30 mb-4 bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                <User className="w-12 h-12 text-white" />
-              </div>
-            )}
-            
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-1">{displayName}</h2>
-            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm mb-3">
-              <Mail className="w-3.5 h-3.5" />
-              <span>{userEmail}</span>
+      {/* Profile Section */}
+      <div className="p-4">
+        <div className="flex flex-col items-center pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
+          {user?.imageUrl ? (
+            <img 
+              src={user.imageUrl} 
+              alt="Profile" 
+              className="w-20 h-20 rounded-full border-2 border-blue-100 dark:border-blue-900/30 object-cover shadow-sm mb-3" 
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full border-2 border-blue-100 dark:border-blue-900/30 mb-3 bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center">
+              <User className="w-10 h-10 text-white" />
             </div>
-            
-            <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-purple-600 dark:text-purple-400 px-3 py-1.5 rounded-full text-sm">
-              <Award className="w-4 h-4" />
-              <span>Grade {grade?.user_grade_level || '9'} Student</span>
+          )}
+          
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-1">{displayName}</h2>
+          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs mb-2">
+            <Mail className="w-3 h-3" />
+            <span>{userEmail}</span>
+          </div>
+          
+          <div className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-full text-xs">
+            <Award className="w-3.5 h-3.5" />
+            <span>Grade {grade?.user_grade_level || '9'} Student</span>
+          </div>
+        </div>
+        
+        {/* Stats Cards */}
+        <div className="flex justify-between mb-4">
+          <div className="w-[48%] bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 flex items-center">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3">
+              <FileText className="w-4 h-4 text-blue-500 dark:text-blue-400" />
             </div>
-            
-            <div className="flex items-center gap-3 mt-5 w-full justify-center md:justify-start">
-              <Link to="/community/myPost" className="text-sm text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center gap-1 transition-colors">
-                <FileText className="w-4 h-4" />
-                <span>My Posts</span>
-              </Link>
-              <Link to="/search-groups" className="text-sm text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center gap-1 transition-colors">
-                <Users className="w-4 h-4" />
-                <span>Groups</span>
-              </Link>
+            <div>
+              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{userPosts.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Posts</div>
             </div>
           </div>
           
-          {/* Activity Section */}
-          <div className="md:w-2/3">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <motion.div 
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-4 shadow-sm border border-purple-100 dark:border-purple-900/30"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">{userPosts.length}</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Posts Created</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-lg p-4 shadow-sm border border-teal-100 dark:border-teal-900/30"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">{userGroups.length}</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Groups Joined</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                  </div>
-                </div>
-              </motion.div>
+          <div className="w-[48%] bg-indigo-50 dark:bg-indigo-900/10 rounded-lg p-3 flex items-center">
+            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
+              <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
             </div>
-            
-            {/* Groups and Posts Tabs */}
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="mb-4">
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Your Activity</h3>
-                
-                {/* Groups Section */}
-                {userGroups.length > 0 && (
-                  <div className="mb-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                        <Users className="w-4 h-4 text-teal-500 dark:text-teal-400" />
-                        <span>My Groups</span>
-                      </h4>
-                      <Link to="/search-groups" className="text-xs flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline">
-                        <span>View All</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {userGroups.slice(0, 2).map(group => (
-                        <motion.div 
-                          key={group._id}
-                          whileHover={{ scale: 1.02 }}
-                          className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
-                        >
-                          <img 
-                            src={group.profilePicture || 'https://via.placeholder.com/40'} 
-                            alt={group.groupName} 
-                            className="w-10 h-10 rounded-full object-cover border border-teal-100 dark:border-teal-900/30"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = 'https://via.placeholder.com/40';
-                            }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800 dark:text-white truncate">{group.groupName}</p>
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs">
-                                <Users className="w-3 h-3" />
-                                <span>{group.members?.length || 0}</span>
-                              </div>
-                              {group.groupCreator === userEmail && (
-                                <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 text-xs rounded-full">
-                                  Creator
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Posts Section */}
-                {userPosts.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                        <FileText className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-                        <span>Recent Posts</span>
-                      </h4>
-                      <Link to="/community/myPost" className="text-xs flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:underline">
-                        <span>View All</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                    
-                    {userPosts.slice(0, 2).map(post => (
-                      <motion.div 
-                        key={post._id}
-                        whileHover={{ scale: 1.01 }}
-                        className="mb-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
-                      >
-                        <p className="text-sm text-gray-800 dark:text-white line-clamp-2 mb-2">
-                          {post.content}
-                        </p>
-                        
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {post.tags.slice(0, 3).map((tag, idx) => (
-                            <span key={idx} className="px-2 py-0.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs rounded-full">
-                              {tag}
-                            </span>
-                          ))}
-                          {post.tags.length > 3 && (
-                            <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs rounded-full">
-                              +{post.tags.length - 3}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-700">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            <span>{formatDate(post.createdAt)}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1">
-                              <Heart className="w-3 h-3" />
-                              <span>{post.likes || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>0</span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-                
-                {userGroups.length === 0 && userPosts.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Bookmark className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-2" />
-                    <p className="text-gray-500 dark:text-gray-400">No activity yet</p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                      Join groups or create posts to see them here
-                    </p>
-                  </div>
-                )}
-              </div>
+            <div>
+              <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{userGroups.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Groups</div>
             </div>
           </div>
         </div>
+        
+        {/* Groups Section */}
+        {userGroups.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-medium text-gray-800 dark:text-white flex items-center gap-1.5 mb-3">
+              <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <span>My Groups</span>
+            </h3>
+            <div className="space-y-2">
+              {userGroups.slice(0, 2).map(group => (
+                <div 
+                  key={group._id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700"
+                >
+                  <img 
+                    src={group.profilePicture || 'https://via.placeholder.com/40'} 
+                    alt={group.groupName} 
+                    className="w-10 h-10 rounded-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://via.placeholder.com/40';
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-800 dark:text-white truncate">{group.groupName}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs">
+                        <Users className="w-3 h-3" />
+                        <span>{group.members?.length || 0} members</span>
+                      </div>
+                      {group.groupCreator === userEmail && (
+                        <span className="px-1.5 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs rounded-full">
+                          Creator
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Link to={`/search-groups?id=${group._id}`} className="text-blue-500 dark:text-blue-400">
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                </div>
+              ))}
+              
+              {userGroups.length > 2 && (
+                <Link 
+                  to="/search-groups" 
+                  className="block text-center text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2"
+                >
+                  View all {userGroups.length} groups
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Posts Section */}
+        {userPosts.length > 0 && (
+          <div>
+            <h3 className="font-medium text-gray-800 dark:text-white flex items-center gap-1.5 mb-3">
+              <FileText className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+              <span>My Posts</span>
+            </h3>
+            <div className="space-y-2">
+              {userPosts.slice(0, 2).map(post => (
+                <div 
+                  key={post._id}
+                  className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700"
+                >
+                  <p className="text-sm text-gray-800 dark:text-white line-clamp-2 mb-2">
+                    {post.content}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {post.tags.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                    {post.tags.length > 3 && (
+                      <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs rounded-full">
+                        +{post.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>{formatDate(post.createdAt)}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <Heart className="w-3 h-3" />
+                        <span>{post.likes || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {userPosts.length > 2 && (
+                <Link 
+                  to="/community/myPost" 
+                  className="block text-center text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2"
+                >
+                  View all {userPosts.length} posts
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {userGroups.length === 0 && userPosts.length === 0 && (
+          <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+            <FileText className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
+            <p>No activity yet</p>
+            <p className="text-sm mt-1">Create posts or join groups to see them here</p>
+          </div>
+        )}
       </div>
     </motion.div>
   );
