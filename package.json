@@ -23,6 +23,7 @@
     "elevenlabs": "^0.17.1",
     "firebase": "^11.0.1",
     "framer-motion": "^11.11.17",
+    "fyda-auth-by-mullerking": "^1.0.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.344.0",
     "marked": "^14.1.3",
