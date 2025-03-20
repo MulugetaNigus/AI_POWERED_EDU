@@ -285,12 +285,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
                         <Heart className="w-3 h-3" />
                         <span>{post.likes || 0}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+
+                      {/* <div className="flex items-center gap-1">
                         <MessageSquare className="w-3 h-3" />
                         <span>0</span>
-                      </div>
+                      </div> */}
+
                     </div>
-                    
+
                   </div>
                 </div>
               ))}

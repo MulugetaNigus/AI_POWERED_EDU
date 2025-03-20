@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Clock, MessageCircle, User, MoreVertical } from 'lucide-react';
+import { Clock, MessageCircle, User, MoreVertical, Heart } from 'lucide-react';
 import axios from 'axios';
 import img1 from './Assets/HeroOne.png';
 import ReportModal from '../components/ReportModal';
@@ -29,22 +29,22 @@ const Feed: React.FC = () => {
   const theme = 'light';
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get('http://localhost:8888/api/v1/getPost');
-        // Filter only approved posts
-        const approvedPosts = response.data.filter((post: Post) => post.approved);
-        setPosts(approvedPosts);
-      } catch (err) {
-        setError('Failed to fetch posts');
-        console.error('Error fetching posts:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPosts();
   }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8888/api/v1/getPost');
+      // Filter only approved posts
+      const approvedPosts = response.data.filter((post: Post) => post.approved);
+      setPosts(approvedPosts);
+    } catch (err) {
+      setError('Failed to fetch posts');
+      console.error('Error fetching posts:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleReport = async (reason: string, details: string) => {
     setIsSubmittingReport(true);
@@ -130,6 +130,73 @@ const Feed: React.FC = () => {
     return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
   }
 
+  // this is my backend code base to update the likes by looking this adjust the frontend code to send the post id and the user id to the backend
+  // this is the endpoints to like the post = 
+  // router.post("/updateLikes/:id", addLikes);
+
+
+  const handleLike = async (postId: string, currentLikes: number) => {
+    try {
+      // Good: Using template literals for URL construction
+      // Good: Including required parameters in the request body
+      const response = await axios.post(`http://localhost:8888/api/v1/updateLikes/${postId}`, {
+        increment: 1,  
+        currentLikes: currentLikes,
+      });
+      // for debugging purposes
+      console.log(response);
+      // Improvement suggestion: Check the response data
+      // The backend returns { success: true, data: updatedPost }
+      if (response.data.success) {
+        toast.success('Post liked successfully', {
+          position: "top-right",
+          autoClose: 300,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: theme === 'light' ? 'light' : 'dark',
+        });
+        fetchPosts();
+      }
+
+    } catch (error: any) {
+      console.error('Error liking post:', error);
+
+      // Improvement: More specific error handling
+      let errorMessage = 'Failed to like post';
+      if (error.response) {
+        // Handle specific backend errors
+        switch (error.response.status) {
+          case 400:
+            errorMessage = 'Invalid request';
+            break;
+          case 404:
+            errorMessage = 'Post not found';
+            break;
+          case 409:
+            errorMessage = 'Likes count has changed';
+            break;
+          default:
+            errorMessage = error.response.data.message || 'Failed to like post';
+        }
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 300,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: theme === 'light' ? 'light' : 'dark',
+      });
+    }
+  };
+
+
   return (
     <div className="space-y-6 p-1">
       <div className="mt-0">
@@ -196,16 +263,29 @@ const Feed: React.FC = () => {
 
             {/* Timestamp and Email */}
             <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 pt-3 border-t dark:border-gray-700">
+              
+              {/* likes */}
+              {/* when i click the like button create a function to increment the likes from my backend */}
+              <button onClick={() => handleLike(post._id, post.likes)}>
+                <div className="flex items-center gap-2">
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm">{post.likes || 0}</span>
+                </div>
+              </button>
+              
+              {/* date and time */}
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 <span className="text-sm">
                   {new Date(post.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4" />
                 <span className="text-sm">{post.userID}</span>
-              </div>
+              </div> */}
+
             </div>
           </div>
         </div>
