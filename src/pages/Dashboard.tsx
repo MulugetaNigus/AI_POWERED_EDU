@@ -36,7 +36,6 @@ import { auth } from "../config/firebaseConfig";
 // import { signOut } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
-import SideAI from "../components/SideAI";
 // import uuid from 'uuid';
 import { v4 as uuidv4 } from "uuid";
 import SubscriptionModal from "../components/SubscriptionModal";
@@ -104,7 +103,6 @@ export default function Dashboard() {
     profile: string;
   } | null>();
   const [isBlurred, setIsBlurred] = useState(true);
-  const [showSideAI, setShowSideAI] = useState(false);
   const [user_current_grade, setuser_current_grade] = useState();
   const [userEmail, setuserEmail] = useState<string | undefined>("");
   const [userID, setuserID] = useState("");
@@ -118,7 +116,7 @@ export default function Dashboard() {
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [selectedPDF, setSelectedPDF] = useState<File | null>(null);
   const [pdfURL, setPdfURL] = useState<string | null>(null);
-  const [showPDFSidebar, setShowPDFSidebar] = useState(true);
+  const [showPDFSidebar, setShowPDFSidebar] = useState(false);
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [showChatHistory, setShowChatHistory] = useState(true);
 
@@ -228,10 +226,6 @@ export default function Dashboard() {
     level: grade, // Keep as string
     courses: groupedCourses[grade]
   }));
-
-  const toggleSideAI = () => {
-    setShowSideAI(!showSideAI);
-  };
 
   // handle the blue effect
   const toggleBlur = () => {
@@ -412,15 +406,30 @@ export default function Dashboard() {
     }
   };
 
-  const handlePDFMessage = (message: string) => {
+  const handlePDFMessage = (message: { text: string; isAI: boolean }) => {
     setMessages((prev) => [...prev, message]);
-    if (selectedCourse) {
-      updateChatHistory(selectedCourse.grade, selectedCourse.course, {
-        text: message.text,
-        isAI: message.isAI,
-        timestamp: new Date().toISOString(),
-      });
+  };
+
+  const handlePDFTextSelection = (text: string, action: string) => {
+    let prompt = '';
+    switch (action) {
+      case 'explain':
+        prompt = `Please explain this text from the PDF: "${text}"`;
+        break;
+      case 'describe':
+        prompt = `Please describe this text from the PDF: "${text}"`;
+        break;
+      case 'summarize':
+        prompt = `Please summarize this text from the PDF: "${text}"`;
+        break;
+      case 'analyze':
+        prompt = `Please analyze this text from the PDF: "${text}"`;
+        break;
+      default:
+        prompt = text;
     }
+    setInput(prompt);
+    handleSend(new Event('submit') as any);
   };
 
   const handleCourseSelect = (grade: number, course: string) => {
@@ -549,13 +558,6 @@ export default function Dashboard() {
 
   return (
     <>
-      {showSideAI && <SideAI onClose={() => setShowSideAI(false)} />}
-      <a
-        className="p-5 bg-blue-600 text-white rounded-full fixed right-2 bottom-20"
-        onClick={toggleSideAI}
-      >
-        <BotMessageSquareIcon className="w-6 h-6 cursor-pointer hover:animate-spin" />
-      </a>
       <Header creditVisibility={creditVisibility} RerenderToUpdateCredit={renderNewCreditValue} />
       <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="flex h-[calc(100vh-4rem)]">
@@ -865,6 +867,7 @@ export default function Dashboard() {
                     onFileSelect={handlePDFSelect}
                     selectedFile={selectedPDF}
                     pdfURL={pdfURL}
+                    onSendSelectedText={handlePDFTextSelection}
                   />
                 </div>
               </div>
