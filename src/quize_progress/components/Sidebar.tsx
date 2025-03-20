@@ -72,6 +72,7 @@ export default function Sidebar({
         if (response.data.message === 'success') {
           setCourses(response.data.data);
         }
+        console.log(response.data.data);
       } catch (err) {
         setError('Failed to fetch courses');
         console.error('Error fetching courses:', err);

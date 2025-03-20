@@ -327,7 +327,7 @@ export async function generateQuestionsForSubject(subject: string, difficulty: s
 export async function generatePersonalizedFeedback(answers: any[], topics: string[], subject: string) {
   try {
     const prompt = `
-Based on the provided quiz answers and topics, analyze the user's performance to offer personalized learning feedback. Identify strengths and weaknesses. For each weakness, generate specific improvement actions and recommend relevant online resources such as websites and YouTube links. If no weaknesses are found, add an encouraging narrative in the strengths section to motivate the user.
+Based on the provided quiz answers and topics, analyze the user's performance to offer personalized learning feedback. Identify strengths and weaknesses. For each weakness, generate specific improvement actions and recommend relevant online resources such as websites and YouTube videos url for youtube like this https://www.youtube.com/topic_name and for the websites like this https://www.google.com/topic_name. If no weaknesses are found, add an encouraging narrative in the strengths section to motivate the user.
 
 Return ONLY a JSON object with the following structure (no additional explanations or markdown):
 
