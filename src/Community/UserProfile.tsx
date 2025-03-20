@@ -226,9 +226,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
                       )}
                     </div>
                   </div>
-                  <Link to={`/search-groups?id=${group._id}`} className="text-blue-500 dark:text-blue-400">
+                  {/* <Link to={`/search-groups?id=${group._id}`} className="text-blue-500 dark:text-blue-400">
                     <ExternalLink className="w-4 h-4" />
-                  </Link>
+                  </Link> */}
                 </div>
               ))}
               
@@ -290,6 +290,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
                         <span>0</span>
                       </div>
                     </div>
+                    
                   </div>
                 </div>
               ))}
