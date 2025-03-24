@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard, BookOpenCheck, Users, Trophy, Link2, Sparkles } from 'lucide-react';
+import { BookOpen, LogIn, Menu, X, LogOut, Loader2, CreditCard, BookOpenCheck, Users, Trophy, Link2, Sparkles, HelpCircle } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 // import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
@@ -10,17 +10,41 @@ import { useUser, UserButton } from "@clerk/clerk-react";
 import { useClerk } from '@clerk/clerk-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Add TourContext event to allow triggering tour from header
+export const TourEvent = new EventTarget();
+export const TourActiveEvent = new EventTarget();
+
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isTourActive, setIsTourActive] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [userEmail, setUserEmail] = useState<string | undefined>("");
 
   const { isSignedIn, user, signOut } = useUser();
   const clerk = useClerk();
+
+  // Listen for tour active state
+  useEffect(() => {
+    const handleTourActiveChange = (e: CustomEvent) => {
+      setIsTourActive(e.detail.isActive);
+    };
+
+    const handleTourEvent = () => {
+      setIsTourActive(prevState => !prevState);
+    };
+    
+    TourEvent.addEventListener('start-tour', handleTourEvent);
+    TourActiveEvent.addEventListener('tour-state-change', handleTourActiveChange as EventListener);
+    
+    return () => {
+      TourEvent.removeEventListener('start-tour', handleTourEvent);
+      TourActiveEvent.removeEventListener('tour-state-change', handleTourActiveChange as EventListener);
+    };
+  }, []);
 
   // Check if user has scrolled
   useEffect(() => {
@@ -87,6 +111,13 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     { name: 'Resources', path: '/resources', icon: Link2 },
   ];
 
+  // Function to trigger site tour
+  const triggerSiteTour = () => {
+    // Dispatch custom event for App.tsx to listen to
+    const tourEvent = new CustomEvent('start-tour');
+    TourEvent.dispatchEvent(tourEvent);
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
@@ -147,6 +178,21 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
             
+            {isSignedIn && (
+              <button
+                onClick={triggerSiteTour}
+                className={`flex items-center justify-center p-2 transition-colors duration-300 rounded-full ${
+                  isTourActive 
+                    ? 'bg-blue-600 text-white shadow-md' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-800'
+                }`}
+                aria-label={isTourActive ? "Stop site tour" : "Take site tour"}
+                title={isTourActive ? "Stop site tour" : "Take site tour"}
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            )}
+            
             {isSignedIn ? (
               <>
                 {creditVisibility && (
@@ -179,6 +225,22 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-4">
             <ThemeToggle />
+            
+            {isSignedIn && (
+              <button
+                onClick={triggerSiteTour}
+                className={`flex items-center justify-center p-2 transition-colors duration-300 rounded-full ${
+                  isTourActive 
+                    ? 'bg-blue-600 text-white shadow-md' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-800'
+                }`}
+                aria-label={isTourActive ? "Stop site tour" : "Take site tour"}
+                title={isTourActive ? "Stop site tour" : "Take site tour"}
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            )}
+            
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
@@ -226,6 +288,23 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                 AI Assistance
               </Link>
               
+              {isSignedIn && (
+                <button 
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    triggerSiteTour();
+                  }}
+                  className={`flex items-center w-full p-3 rounded-lg font-medium ${
+                    isTourActive 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
+                  }`}
+                >
+                  <HelpCircle className="w-5 h-5 mr-3" />
+                  {isTourActive ? "Stop Site Tour" : "Take Site Tour"}
+                </button>
+              )}
+              
               {!isSignedIn && (
                 <Link 
                   to="/signin" 
@@ -249,7 +328,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                     onClick={handleLogout}
                     className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="h-5 w-5" />
                   </button>
                 </div>
               )}

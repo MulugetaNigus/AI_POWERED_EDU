@@ -43,7 +43,6 @@ import SubscriptionModal from "../components/SubscriptionModal";
 import { UserButton, useUser } from '@clerk/clerk-react';
 import PDFPreview from "../components/PDFPreview";
 
-
 interface ChatHistory {
   grade: number;
   subject: string;

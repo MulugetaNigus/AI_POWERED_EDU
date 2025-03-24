@@ -26,14 +26,81 @@ import MyGroup from './Community/MyGroup/MyGroup';
 import Chat from './Community/Chat/Chat';
 import Resources from './Community/Resources/Resources';
 import LiveSessions from './Community/LiveSessions/LiveSessions';
-import Joyride, { CallBackProps } from 'react-joyride';
+import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import { motion } from 'framer-motion';
+import { TourEvent, TourActiveEvent } from './components/Header';
 
 function App() {
     const { isSignedIn, user } = useUser();
     const [displayOnBoarding, setDisplayOnBoarding] = useState<boolean>(false);
     const [runTour, setRunTour] = useState(false);
-    // const navigate = useNavigate();
+    
+    // Notify header when tour state changes
+    useEffect(() => {
+        // Create and dispatch custom event with tour state
+        const tourStateEvent = new CustomEvent('tour-state-change', {
+            detail: { isActive: runTour }
+        });
+        TourActiveEvent.dispatchEvent(tourStateEvent);
+    }, [runTour]);
+    
+    // Listen for tour events to toggle tour on/off
+    useEffect(() => {
+        const handleTourEvent = () => {
+            setRunTour(prevState => !prevState);
+        };
+        
+        TourEvent.addEventListener('start-tour', handleTourEvent);
+        
+        return () => {
+            TourEvent.removeEventListener('start-tour', handleTourEvent);
+        };
+    }, []);
+
+    // Tour steps defining the site tour
+    const tourSteps = [
+        {
+            target: '.home-link',
+            content: 'Welcome to ExtreamX Education Platform! Let me show you around the site.',
+            disableBeacon: true,
+            placement: 'center' as const
+        },
+        {
+            target: 'header a[href="/"]',
+            content: 'Click here anytime to return to the homepage.',
+            placement: 'bottom' as const
+        },
+        {
+            target: 'header a[href="/exam"]',
+            content: 'Access practice exams and assessments here.',
+            placement: 'bottom' as const
+        },
+        {
+            target: 'header a[href="/community"]',
+            content: 'Connect with other students and join study groups.',
+            placement: 'bottom' as const
+        },
+        {
+            target: 'header a[href="/resources"]',
+            content: 'Find learning materials and helpful resources.',
+            placement: 'bottom' as const
+        },
+        {
+            target: 'header a[href="/dashboard"]',
+            content: 'Access AI-powered learning assistance tailored to your needs.',
+            placement: 'bottom' as const
+        },
+        {
+            target: '.user-profile',
+            content: 'Manage your profile and account settings here.',
+            placement: 'bottom-end' as const
+        },
+        {
+            target: '.ChatBot',
+            content: 'Need help? Our AI assistant is here to answer your questions anytime.',
+            placement: 'top' as const
+        }
+    ];
 
     useEffect(() => {
         const fetchOnboardingData = async () => {
@@ -47,7 +114,6 @@ function App() {
 
                     if (!userOnboardingData) {
                         setDisplayOnBoarding(true);
-                        // navigate('/on-boarding');
                     } else {
                         setDisplayOnBoarding(false);
                         // Store user data in localStorage with grade level
@@ -56,7 +122,6 @@ function App() {
                             // Add any other user data you want to store
                         };
                         localStorage.setItem('user', JSON.stringify(userData));
-                        // navigate('/');
                     }
                 } catch (error) {
                     console.error("Error fetching onboarding data:", error);
@@ -67,11 +132,20 @@ function App() {
         fetchOnboardingData();
     }, [isSignedIn, user]);
 
+    // Handle tour callbacks
+    const handleTourCallback = (data: CallBackProps) => {
+        const { status } = data;
+        
+        if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+            setRunTour(false);
+        }
+    };
+
     return (
         <BrowserRouter>
             <ThemeProvider>
                 <Joyride
-                    steps={[]} // Add your steps here
+                    steps={tourSteps}
                     run={runTour}
                     continuous={true}
                     showSkipButton={true}
@@ -81,8 +155,31 @@ function App() {
                             primaryColor: '#4338ca',
                             zIndex: 10000,
                         },
+                        tooltip: {
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                        },
+                        buttonNext: {
+                            backgroundColor: '#4338ca',
+                            borderRadius: '4px',
+                            color: '#fff',
+                            fontSize: '14px',
+                        },
+                        buttonBack: {
+                            color: '#4338ca',
+                            fontSize: '14px',
+                            marginRight: '10px',
+                        },
+                        buttonSkip: {
+                            color: '#6b7280',
+                            fontSize: '14px',
+                        }
                     }}
-                    callback={() => {}} // Add your callback here
+                    callback={handleTourCallback}
+                    locale={{
+                        last: 'Finish',
+                        skip: 'Skip tour'
+                    }}
                 />
                 <div className="home-link min-h-screen relative bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors duration-200">
                     {/* Background Decorations */}
