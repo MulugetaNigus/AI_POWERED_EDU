@@ -118,6 +118,22 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     TourEvent.dispatchEvent(tourEvent);
   };
 
+  // Handler for AI Assistance button
+  const goToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  // Handler for mobile menu toggle
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Handler for logo click
+  const goToHome = () => {
+    navigate('/');
+    setIsMenuOpen(false);
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
@@ -129,7 +145,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
+          <div onClick={goToHome} className="flex items-center space-x-2 group cursor-pointer">
             <div className="relative">
               <div className="absolute -inset-1 bg-blue-500/20 dark:bg-blue-500/30 rounded-full blur-md group-hover:bg-blue-500/30 dark:group-hover:bg-blue-500/40 transition-all duration-300"></div>
               <BookOpen className="relative h-8 w-8 text-blue-600 dark:text-blue-500" />
@@ -137,7 +153,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
             <span className="text-2xl font-bold text-gray-800 dark:text-white">
               Extream<span className="text-blue-600 dark:text-blue-400">X</span>
             </span>
-          </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
@@ -165,13 +181,28 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
               </Link>
             ))}
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
-            <Link 
-              to="/dashboard" 
+            <button 
+              onClick={goToDashboard}
               className="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               AI Assistance
-            </Link>
+            </button>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button 
+              onClick={toggleMenu}
+              className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
           </div>
 
           {/* Right side - User controls */}
@@ -221,117 +252,47 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
               </Link>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-4">
-            <ThemeToggle />
-            
-            {isSignedIn && (
-              <button
-                onClick={triggerSiteTour}
-                className={`flex items-center justify-center p-2 transition-colors duration-300 rounded-full ${
-                  isTourActive 
-                    ? 'bg-blue-600 text-white shadow-md' 
-                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-800'
-                }`}
-                aria-label={isTourActive ? "Stop site tour" : "Take site tour"}
-                title={isTourActive ? "Stop site tour" : "Take site tour"}
-              >
-                <HelpCircle className="w-5 h-5" />
-              </button>
-            )}
-            
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Navigation Menu */}
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div 
-            className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 shadow-lg rounded-b-2xl overflow-hidden"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
+            className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800"
           >
-            <div className="px-4 py-6 space-y-4">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.name}
-                  to={link.path} 
-                  className={`flex items-center p-3 rounded-lg font-medium ${
-                    isActive(link.path) 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <link.icon className="w-5 h-5 mr-3" />
-                  {link.name}
-                </Link>
-              ))}
-              
-              <Link 
-                to="/dashboard" 
-                className="flex items-center p-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Sparkles className="w-5 h-5 mr-3" />
-                AI Assistance
-              </Link>
-              
-              {isSignedIn && (
-                <button 
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    triggerSiteTour();
-                  }}
-                  className={`flex items-center w-full p-3 rounded-lg font-medium ${
-                    isTourActive 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <HelpCircle className="w-5 h-5 mr-3" />
-                  {isTourActive ? "Stop Site Tour" : "Take Site Tour"}
-                </button>
-              )}
-              
-              {!isSignedIn && (
-                <Link 
-                  to="/signin" 
-                  className="flex items-center p-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <LogIn className="w-5 h-5 mr-3" />
-                  Log In
-                </Link>
-              )}
-              
-              {isSignedIn && (
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
-                  <div className="flex items-center">
-                    <UserButton />
-                    <span className="ml-3 font-medium text-gray-800 dark:text-gray-200">
-                      {user?.fullName || user?.emailAddresses[0].emailAddress}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={handleLogout}
-                    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+            <div className="container mx-auto px-4 py-4">
+              <nav className="flex flex-col space-y-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex items-center p-2 rounded-lg ${
+                      isActive(link.path)
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
                   >
-                    <LogOut className="h-5 w-5" />
-                  </button>
-                </div>
-              )}
+                    <link.icon className="w-5 h-5 mr-3" />
+                    {link.name}
+                  </Link>
+                ))}
+                <button
+                  onClick={() => {
+                    goToDashboard();
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                >
+                  <Sparkles className="w-5 h-5 mr-3" />
+                  AI Assistance
+                </button>
+              </nav>
             </div>
           </motion.div>
         )}

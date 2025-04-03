@@ -15,6 +15,16 @@ export default function CTASection() {
     'Mobile access for learning on the go'
   ];
 
+  // Handler for Get Started button
+  const handleGetStarted = () => {
+    navigate('/signup');
+  };
+
+  // Handler for View Pricing button
+  const handleViewPricing = () => {
+    navigate('/subscription');
+  };
+
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Background decorations */}
@@ -63,7 +73,7 @@ export default function CTASection() {
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <motion.button
-                      onClick={() => navigate('/signup')}
+                      onClick={handleGetStarted}
                       className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors duration-200 flex items-center justify-center"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -73,7 +83,7 @@ export default function CTASection() {
                     </motion.button>
                     
                     <motion.button
-                      onClick={() => navigate('/pricing')}
+                      onClick={handleViewPricing}
                       className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors duration-200"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

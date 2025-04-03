@@ -71,12 +71,22 @@ const PostCreation: React.FC = () => {
         ? (
           <>
             <div className='flex items-center justify-start'>
-              <button onClick={() => setexpandPostForm(false)} className='bg-blue-600 p-2 rounded-lg text-white mb-2'>Close Form</button>
+              <button onClick={() => setexpandPostForm(false)} className='flex items-center justify-center gap-2 bg-blue-600 p-2 rounded-lg text-white mb-2'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                Close Form
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
-              <div className='flex items-center justify-start gap-1'>
-                <Podcast className='w-5 h-5 text-gray-500' />
+              <div className='flex flex-row items-center justify-start gap-1'>
+
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                </svg>
+
                 <label htmlFor="#" className='dark:text-white text-gray-500 text-base ml-1'>Create a post</label>
+
               </div>
               <textarea
                 className="dark:bg-gray-800 border-2 dark:border-gray-700 w-full p-2 border rounded-lg resize-none mt-2"
@@ -129,7 +139,12 @@ const PostCreation: React.FC = () => {
           </>
         ) : (
           <div className='flex items-center justify-start'>
-            <button onClick={() => setexpandPostForm(true)} className='bg-blue-600 p-2 rounded-lg text-white mb-2'>Create a post</button>
+            <button onClick={() => setexpandPostForm(true)} className='flex items-center justify-center gap-2 bg-blue-600 p-2 rounded-lg text-white mb-2'>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+              </svg>
+              Create a post
+            </button>
           </div>
         )
       }

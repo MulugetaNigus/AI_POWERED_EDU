@@ -119,7 +119,7 @@ const CommunityPage: React.FC = () => {
                     className="md:w-1/4"
                     variants={itemVariants}
                 >
-                    <div className="sticky top-24">
+                    <div clasName="sticky top-24">
                         <PopularGroups />
                     </div>
                 </motion.div>

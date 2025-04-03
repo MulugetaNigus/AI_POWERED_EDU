@@ -96,7 +96,7 @@ export default function OnboardingFlow() {
       address: useraddress,
       region: userregion,
       plan: "free",
-      credit: 10
+      credit: 2500
     };
     console.log(userInfo);
     await axios

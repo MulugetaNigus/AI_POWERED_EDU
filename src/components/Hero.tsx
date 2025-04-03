@@ -30,6 +30,16 @@ export default function Hero() {
     }
   };
 
+  // Handler for Get Started button
+  const handleGetStarted = () => {
+    navigate('/dashboard');
+  };
+
+  // Handler for Watch Demo button
+  const handleWatchDemo = () => {
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="relative bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
       {/* Background Decorations */}
@@ -133,7 +143,7 @@ export default function Hero() {
               variants={itemVariants}
             >
               <motion.button
-                onClick={() => navigate('/dashboard')}
+                onClick={handleGetStarted}
                 className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white rounded-xl 
                   hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700
                   transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30"
@@ -153,7 +163,7 @@ export default function Hero() {
               </motion.button>
 
               <motion.button
-                onClick={() => setIsModalOpen(true)}
+                onClick={handleWatchDemo}
                 className="px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl
                   hover:border-blue-600 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 
                   transition-all duration-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"

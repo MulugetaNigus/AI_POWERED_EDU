@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Calculator,
   TestTube,
@@ -60,23 +61,31 @@ const grades = [
 ];
 `
 
-const coursesByGrade: Record<number, { icon: any; name: string; desc: string; }[]> = {
+const coursesByGrade: Record<number, { icon: any; name: string; desc: string; path: string; }[]> = {
   6: [
     {
       icon: Calculator,
       name: 'Grade 6 Mathematics',
       desc: 'Foundation of numbers and operations',
+      path: '/courses/grade-6/mathematics'
     },
     {
       icon: Languages,
       name: 'Grade 6 English',
       desc: 'Essential communication skills',
+      path: '/courses/grade-6/english'
     },
-    { icon: Globe, name: 'Grade 6 Social Studies', desc: 'Understanding our world' },
+    { 
+      icon: Globe, 
+      name: 'Grade 6 Social Studies', 
+      desc: 'Understanding our world',
+      path: '/courses/grade-6/social-studies'
+    },
     {
       icon: Brain,
       name: 'Grade 6 Civics and Ethics',
       desc: 'Introduction to Civics and Ethics',
+      path: '/courses/grade-6/civics'
     },
   ],
   8: [
@@ -84,41 +93,111 @@ const coursesByGrade: Record<number, { icon: any; name: string; desc: string; }[
       icon: Calculator,
       name: 'Grade 8 Mathematics',
       desc: 'Advanced calculations and algebra',
+      path: '/courses/grade-8/mathematics'
     },
-    { icon: TestTube, name: 'Grade 8 Chemistry', desc: 'Matter and reactions' },
-    { icon: Languages, name: 'Grade 8 Physics', desc: 'Laws of nature and mechanics' },
-    { icon: History, name: 'Grade 8 Civics', desc: 'Introduction to Civics and Ethics' },
+    { 
+      icon: TestTube, 
+      name: 'Grade 8 Chemistry', 
+      desc: 'Matter and reactions',
+      path: '/courses/grade-8/chemistry'
+    },
+    { 
+      icon: Languages, 
+      name: 'Grade 8 Physics', 
+      desc: 'Laws of nature and mechanics',
+      path: '/courses/grade-8/physics'
+    },
+    { 
+      icon: History, 
+      name: 'Grade 8 Civics', 
+      desc: 'Introduction to Civics and Ethics',
+      path: '/courses/grade-8/civics'
+    },
     {
       icon: Code,
       name: 'Grade 8 Social Studies',
       desc: 'Life sciences and systems',
+      path: '/courses/grade-8/social-studies'
     },
-    { icon: Brain, name: 'Grade 8 Biology', desc: 'Earth and human geography' },
-    { icon: Brain, name: 'Grade 8 English', desc: 'Learn about grammers and more in english' },
+    { 
+      icon: Brain, 
+      name: 'Grade 8 Biology', 
+      desc: 'Earth and human geography',
+      path: '/courses/grade-8/biology'
+    },
+    { 
+      icon: Brain, 
+      name: 'Grade 8 English', 
+      desc: 'Learn about grammers and more in english',
+      path: '/courses/grade-8/english'
+    },
   ],
   12: [
     {
       icon: Calculator,
       name: 'Advanced Mathematics',
       desc: 'Calculus and statistics',
+      path: '/courses/grade-12/mathematics'
     },
-    { icon: TestTube, name: 'Chemistry', desc: 'Advanced chemical concepts' },
-    { icon: Atom, name: 'Physics', desc: 'Laws of nature and mechanics' },
-    { icon: HeartPulse, name: 'Biology', desc: 'Life sciences and systems' },
-    { icon: Globe, name: 'Geography', desc: 'Earth and human geography' },
-    { icon: Globe, name: 'Grade 12 Agriculture', desc: 'Earth and human geography' },
-    { icon: Globe, name: 'Grade 12 Economics', desc: 'Bettur unserstaing' },
-    { icon: Globe, name: 'Grade 12 History', desc: 'Explore our history' },
+    { 
+      icon: TestTube, 
+      name: 'Chemistry', 
+      desc: 'Advanced chemical concepts',
+      path: '/courses/grade-12/chemistry'
+    },
+    { 
+      icon: Atom, 
+      name: 'Physics', 
+      desc: 'Laws of nature and mechanics',
+      path: '/courses/grade-12/physics'
+    },
+    { 
+      icon: HeartPulse, 
+      name: 'Biology', 
+      desc: 'Life sciences and systems',
+      path: '/courses/grade-12/biology'
+    },
+    { 
+      icon: Globe, 
+      name: 'Geography', 
+      desc: 'Earth and human geography',
+      path: '/courses/grade-12/geography'
+    },
+    { 
+      icon: Globe, 
+      name: 'Grade 12 Agriculture', 
+      desc: 'Earth and human geography',
+      path: '/courses/grade-12/agriculture'
+    },
+    { 
+      icon: Globe, 
+      name: 'Grade 12 Economics', 
+      desc: 'Bettur unserstaing',
+      path: '/courses/grade-12/economics'
+    },
+    { 
+      icon: Globe, 
+      name: 'Grade 12 History', 
+      desc: 'Explore our history',
+      path: '/courses/grade-12/history'
+    },
     {
       icon: Languages,
       name: 'Grade 12 IT',
       desc: 'Academic computer and turbine',
+      path: '/courses/grade-12/it'
     },
   ],
 };
 
 export default function CourseList() {
   const [selectedGrade, setSelectedGrade] = useState(12);
+  const navigate = useNavigate();
+
+  // Handler for navigating to a specific course
+  const handleLearnMore = (coursePath: string) => {
+    navigate(coursePath);
+  };
 
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-800">
@@ -186,7 +265,10 @@ export default function CourseList() {
                     <p className="text-gray-600 dark:text-gray-300">
                       {course.desc}
                     </p>
-                    <button className="mt-4 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => handleLearnMore(course.path)}
+                      className="mt-4 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                    >
                       Learn more →
                     </button>
                   </motion.div>

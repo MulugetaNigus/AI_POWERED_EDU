@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, Brain, Target, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const MotivationalSection = () => {
+    const navigate = useNavigate();
     const fadeInUp = {
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
@@ -132,6 +134,7 @@ const MotivationalSection = () => {
                         variants={fadeInUp}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate('/dashboard')}
                     >
                         <span className="relative z-10 flex items-center">
                             Start Your Journey

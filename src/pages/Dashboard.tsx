@@ -231,24 +231,22 @@ export default function Dashboard() {
     setIsBlurred((prev) => !prev);
   };
 
+  // Add the token calculator function
+  function countTokens(input: string): number {
+    const tokenize = (text: string) => text.match(/\b[\w']+\b/g) || [];
+    const tokens = tokenize(input || '');
+    return tokens.length;
+  }
+
   const handleSend = async (e: React.FormEvent) => {
-    console.log("Current user credit: ", userCurrentCredit)
+    console.log("Current user credit: ", userCurrentCredit);
     e.preventDefault();
     if (input.trim() && selectedCourse) {
       const userMessage = `${input}`;
       setMessages([...messages, { text: userMessage, isAI: false }]);
-      // Update chat history
-      // updateChatHistory(selectedCourse.grade, selectedCourse.course, {
-      //   text: input,
-      //   isAI: false,
-      //   timestamp: new Date().toISOString()
-      // });
       setInput("");
       setIsLoading(true);
       setReinput(input);
-
-      // before calling my ai endpoint for getting a respnse i just want you to add a little bit checking for the user credit > 0 using the local state  = userCurrentCredit
-      // if the userCurrentCredit is less than 0 i want to show the modal to the user to subscribe if user say yes i want to redirect to the subscription page unless stay here 
 
       if (Number(userCurrentCredit) <= 0) {
         setShowSubscriptionModal(true);
@@ -257,41 +255,25 @@ export default function Dashboard() {
       }
 
       try {
-        // const response = await axios.post(
-        //   "http://localhost:3000/process-file",
-        //   {
-        //     subject: "algorithm",
-        //     prompt: input,
-        //   }
-        // );
-
-        // const response = await axios.post("http://127.0.0.1:8000/process_pdf", {
-        //   // subject: "flutter",
-        //   question: input,
-        // });
-
-        // https://python-gemini-doc-backend.onrender.com
-        // Ngrok endpoints to tunnel = https://8d30-102-213-69-44.ngrok-free.app
         const response = await axios.post(
-          // "http://127.0.0.1:8000/process_pdf",
           "http://localhost:9000/api/tuned-model/generate",
           {
             subject: selectedCourse?.course,
             question: input,
-            grade: user_gradeLevel
-
+            grade: user_gradeLevel,
           }
         );
 
-        console.log(response.data.answer);
-        // if response.data id true i want to store the user subject, prompt and the response data in localstorage for the chat history purpose
-        if (response.data.answer) {
+        const aiResponse = response.data.answer;
+        console.log(aiResponse);
+
+        if (aiResponse) {
           const chatHistoryData = {
             email: currentUsername,
             id: uuidv4(),
             subject: selectedCourse.course,
             prompt: input,
-            data: response.data.answer,
+            data: aiResponse,
             timestamp: new Date().toISOString(),
           };
           let drophistory =
@@ -300,19 +282,30 @@ export default function Dashboard() {
           localStorage.setItem("chatHistory", JSON.stringify(drophistory));
         }
 
-        // every successfull ai response i want to call this endpoint to update the credit of the user, endpoint = http://localhost:8888/onboard/credit/:id
-        await axios.put(`http://localhost:8888/api/v1/onboard/credit/${userID}`)
-          .then((result => {
-            console.log(result.data.remainingCredits)
-            setUserCurrentCredit(result.data.remainingCredits)
-            setRenderNewCreditValue(true)
-          })).catch((err) => {
+        // Calculate tokens for request and response
+        const requestTokens = countTokens(input);
+        const responseTokens = countTokens(aiResponse);
+        // const totalTokens = requestTokens + responseTokens;
+        // MAKE ZERO FOT THE USER REQ TOKEN CAUSE THAT IS MORE COMSUMING
+        const totalTokens = 0 + responseTokens;
+
+        // Deduct credits based on total tokens
+        await axios
+          .put(`http://localhost:8888/api/v1/onboard/credit/${userID}`, {
+            tokensUsed: totalTokens,
+          })
+          .then((result) => {
+            console.log(result.data.remainingCredits);
+            setUserCurrentCredit(result.data.remainingCredits);
+            setRenderNewCreditValue((prev) => !prev);
+          })
+          .catch((err) => {
             console.log(err);
           });
 
         setMessages((prev) => [
           ...prev,
-          { text: response.data.answer, isAI: true },
+          { text: aiResponse, isAI: true },
         ]);
         if (!showIcons) {
           setShowIcons(true);
@@ -333,35 +326,6 @@ export default function Dashboard() {
       setIsLoading(false);
     }
   };
-
-  // const updateChatHistory = (
-  //   grade: number,
-  //   subject: string,
-  //   message: { text: string; isAI: boolean; timestamp: string }
-  // ) => {
-  //   setChatHistory((prev) => {
-  //     const existingChat = prev.find(
-  //       (chat) => chat.grade === grade && chat.subject === subject
-  //     );
-
-  //     if (existingChat) {
-  //       return prev.map((chat) =>
-  //         chat.grade === grade && chat.subject === subject
-  //           ? { ...chat, messages: [...chat.messages, message] }
-  //           : chat
-  //       );
-  //     } else {
-  //       return [
-  //         ...prev,
-  //         {
-  //           grade,
-  //           subject,
-  //           messages: [message],
-  //         },
-  //       ];
-  //     }
-  //   });
-  // };
 
   // handle the chat history
 

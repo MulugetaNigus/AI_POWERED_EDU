@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Zap, Brain, Bot, MessageSquare, Image, BarChart3, Lightbulb } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AIFeatures() {
+  const navigate = useNavigate();
+
   const features = [
     {
       icon: Brain,
@@ -37,6 +40,11 @@ export default function AIFeatures() {
       borderColor: 'border-yellow-200 dark:border-yellow-800'
     }
   ];
+
+  // Handler for Try AI Assistant button
+  const handleTryAIAssistant = () => {
+    navigate('/dashboard');
+  };
 
   return (
     <section className="py-24 bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
@@ -146,6 +154,7 @@ export default function AIFeatures() {
               </div>
               <p className="mb-4">Join thousands of students who are already benefiting from our advanced AI tools.</p>
               <motion.button
+                onClick={handleTryAIAssistant}
                 className="px-6 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors duration-200"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

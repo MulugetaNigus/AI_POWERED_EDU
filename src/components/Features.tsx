@@ -58,6 +58,20 @@ export default function Features() {
     }
   };
 
+  // Handler for scrolling to subjects section
+  const handleExploreSubjects = () => {
+    // Find the subjects section element
+    const subjectsSection = document.getElementById('subjects');
+    
+    // If the element exists, scroll to it smoothly
+    if (subjectsSection) {
+      subjectsSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
     <section id="features" className="py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
       {/* Background decorations */}
@@ -117,15 +131,15 @@ export default function Features() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <a 
-              href="#subjects" 
+            <button 
+              onClick={handleExploreSubjects}
               className="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
             >
               <span className="font-medium">Explore Subjects</span>
               <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
               </svg>
-            </a>
+            </button>
           </motion.div>
         </div>
       </div>

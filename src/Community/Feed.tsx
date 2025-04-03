@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Clock, MessageCircle, User, MoreVertical, Heart } from 'lucide-react';
+import { Clock, MessageCircle, User, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 import img1 from './Assets/HeroOne.png';
 import ReportModal from '../components/ReportModal';
 import { toast, ToastContainer } from 'react-toastify';
 import { useUser } from "@clerk/clerk-react";
+import { formatDistanceToNow, format } from "date-fns";
 
 interface Post {
   _id: string;
@@ -16,6 +17,8 @@ interface Post {
   createdAt: string;
   updatedAt: string;
   userName?: string; // Optional user name field
+  email?: string;
+  role?: string;
 }
 
 const Feed: React.FC = () => {
@@ -25,6 +28,7 @@ const Feed: React.FC = () => {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const { user } = useUser();
   const theme = 'light';
 
@@ -83,71 +87,43 @@ const Feed: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6 p-1">
-        <div className="mt-0">
-          <p className="text-gray-600 text-2xl font-bold">Community Posts</p>
-        </div>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white dark:bg-gray-900 shadow-lg rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700">
-            <div className="p-6 animate-pulse">
-              {/* User Profile Section Skeleton */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b dark:border-gray-700">
-                <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
-              </div>
-
-              {/* Tags Skeleton */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
-              </div>
-
-              {/* Content Skeleton */}
-              <div className="space-y-2 mb-4">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6" />
-              </div>
-
-              {/* Image Skeleton */}
-              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4" />
-
-              {/* Footer Skeleton */}
-              <div className="flex items-center justify-between pt-3 border-t dark:border-gray-700">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
-  }
-
-  // this is my backend code base to update the likes by looking this adjust the frontend code to send the post id and the user id to the backend
-  // this is the endpoints to like the post = 
-  // router.post("/updateLikes/:id", addLikes);
-
-
   const handleLike = async (postId: string, currentLikes: number) => {
     try {
-      // Good: Using template literals for URL construction
-      // Good: Including required parameters in the request body
+      // Check if the post is already liked by the user
+      const isLiked = likedPosts.has(postId);
+      
+      // If already liked, prevent the user from updating
+      if (isLiked) {
+        toast.info('You have already liked this post', {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: theme === 'light' ? 'light' : 'dark',
+        });
+        return;
+      }
+      
+      // Add like
       const response = await axios.post(`http://localhost:8888/api/v1/updateLikes/${postId}`, {
-        increment: 1,  
+        increment: 1,
         currentLikes: currentLikes,
       });
+      
       // for debugging purposes
       console.log(response);
+      
       // Improvement suggestion: Check the response data
       // The backend returns { success: true, data: updatedPost }
       if (response.data.success) {
+        // Update the liked posts set
+        const newLikedPosts = new Set(likedPosts);
+        newLikedPosts.add(postId); // Add to liked posts
+        setLikedPosts(newLikedPosts);
+        
         toast.success('Post liked successfully', {
           position: "top-right",
           autoClose: 300,
@@ -196,6 +172,52 @@ const Feed: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6 p-1">
+        <div className="mt-0">
+          <p className="text-gray-600 text-2xl font-bold">Community Posts</p>
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white dark:bg-gray-900 shadow-lg rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700">
+            <div className="p-6 animate-pulse">
+              {/* User Profile Section Skeleton */}
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b dark:border-gray-700">
+                <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+              </div>
+
+              {/* Tags Skeleton */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              </div>
+
+              {/* Content Skeleton */}
+              <div className="space-y-2 mb-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6" />
+              </div>
+
+              {/* Image Skeleton */}
+              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4" />
+
+              {/* Footer Skeleton */}
+              <div className="flex items-center justify-between pt-3 border-t dark:border-gray-700">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
+  }
 
   return (
     <div className="space-y-6 p-1">
@@ -230,12 +252,11 @@ const Feed: React.FC = () => {
                   setSelectedPost(post);
                   setReportModalOpen(true);
                 }}
-                className={`p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full ${
-                  post.userID === user?.emailAddresses[0]?.emailAddress ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full ${post.userID === user?.emailAddresses[0]?.emailAddress ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 disabled={post.userID === user?.emailAddresses[0]?.emailAddress}
-                title={post.userID === user?.emailAddresses[0]?.emailAddress ? 
-                  'Cannot report own post' : 
+                title={post.userID === user?.emailAddresses[0]?.emailAddress ?
+                  'Cannot report own post' :
                   'Report post'}
               >
                 <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -263,29 +284,41 @@ const Feed: React.FC = () => {
 
             {/* Timestamp and Email */}
             <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 pt-3 border-t dark:border-gray-700">
-              
-              {/* likes */}
-              {/* when i click the like button create a function to increment the likes from my backend */}
-              <button onClick={() => handleLike(post._id, post.likes)}>
+              {/* Like button on the left */}
+              <button 
+                onClick={() => handleLike(post._id, post.likes)}
+                className={`transition-all duration-200 ease-in-out ${likedPosts.has(post._id) ? 'cursor-not-allowed' : 'hover:text-blue-600'}`}
+                title={likedPosts.has(post._id) ? "You already liked this post" : "Like this post"}
+                disabled={likedPosts.has(post._id)}
+              >
                 <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4" />
-                  <span className="text-sm">{post.likes || 0}</span>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    fill={likedPosts.has(post._id) ? "currentColor" : "none"} 
+                    viewBox="0 0 24 24" 
+                    strokeWidth={1.5} 
+                    stroke={likedPosts.has(post._id) ? "#2563eb" : "currentColor"} 
+                    className={`size-6 ${likedPosts.has(post._id) ? "text-blue-600" : "text-gray-500"}`}
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" 
+                    />
+                  </svg>
+                  <span className={`text-sm ${likedPosts.has(post._id) ? "text-blue-600 font-medium" : "text-gray-500"}`}>
+                    {post.likes || 0}
+                  </span>
                 </div>
               </button>
-              
-              {/* date and time */}
+
+              {/* Date and time on the right */}
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span className="text-sm">
-                  {new Date(post.createdAt).toLocaleDateString()}
+                <span className="text-sm" title={format(new Date(post.createdAt), "PPpp")}>
+                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                 </span>
               </div>
-
-              {/* <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                <span className="text-sm">{post.userID}</span>
-              </div> */}
-
             </div>
           </div>
         </div>

@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { Users, Rocket, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Togather = () => {
+    const navigate = useNavigate();
     return (
         <section className="py-20 relative overflow-hidden">
             {/* Background decorations */}
@@ -73,6 +75,7 @@ const Togather = () => {
                                 className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200 group"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => navigate('/community')}
                             >
                                 Join Our Community
                                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
