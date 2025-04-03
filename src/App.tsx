@@ -29,6 +29,8 @@ import LiveSessions from './Community/LiveSessions/LiveSessions';
 import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import { motion } from 'framer-motion';
 import { TourEvent, TourActiveEvent } from './components/Header';
+import { ToastContainer, Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     const { isSignedIn, user } = useUser();
@@ -240,6 +242,20 @@ function App() {
                         </Routes>
                     </div>
                 </div>
+                {/* Global Toast Container */}
+                <ToastContainer
+                    position="top-center"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={true}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                    transition={Bounce}
+                />
             </ThemeProvider>
         </BrowserRouter>
     );

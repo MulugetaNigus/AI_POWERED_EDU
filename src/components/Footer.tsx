@@ -4,9 +4,14 @@ import ContactModal from './ContactModal';
 import { useUser } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Footer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState('');
   const { isSignedIn } = useUser();
 
   const toggleModal = () => {
@@ -14,6 +19,94 @@ export default function Footer() {
       return alert("Please sign in first");
     }
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes('@')) {
+      setSubscriptionStatus('Please enter a valid email address');
+      toast.error('Please enter a valid email address', {
+        position: "top-center",
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        onClose: () => {
+          setTimeout(() => {
+            toast.dismiss();
+          }, 3000);
+        }
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setSubscriptionStatus('');
+    
+    try {
+      const response = await fetch('http://localhost:8888/api/v1/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      if (response.ok) {
+        setEmail('');
+        setSubscriptionStatus('Successfully subscribed!');
+        toast.success('Successfully subscribed to our newsletter!', {
+          position: "top-center",
+          autoClose: 3000,
+          closeOnClick: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          // auto close after 3 seconds
+          onClose: () => {
+            setTimeout(() => {
+              toast.dismiss();
+            }, 3000);
+          }
+        });
+      } else {
+        const data = await response.json();
+        setSubscriptionStatus(data.message || 'Failed to subscribe. Please try again.');
+        toast.error(data.message || 'Failed to subscribe. Please try again.', {
+          position: "top-center",
+          autoClose: 3000,
+          closeOnClick: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          onClose: () => {
+            setTimeout(() => {
+              toast.dismiss();
+            }, 3000);
+          }
+        });
+      }
+    } catch (error) {
+      setSubscriptionStatus('Network error. Please try again later.');
+      toast.error('Network error. Please try again later.', {
+        position: "top-center",
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        onClose: () => {
+          setTimeout(() => {
+            toast.dismiss();
+          }, 3000);
+        }
+      });
+      console.error('Subscription error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const footerLinks = [
@@ -64,21 +157,31 @@ export default function Footer() {
               </div>
               
               <div className="w-full md:w-auto">
-                <div className="flex flex-col sm:flex-row gap-3">
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
                   <input 
                     type="email" 
                     placeholder="Enter your email" 
                     className="px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white w-full sm:w-64"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
                   />
                   <motion.button 
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center font-medium transition-colors duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                    disabled={isSubmitting}
                   >
-                    Subscribe
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+                    {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
                   </motion.button>
-                </div>
+                </form>
+                {subscriptionStatus && (
+                  <p className={`mt-2 text-sm ${subscriptionStatus.includes('Success') ? 'text-green-400' : 'text-red-400'}`}>
+                    {subscriptionStatus}
+                  </p>
+                )}
               </div>
             </div>
           </div>
