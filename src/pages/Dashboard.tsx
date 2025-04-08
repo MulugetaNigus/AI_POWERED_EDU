@@ -118,6 +118,7 @@ export default function Dashboard() {
   const [showPDFSidebar, setShowPDFSidebar] = useState(false);
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [showChatHistory, setShowChatHistory] = useState(true);
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
   // const CHAPA_SECRET_KEY = import.meta.env.VITE_CHAPA_SECRET_KEY;
   // const userCurrentCreditRef = useRef<string>("");
@@ -763,6 +764,30 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+
+              {/* Image Upload Modal */}
+              {showImageUpload && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Upload an Image
+                      </h3>
+                      <button 
+                        onClick={() => setShowImageUpload(false)}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                      >
+                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </div>
+                    <ImageUpload 
+                      onAnalysisComplete={handleImageAnalysis}
+                      isLoading={isImageLoading}
+                      setIsLoading={setIsImageLoading}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Input Area */}
               <form

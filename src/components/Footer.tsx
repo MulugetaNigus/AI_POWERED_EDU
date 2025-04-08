@@ -4,8 +4,6 @@ import ContactModal from './ContactModal';
 import { useUser } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 export default function Footer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,19 +24,6 @@ export default function Footer() {
     
     if (!email || !email.includes('@')) {
       setSubscriptionStatus('Please enter a valid email address');
-      toast.error('Please enter a valid email address', {
-        position: "top-center",
-        autoClose: 3000,
-        closeOnClick: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-        onClose: () => {
-          setTimeout(() => {
-            toast.dismiss();
-          }, 3000);
-        }
-      });
       return;
     }
     
@@ -57,52 +42,12 @@ export default function Footer() {
       if (response.ok) {
         setEmail('');
         setSubscriptionStatus('Successfully subscribed!');
-        toast.success('Successfully subscribed to our newsletter!', {
-          position: "top-center",
-          autoClose: 3000,
-          closeOnClick: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          // auto close after 3 seconds
-          onClose: () => {
-            setTimeout(() => {
-              toast.dismiss();
-            }, 3000);
-          }
-        });
       } else {
         const data = await response.json();
         setSubscriptionStatus(data.message || 'Failed to subscribe. Please try again.');
-        toast.error(data.message || 'Failed to subscribe. Please try again.', {
-          position: "top-center",
-          autoClose: 3000,
-          closeOnClick: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          onClose: () => {
-            setTimeout(() => {
-              toast.dismiss();
-            }, 3000);
-          }
-        });
       }
     } catch (error) {
       setSubscriptionStatus('Network error. Please try again later.');
-      toast.error('Network error. Please try again later.', {
-        position: "top-center",
-        autoClose: 3000,
-        closeOnClick: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-        onClose: () => {
-          setTimeout(() => {
-            toast.dismiss();
-          }, 3000);
-        }
-      });
       console.error('Subscription error:', error);
     } finally {
       setIsSubmitting(false);
