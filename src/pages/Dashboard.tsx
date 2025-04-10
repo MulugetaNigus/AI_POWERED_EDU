@@ -110,6 +110,11 @@ export default function Dashboard() {
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const [currentUsername, setCurrentUsername] = useState<string | undefined>("");
   const [isUsernameVisible, setIsUsernameVisible] = useState(false);
+  const [responseTime, setResponseTime] = useState<number | null>(null);
+  const [responseMetadata, setResponseMetadata] = useState<{
+    requestTime: string;
+    model?: string;
+  } | null>(null);
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -248,6 +253,13 @@ export default function Dashboard() {
       setInput("");
       setIsLoading(true);
       setReinput(input);
+      
+      // Reset response time and metadata
+      setResponseTime(null);
+      setResponseMetadata(null);
+
+      // Record start time
+      const startTime = Date.now();
 
       if (Number(userCurrentCredit) <= 0) {
         setShowSubscriptionModal(true);
@@ -264,6 +276,11 @@ export default function Dashboard() {
             grade: user_gradeLevel,
           }
         );
+
+        // Calculate response time
+        const endTime = Date.now();
+        const responseTimeMs = endTime - startTime;
+        setResponseTime(responseTimeMs);
 
         const aiResponse = response.data.answer;
         console.log(aiResponse);
@@ -289,6 +306,12 @@ export default function Dashboard() {
         // const totalTokens = requestTokens + responseTokens;
         // MAKE ZERO FOT THE USER REQ TOKEN CAUSE THAT IS MORE COMSUMING
         const totalTokens = 0 + responseTokens;
+
+        // Set response metadata
+        setResponseMetadata({
+          requestTime: new Date().toLocaleTimeString(),
+          model: response.data.model || "AI Tutor"
+        });
 
         // Deduct credits based on total tokens
         await axios
@@ -722,29 +745,46 @@ export default function Dashboard() {
                       </div>
 
                       {message.isAI && (
-                        <div className="flex items-center space-x-2 mt-2">
-                          <button
-                            onClick={() => handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))}
-                            onDoubleClick={() => handleStopSpeak()}
-                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
-                            title="Listen or double click to stop"
-                          >
-                            <Volume2 className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                          </button>
-                          <button
-                            onClick={() => handleCopyText(message.text)}
-                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
-                            title="Copy"
-                          >
-                            <Copy className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                          </button>
-                          <button
-                            onClick={() => handleRegenerateResponse()}
-                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
-                            title="Regenerate"
-                          >
-                            <RefreshCw className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                          </button>
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex items-center space-x-2 mt-2">
+                            <button
+                              onClick={() => handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))}
+                              onDoubleClick={() => handleStopSpeak()}
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              title="Listen or double click to stop"
+                            >
+                              <Volume2 className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                            </button>
+                            <button
+                              onClick={() => handleCopyText(message.text)}
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              title="Copy"
+                            >
+                              <Copy className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                            </button>
+                            <button
+                              onClick={() => handleRegenerateResponse()}
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              title="Regenerate"
+                            >
+                              <RefreshCw className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                            </button>
+                          </div>
+                          
+                          {/* Response Time and Metadata */}
+                          {index === messages.length - 1 && responseTime !== null && (
+                            <div className="mt-1 text-xs text-gray-400 flex flex-wrap gap-2">
+                              <span>Response time: {(responseTime / 1000).toFixed(2)}s</span>
+                              {responseMetadata && (
+                                <>
+                                  <span>•</span>
+                                  <span>Time: {responseMetadata.requestTime}</span>
+                                  <span>•</span>
+                                  <span>Model: {responseMetadata.model}</span>
+                                </>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -794,48 +834,74 @@ export default function Dashboard() {
                 onSubmit={handleSend}
                 className="border-t border-gray-200/50 dark:border-gray-700/50 p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
               >
-                <div className="flex items-center space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowImageUpload(!showImageUpload)}
-                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    title="Upload image"
-                  >
-                    <ImageIcon className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNewChat}
-                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    title="Start new chat"
-                    disabled={!selectedCourse}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder={
-                      selectedCourse
-                        ? "Ask anything about this course..."
-                        : "Select a course to start chatting..."
-                    }
-                    disabled={!selectedCourse || isLoading}
-                    className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!selectedCourse || isLoading}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                  >
-                    <span className="text-sm font-medium">Send</span>
-                    {isLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Send className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+                <div className="relative flex flex-col w-full max-w-4xl mx-autoo">
+                  <div className="relative flex items-center w-full overflow-hidden bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-300 dark:border-gray-700/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-gray-600 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900/30 focus-within:border-blue-400">
+                    {/* Input with auto-resize based on content */}
+                    <textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend(e);
+                        }
+                      }}
+                      placeholder={
+                        selectedCourse
+                          ? "Ask anything about this course..."
+                          : "Select a course to start chatting..."
+                      }
+                      disabled={!selectedCourse || isLoading}
+                      rows={1}
+                      className="flex-1 px-4 py-6 text-sm bg-transparent text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none outline-none min-h-[56px] max-h-[200px] overflow-y-auto"
+                    />
+
+                    {/* Action buttons container */}
+                    <div className="flex items-center pr-2 space-x-1">
+                      {/* Image upload button */}
+                      <button
+                        type="button"
+                        onClick={() => setShowImageUpload(!showImageUpload)}
+                        className="p-2.5 text-gray-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        title="Upload image"
+                      >
+                        <ImageIcon className="h-5 w-5" />
+                      </button>
+
+                      {/* New chat button */}
+                      <button
+                        type="button"
+                        onClick={handleNewChat}
+                        className="p-2.5 text-gray-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        title="Start new chat"
+                        disabled={!selectedCourse}
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+
+                      {/* Send button */}
+                      <button
+                        type="submit"
+                        disabled={!selectedCourse || isLoading || !input.trim()}
+                        className={`p-2.5 rounded-full transition-all duration-200 flex items-center justify-center ${
+                          !selectedCourse || isLoading || !input.trim()
+                            ? "text-gray-400 dark:text-gray-600"
+                            : "text-white bg-blue-600 hover:bg-blue-700 shadow-md"
+                        }`}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                          <Send className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Helpful prompt below input */}
+                  <div className="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
+                    Press Enter to send, Shift+Enter for a new line
+                  </div>
                 </div>
               </form>
             </div>
