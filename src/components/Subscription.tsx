@@ -4,6 +4,7 @@ import axios from 'axios';
 import SuccessPayment from './SuccessPayment';
 import { useUser } from '@clerk/clerk-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Header from './Header';
 
 interface Plan {
   id: string;
@@ -29,8 +30,8 @@ const plans: Plan[] = [
   {
     id: 'starter',
     name: 'Starter',
-    price: 250,
-    credits: 50,
+    price: 75,
+    credits: 2500,
     features: [
       '50 AI Credits',
       'PDF Chat Support',
@@ -42,8 +43,8 @@ const plans: Plan[] = [
   {
     id: 'basic',
     name: 'Pro',
-    price: 500,
-    credits: 100,
+    price: 120,
+    credits: 5000,
     isPopular: true,
     features: [
       '100 AI Credits',
@@ -57,8 +58,8 @@ const plans: Plan[] = [
   {
     id: 'premium',
     name: 'Elite',
-    price: 1000,
-    credits: 500,
+    price: 300,
+    credits: 7500,
     features: [
       '500 AI Credits',
       'Premium PDF Analysis',
@@ -80,7 +81,7 @@ export default function Subscription() {
   const [userID, setUserID] = useState<string | undefined>("");
   const [cycle, setCycle] = useState<'monthly' | 'annual'>('monthly');
   const [showErrorToast, setShowErrorToast] = useState(false);
-  const [showFeatureTooltip, setShowFeatureTooltip] = useState<{[key: string]: boolean}>({});
+  const [showFeatureTooltip, setShowFeatureTooltip] = useState<{ [key: string]: boolean }>({});
 
   const { isSignedIn, user } = useUser();
 
@@ -149,13 +150,31 @@ export default function Subscription() {
         localStorage.setItem('pending_payment', JSON.stringify({
           tx_ref,
           plan_id: plan.id,
+          email: email,
           amount: cycle === 'annual' ? plan.price * 10 * 0.85 : plan.price,
           credits: cycle === 'annual' ? plan.credits * 12 : plan.credits,
           userId: userID
         }));
-
-        // Redirect to the checkout URL
-        window.location.href = response.data.data.checkout_url;
+        try {
+          const res = await axios.put(
+            'http://localhost:8888/api/v1/onboard',
+            { email: email, plan: plan.name },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          if (res.data) {
+            alert(res.data.success);
+            // Redirect to the checkout URL
+            window.location.href = response.data.data.checkout_url;
+            return response.data;
+          }
+        } catch (error: any) {
+          alert("Failed to update user plan");
+          throw new Error(error.response?.data?.message || 'Failed to update user plan');
+        }
       } else {
         setPaymentError(true);
         console.error('Payment initialization failed:', response.data);
@@ -213,6 +232,7 @@ export default function Subscription() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-gray-900 pt-20 pb-24 px-4 sm:px-6 lg:px-8">
+      <Header />
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-[1000px] h-[1000px] opacity-30 dark:opacity-10 bg-gradient-to-b from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
@@ -241,8 +261,8 @@ export default function Subscription() {
           >
             <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
             <p className="text-gray-800 dark:text-gray-200">Payment processing error. Please try again.</p>
-            <button 
-              onClick={() => setShowErrorToast(false)} 
+            <button
+              onClick={() => setShowErrorToast(false)}
               className="ml-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <X className="w-4 h-4 text-gray-500" />
@@ -258,24 +278,23 @@ export default function Subscription() {
             <CreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2" />
             <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Subscription Plans</span>
           </div>
-          
+
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <h1 className="mt-2 text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 md:mb-0 max-w-2xl">
               <span className="inline bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 dark:from-blue-400 dark:via-purple-400 dark:to-blue-400">
                 Power Up Your Learning
               </span>
             </h1>
-            
+
             {/* Billing cycle toggle - Left aligned now */}
             <div className="md:ml-6">
               <div className="inline-flex p-1 rounded-lg bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => setCycle('monthly')}
-                  className={`relative px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                    cycle === 'monthly'
-                      ? 'text-white' 
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
+                  className={`relative px-6 py-2 rounded-md text-sm font-medium transition-all ${cycle === 'monthly'
+                    ? 'text-white'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
                 >
                   {cycle === 'monthly' && (
                     <motion.div
@@ -287,14 +306,13 @@ export default function Subscription() {
                   )}
                   <span className="relative z-10">Monthly</span>
                 </button>
-                
+
                 <button
                   onClick={() => setCycle('annual')}
-                  className={`relative px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                    cycle === 'annual'
-                      ? 'text-white' 
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
+                  className={`relative px-6 py-2 rounded-md text-sm font-medium transition-all ${cycle === 'annual'
+                    ? 'text-white'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
                 >
                   {cycle === 'annual' && (
                     <motion.div
@@ -312,7 +330,7 @@ export default function Subscription() {
               </div>
             </div>
           </div>
-          
+
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mt-6">
             Choose the plan that best fits your needs and elevate your exam preparation with our AI-powered tools.
           </p>
@@ -325,24 +343,23 @@ export default function Subscription() {
               key={plan.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ 
-                duration: 0.4, 
+              transition={{
+                duration: 0.4,
                 delay: plans.indexOf(plan) * 0.1,
                 ease: [0.4, 0, 0.2, 1]
               }}
-              whileHover={{ 
+              whileHover={{
                 y: -5,
                 transition: { duration: 0.2, ease: "easeOut" }
               }}
-              className={`relative rounded-2xl overflow-hidden ${
-                plan.isPopular ? 'md:-translate-y-4 z-10' : 'z-0'
-              }`}
+              className={`relative rounded-2xl overflow-hidden ${plan.isPopular ? 'md:-translate-y-4 z-10' : 'z-0'
+                }`}
             >
               {/* Card background with gradient border */}
               <div className="absolute inset-0 p-0.5 rounded-2xl bg-gradient-to-br from-gray-200 via-gray-100 to-white dark:from-gray-700 dark:via-gray-800 dark:to-gray-900">
                 <div className="absolute inset-0 bg-white dark:bg-gray-900 rounded-[calc(1rem-1px)]"></div>
               </div>
-              
+
               {/* Popular badge */}
               {plan.isPopular && (
                 <div className="absolute top-5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
@@ -353,7 +370,7 @@ export default function Subscription() {
                   </div>
                 </div>
               )}
-              
+
               {/* Card content - Using flex column with justify-between to align buttons */}
               <div className={`relative h-full p-6 sm:p-8 flex flex-col 
                 ${plan.isPopular ? 'bg-gradient-to-b from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10' : 'bg-white dark:bg-gray-900'}`}
@@ -363,10 +380,10 @@ export default function Subscription() {
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
                     <div className="mt-4 flex items-baseline">
                       <span className={`text-4xl font-extrabold 
-                        ${plan.isPopular 
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400' 
+                        ${plan.isPopular
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400'
                           : 'text-gray-900 dark:text-white'}`}>
-                        {cycle === 'annual' 
+                        {cycle === 'annual'
                           ? `${Math.round(plan.price * 10 * 0.85)}`
                           : `${plan.price}`}
                       </span>
@@ -376,17 +393,17 @@ export default function Subscription() {
                       </span>
                     </div>
                   </div>
-                  
+
                   {/* Feature badge */}
                   <div className={`inline-flex items-center px-3 py-1 mb-6 rounded-full ${planColors[plan.id as keyof typeof planColors].badge}`}>
                     <Zap className={`h-4 w-4 mr-2 ${planColors[plan.id as keyof typeof planColors].icon}`} />
                     <span className="text-sm">
-                      {cycle === 'annual' 
+                      {cycle === 'annual'
                         ? `${plan.credits * 12} AI Credits`
                         : `${plan.credits} AI Credits`}
                     </span>
                   </div>
-                  
+
                   {/* Features list - enhanced with better spacing */}
                   <ul className="space-y-3">
                     {plan.features.map((feature, idx) => (
@@ -398,18 +415,18 @@ export default function Subscription() {
                           <span className="text-gray-700 dark:text-gray-300">
                             {feature}
                           </span>
-                          
+
                           {/* Info tooltip for certain features */}
                           {featureTooltips[feature] && (
                             <div className="inline-block ml-1">
-                              <button 
+                              <button
                                 onMouseEnter={() => toggleFeatureTooltip(feature)}
                                 onMouseLeave={() => toggleFeatureTooltip(feature)}
                                 className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                               >
                                 <HelpCircle className="h-3.5 w-3.5" />
                               </button>
-                              
+
                               {showFeatureTooltip[feature] && (
                                 <motion.div
                                   initial={{ opacity: 0, y: 5 }}
@@ -427,7 +444,7 @@ export default function Subscription() {
                     ))}
                   </ul>
                 </div>
-                
+
                 {/* Button section - now in a separate div at the bottom with mt-auto */}
                 <div className="mt-auto pt-8">
                   {/* CTA Button - Enhanced with better hover effects */}
@@ -452,10 +469,11 @@ export default function Subscription() {
                   </motion.button>
 
                   {/* Guarantee badge */}
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                  {/* <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                     <Shield className="h-3 w-3 mr-1 text-green-500" />
                     <span>7-day money-back guarantee</span>
-                  </div>
+                  </div> */}
+
                 </div>
               </div>
             </motion.div>

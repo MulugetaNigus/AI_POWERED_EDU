@@ -194,38 +194,46 @@ const Feed: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6 p-1">
-        <div className="mt-0">
-          <p className="text-gray-600 text-2xl font-bold">Community Posts</p>
+        <div className="mt-0 mb-4"> {/* Added margin-bottom */}
+          <p className="text-gray-700 dark:text-gray-300 text-2xl font-semibold">Community Posts</p> {/* Adjusted font weight and color */}
         </div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white dark:bg-gray-900 shadow-lg rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700">
-            <div className="p-6 animate-pulse">
+          <div key={i} className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"> {/* Adjusted background and border */}
+            <div className="p-5 animate-pulse"> {/* Adjusted padding */}
               {/* User Profile Section Skeleton */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b dark:border-gray-700">
-                <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+              <div className="flex items-center gap-3 mb-4"> {/* Removed border-bottom */}
+                <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full" /> {/* Adjusted size and color */}
+                <div className="flex-1 space-y-1">
+                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3" /> {/* User name skeleton */}
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4" /> {/* Timestamp/Visibility skeleton */}
+                </div>
               </div>
+
+              {/* Title Skeleton */}
+              <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-3" />
 
               {/* Tags Skeleton */}
               <div className="flex items-center gap-2 mb-4">
-                <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                <div className="h-5 w-16 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                <div className="h-5 w-20 bg-gray-300 dark:bg-gray-600 rounded-full" />
               </div>
 
               {/* Content Skeleton */}
               <div className="space-y-2 mb-4">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6" />
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-full" />
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-5/6" />
               </div>
 
               {/* Image Skeleton */}
-              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4" />
+              <div className="w-full h-56 bg-gray-300 dark:bg-gray-600 rounded-md mb-4" /> {/* Adjusted height and rounding */}
 
               {/* Footer Skeleton */}
-              <div className="flex items-center justify-between pt-3 border-t dark:border-gray-700">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+              <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700"> {/* Adjusted padding and border */}
+                <div className="flex gap-4">
+                  <div className="h-5 w-16 bg-gray-300 dark:bg-gray-600 rounded" /> {/* Like button skeleton */}
+                  <div className="h-5 w-20 bg-gray-300 dark:bg-gray-600 rounded" /> {/* Comment button skeleton */}
+                </div>
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24" /> {/* Timestamp skeleton */}
               </div>
             </div>
           </div>
@@ -240,28 +248,28 @@ const Feed: React.FC = () => {
 
   return (
     <div className="space-y-6 p-1">
-      <div className="mt-0">
-        <p className="text-gray-600 text-2xl font-bold">Community Posts</p>
+      <div className="mt-0 mb-4"> {/* Added margin-bottom */}
+        <p className="text-gray-700 dark:text-gray-300 text-2xl font-semibold">Community Posts</p> {/* Adjusted font weight and color */}
       </div>
-      
+
       {posts.length === 0 ? (
         // Empty state with iframe Lottie animation
-        <div className="flex flex-col items-center justify-center py-10 px-4 overflow-hidden">
-          <div className="w-full h-72 mb-4">
-            <iframe 
-              src="https://lottie.host/embed/13390110-b1cf-4da3-8743-dd158a83ce4e/ZawlSj53Cx.lottie" 
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700"> {/* Added background, padding, shadow, border */}
+          <div className="w-full max-w-xs h-64 mb-6"> {/* Adjusted size and margin */}
+            <iframe
+              src="https://lottie.host/embed/13390110-b1cf-4da3-8743-dd158a83ce4e/ZawlSj53Cx.lottie"
               style={{ width: '100%', height: '100%', border: 'none' }}
               title="No posts animation"
               allowFullScreen
             ></iframe>
           </div>
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
             No Posts Yet
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 text-center mb-6 max-w-md">
-            Be the first to share your thoughts with the community or check back later for updates!
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm"> {/* Adjusted max-width */}
+            It's quiet here... Be the first to share something with the community!
           </p>
-          <button 
+          <button
             onClick={() => {
               // Scroll to post creation component
               const postCreation = document.getElementById('post-creation');
@@ -272,7 +280,7 @@ const Feed: React.FC = () => {
                 document.dispatchEvent(postCreationEvent);
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" // Adjusted padding and added focus styles
           >
             <PlusCircle className="w-5 h-5" />
             Create a Post
@@ -282,39 +290,45 @@ const Feed: React.FC = () => {
         // Show posts when available
         posts.map((post) => (
           <div key={post._id}
-            className="bg-white dark:bg-gray-900 shadow-lg rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 transition hover:shadow-xl">
-            <div className="p-6">
+            className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition hover:shadow-md"> {/* Adjusted background, border, hover effect */}
+            <div className="p-5"> {/* Adjusted padding */}
               {/* User Profile Section */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b dark:border-gray-700">
-                <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900/30">
-                  <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-start gap-3 mb-4"> {/* Use items-start for alignment, removed border */}
+                <div className="flex-shrink-0 p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                  <User className="w-6 h-6 text-blue-600 dark:text-blue-400" /> {/* Slightly larger icon */}
                 </div>
                 <div className="flex-1">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-semibold text-gray-900 dark:text-white block"> {/* Use block for better spacing */}
                     {post.userID.split('@')[0]} {/* Display username part of email */}
                   </span>
-                  
-                  {/* Show visibility indicator */}
-                  {post.visibility && (
-                    <div className="flex items-center mt-1">
-                      {post.visibility === 'public' && (
-                        <span className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                          <Globe className="w-3 h-3 mr-1" /> Public
-                        </span>
-                      )}
-                      {post.visibility === 'friends' && (
-                        <span className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                          <Users className="w-3 h-3 mr-1" /> Friends
-                        </span>
-                      )}
-                      {post.visibility === 'private' && (
-                        <span className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                          <Lock className="w-3 h-3 mr-1" /> Only Me
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  {/* Timestamp and Visibility combined */}
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-0.5"> {/* Reduced margin-top */}
+                    <span title={format(new Date(post.createdAt), "PPpp")}>
+                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                    </span>
+                    {post.visibility && (
+                      <>
+                        <span className="mx-1.5">&middot;</span> {/* Separator */}
+                        {post.visibility === 'public' && (
+                          <span className="flex items-center">
+                            <Globe className="w-3 h-3 mr-1" /> Public
+                          </span>
+                        )}
+                        {post.visibility === 'friends' && (
+                          <span className="flex items-center">
+                            <Users className="w-3 h-3 mr-1" /> Friends
+                          </span>
+                        )}
+                        {post.visibility === 'private' && (
+                          <span className="flex items-center">
+                            <Lock className="w-3 h-3 mr-1" /> Only Me
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
+                {/* Report Button - Icon Only */}
                 <button
                   onClick={() => {
                     // Check if the post is from the current user
@@ -329,125 +343,111 @@ const Feed: React.FC = () => {
                     setSelectedPost(post);
                     setReportModalOpen(true);
                   }}
-                  className={`p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full ${post.userID === user?.emailAddresses[0]?.emailAddress ? 'opacity-50 cursor-not-allowed' : ''
+                  className={`p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 ${post.userID === user?.emailAddresses[0]?.emailAddress ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   disabled={post.userID === user?.emailAddresses[0]?.emailAddress}
                   title={post.userID === user?.emailAddresses[0]?.emailAddress ?
                     'Cannot report own post' :
                     'Report post'}
                 >
-                  <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <MoreVertical className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Post Title - New */}
+              {/* Post Title */}
               {post.title && (
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2"> {/* Adjusted size and margin */}
                   {post.title}
                 </h2>
               )}
 
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
-                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <div className="flex items-center gap-2 mb-3 flex-wrap"> {/* Adjusted margin */}
                   {post.tags.map((tag, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 rounded-full text-sm">
+                    <span key={idx} className="px-2.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 rounded-full text-xs font-medium"> {/* Adjusted padding, size, color */}
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
 
-              {/* Rich Content - render HTML */}
-              <div 
-                className="prose dark:prose-invert max-w-none mb-4 text-gray-800 dark:text-gray-300"
+              {/* Rich Content */}
+              <div
+                className="prose prose-sm sm:prose dark:prose-invert max-w-none mb-4 text-gray-700 dark:text-gray-300" /* Adjusted text color and prose size */
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
-              {/* Images - Display actual images from paths or default if none */}
-              {post.images && post.images.length > 0 ? (
+              {/* Images */}
+              {post.images && post.images.length > 0 && (
                 <div className={`grid ${post.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-2 mb-4`}>
                   {post.images.map((imagePath, index) => (
-                    <div key={index} className="relative overflow-hidden rounded-lg group">
-                      <img 
-                        src={`${BASE_URL}${imagePath}`} 
-                        alt={`Post image ${index + 1}`} 
-                        className="w-full h-60 object-cover rounded-lg transition-transform hover:scale-105 duration-300"
+                    <div key={index} className="relative overflow-hidden rounded-md group aspect-video"> {/* Use aspect-video for consistency, adjusted rounding */}
+                      <img
+                        src={`${BASE_URL}${imagePath}`}
+                        alt={`Post image ${index + 1}`}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" // Ensure image covers container, adjusted hover
                         onError={(e) => {
-                          // Fallback to default image if loading fails
-                          e.currentTarget.src = img1;
+                          e.currentTarget.src = img1; // Fallback
+                          e.currentTarget.parentElement?.classList.add('bg-gray-100', 'dark:bg-gray-700'); // Add background on error
                           console.log(`Failed to load image at path: ${imagePath}`);
                         }}
                       />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <a 
-                          href={`${BASE_URL}${imagePath}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="bg-white text-gray-800 px-3 py-1 rounded-full text-sm font-medium"
-                        >
-                          View Full Image
-                        </a>
-                      </div>
+                      <a
+                        href={`${BASE_URL}${imagePath}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100"
+                        aria-label="View full image"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-8 h-8">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                        </svg>
+                      </a>
                     </div>
                   ))}
                 </div>
-              ) : (
-                // Show default image if no images are available
-                <img src={img1} alt="post-image" className="rounded-lg w-full h-48 object-cover mb-4" />
               )}
+              {/* Removed default image display when no images are present */}
 
-              {/* Timestamp and Interactions */}
-              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 pt-3 border-t dark:border-gray-700">
-                {/* Like button and comment button */}
-                <div className="flex items-center gap-3">
-                  <button 
+              {/* Interactions */}
+              <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700"> {/* Adjusted padding and border */}
+                {/* Like and Comment buttons */}
+                <div className="flex items-center gap-4"> {/* Increased gap */}
+                  <button
                     onClick={() => handleLike(post._id, post.likes)}
-                    className={`transition-all duration-200 ease-in-out ${likedPosts.has(post._id) ? 'cursor-not-allowed' : 'hover:text-blue-600'}`}
+                    className={`flex items-center gap-1.5 group transition-colors duration-200 ease-in-out ${likedPosts.has(post._id) ? 'text-blue-600 cursor-not-allowed' : 'hover:text-blue-600 dark:hover:text-blue-500'}`}
                     title={likedPosts.has(post._id) ? "You already liked this post" : "Like this post"}
                     disabled={likedPosts.has(post._id)}
                   >
-                    <div className="flex items-center gap-2">
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill={likedPosts.has(post._id) ? "currentColor" : "none"} 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke={likedPosts.has(post._id) ? "#2563eb" : "currentColor"} 
-                        className={`w-5 h-5 ${likedPosts.has(post._id) ? "text-blue-600" : "text-gray-500"}`}
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" 
-                        />
-                      </svg>
-                      <span className={`text-sm ${likedPosts.has(post._id) ? "text-blue-600 font-medium" : "text-gray-500"}`}>
-                        {post.likes || 0}
-                      </span>
-                    </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill={likedPosts.has(post._id) ? "currentColor" : "none"}
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className={`w-5 h-5 ${likedPosts.has(post._id) ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500'}`} // Conditional coloring
+                    >
+                      {/* Simplified Like Icon Path */}
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75 2.25 2.25 0 012.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.5 4.5 0 00-1.423-.23H5.904M6.633 10.5l-1.07-1.07m1.07 1.07v7.875M5.563 18.375a12.001 12.001 0 00-1.423-.23H2.25a2.25 2.25 0 01-2.25-2.25V6.75a2.25 2.25 0 012.25-2.25h1.586a12.001 12.001 0 011.423.23l1.07 1.07M6.633 10.5H14.25" />
+                    </svg>
+                    <span className={`text-sm font-medium ${likedPosts.has(post._id) ? "text-blue-600" : "text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"}`}> {/* Adjusted font weight and color */}
+                      {post.likes || 0}
+                    </span>
                   </button>
-                  
-                  {/* Comment button */}
-                  <button disabled className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm">Comment</span>
-                  </button>
-                </div>
 
-                {/* Date and time on the right */}
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-sm" title={format(new Date(post.createdAt), "PPpp")}>
-                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                  </span>
+                  {/* Comment button */}
+                  <button disabled className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500 transition-colors cursor-not-implemented" title="Comments coming soon"> {/* Added tooltip */}
+                    <MessageCircle className="w-5 h-5" />
+                  </button>
                 </div>
+                {/* Timestamp moved to user info section */}
               </div>
             </div>
           </div>
         ))
       )}
-      
+
       <ToastContainer />
       <ReportModal
         isOpen={reportModalOpen}

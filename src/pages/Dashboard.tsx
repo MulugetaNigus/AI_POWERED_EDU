@@ -107,6 +107,7 @@ export default function Dashboard() {
   const [userID, setuserID] = useState("");
   const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
   const [userCurrentCredit, setUserCurrentCredit] = useState<string>("");
+  const [userCurrentPlan, setuserCurrentPlan] = useState<string | undefined>("");
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const [currentUsername, setCurrentUsername] = useState<string | undefined>("");
   const [isUsernameVisible, setIsUsernameVisible] = useState(false);
@@ -179,6 +180,7 @@ export default function Dashboard() {
 
         // Filter the user data to find the current user's credit
         const currentUserData = userData.find((user: { email: string; }) => user.email === email);
+        setuserCurrentPlan(currentUserData.plan);
         console.log("dashboard credit: ", currentUserData?.credit); // Use optional chaining
 
         if (currentUserData) {
@@ -253,7 +255,7 @@ export default function Dashboard() {
       setInput("");
       setIsLoading(true);
       setReinput(input);
-      
+
       // Reset response time and metadata
       setResponseTime(null);
       setResponseMetadata(null);
@@ -587,12 +589,11 @@ export default function Dashboard() {
                                   handleCourseSelect(g.level, course.name);
                                   console.log(course.name);
                                 }}
-                                className={`w-full flex items-center space-x-2 p-2 text-left rounded-md transition-all duration-200 ${
-                                  selectedCourse?.grade === g.level &&
+                                className={`w-full flex items-center space-x-2 p-2 text-left rounded-md transition-all duration-200 ${selectedCourse?.grade === g.level &&
                                   selectedCourse?.course === course.name
-                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm"
-                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                }`}
+                                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                  }`}
                               >
                                 <span className="text-base">{course.icon}</span>
                                 <span className="text-sm font-medium">{course.name}</span>
@@ -609,11 +610,12 @@ export default function Dashboard() {
 
                 {/* Quiz and Progress Link */}
                 <Link
-                  to="/quize-and-progress"
+                  to={userCurrentPlan === "free" ? "/subscription" : "/quize-and-progress"}
                   className="flex items-center justify-center w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5"
                 >
                   <p className="text-sm font-medium">Take a Quiz</p>
-                  <Rocket className="ml-2 w-4 h-4" />
+                  <Rocket className="ml-2 w-4 h-4 mr-2" />
+                  {userCurrentPlan === "free" && <sup className='bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-400 dark:to-orange-400 mb-2 font-bold text-white text-[10px] rounded-full p-2'>Pro</sup>}
                 </Link>
 
                 <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
@@ -735,11 +737,10 @@ export default function Dashboard() {
                   >
                     <div className="max-w-[80%]">
                       <div
-                        className={`p-3 rounded-xl shadow-sm ${
-                          message.isAI
-                            ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                            : "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
-                        }`}
+                        className={`p-3 rounded-xl shadow-sm ${message.isAI
+                          ? "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                          : "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+                          }`}
                       >
                         <MarkdownDisplay markdownText={message.text} />
                       </div>
@@ -770,7 +771,7 @@ export default function Dashboard() {
                               <RefreshCw className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             </button>
                           </div>
-                          
+
                           {/* Response Time and Metadata */}
                           {index === messages.length - 1 && responseTime !== null && (
                             <div className="mt-1 text-xs text-gray-400 flex flex-wrap gap-2">
@@ -813,14 +814,14 @@ export default function Dashboard() {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Upload an Image
                       </h3>
-                      <button 
+                      <button
                         onClick={() => setShowImageUpload(false)}
                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                       >
                         <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                       </button>
                     </div>
-                    <ImageUpload 
+                    <ImageUpload
                       onAnalysisComplete={handleImageAnalysis}
                       isLoading={isImageLoading}
                       setIsLoading={setIsImageLoading}
@@ -883,11 +884,10 @@ export default function Dashboard() {
                       <button
                         type="submit"
                         disabled={!selectedCourse || isLoading || !input.trim()}
-                        className={`p-2.5 rounded-full transition-all duration-200 flex items-center justify-center ${
-                          !selectedCourse || isLoading || !input.trim()
-                            ? "text-gray-400 dark:text-gray-600"
-                            : "text-white bg-blue-600 hover:bg-blue-700 shadow-md"
-                        }`}
+                        className={`p-2.5 rounded-full transition-all duration-200 flex items-center justify-center ${!selectedCourse || isLoading || !input.trim()
+                          ? "text-gray-400 dark:text-gray-600"
+                          : "text-white bg-blue-600 hover:bg-blue-700 shadow-md"
+                          }`}
                       >
                         {isLoading ? (
                           <Loader2 className="h-5 w-5 animate-spin" />
@@ -897,7 +897,7 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Helpful prompt below input */}
                   <div className="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
                     Press Enter to send, Shift+Enter for a new line

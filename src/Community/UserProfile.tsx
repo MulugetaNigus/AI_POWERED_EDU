@@ -16,6 +16,14 @@ import {
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+// Utility function to strip HTML tags
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  // Replace HTML tags with an empty string
+  // Replace common HTML entities like &nbsp; with a space
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+};
+
 interface UserProfileProps {
   loading?: boolean;
 }
@@ -257,8 +265,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
                   key={post._id}
                   className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700"
                 >
+                  {/* Apply stripHtml and truncate */}
                   <p className="text-sm text-gray-800 dark:text-white line-clamp-2 mb-2">
-                    {post.content}
+                    {stripHtml(post.content).slice(0, 100)}
+                    {stripHtml(post.content).length > 100 ? '...' : ''}
                   </p>
                   
                   <div className="flex flex-wrap gap-1 mb-2">

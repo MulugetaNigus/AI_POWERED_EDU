@@ -17,6 +17,7 @@ export const TourActiveEvent = new EventTarget();
 export default function Header({ creditVisibility, RerenderToUpdateCredit }: boolean | any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [currentUserPlan, setcurrentUserPlan] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTourActive, setIsTourActive] = useState(false);
@@ -36,10 +37,10 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
     const handleTourEvent = () => {
       setIsTourActive(prevState => !prevState);
     };
-    
+
     TourEvent.addEventListener('start-tour', handleTourEvent);
     TourActiveEvent.addEventListener('tour-state-change', handleTourActiveChange as EventListener);
-    
+
     return () => {
       TourEvent.removeEventListener('start-tour', handleTourEvent);
       TourActiveEvent.removeEventListener('tour-state-change', handleTourActiveChange as EventListener);
@@ -73,6 +74,8 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
         const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
         const userData = response.data;
         const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+        // const currentUserPlan = userData.plan;
+        setcurrentUserPlan(currentUserData.plan)
         if (currentUserData) {
           setCreditBalance(currentUserData.credit);
         } else {
@@ -107,8 +110,8 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
   // Navigation links
   const navLinks = [
     { name: 'Exam', path: '/exam', icon: BookOpenCheck },
-    { name: 'Community', path: '/community', icon: Users },
-    { name: 'Resources', path: '/resources', icon: Link2 },
+    { name: 'Community', path: currentUserPlan === "free" ? 'subscription' : '/community', icon: Users },
+    { name: 'Resources', path: currentUserPlan === "free" ? 'subscription' : '/resources', icon: Link2 },
   ];
 
   // Function to trigger site tour
@@ -135,12 +138,11 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
   };
 
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md py-3' 
-          : 'bg-transparent py-5'
-      }`}
+    <header
+      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md py-3'
+        : 'bg-transparent py-5'
+        }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
@@ -158,19 +160,20 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <Link 
+              <Link
+                // onClick={currentUserPlan === "free" ? alert("you can't access this section while you are free version") : link.path}
                 key={link.name}
-                to={link.path} 
-                className={`flex items-center font-medium transition-colors duration-200 ${
-                  isActive(link.path) 
-                    ? 'text-blue-600 dark:text-blue-400' 
-                    : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-                }`}
+                to={link.path}
+                className={`flex items-center font-medium transition-colors duration-200 ${isActive(link.path)
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`}
               >
                 <link.icon className="w-5 h-5 mr-2" />
                 {link.name}
+                {link.name.charAt(0) !== "E" && <sup className='bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-400 dark:to-orange-400 mb-2 font-bold text-white text-[10px] rounded-full p-2'>Pro</sup>}
                 {isActive(link.path) && (
-                  <motion.div 
+                  <motion.div
                     layoutId="nav-indicator"
                     className="absolute bottom-0 h-1 w-full bg-blue-600 dark:bg-blue-400 rounded-full"
                     initial={{ opacity: 0 }}
@@ -181,7 +184,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
               </Link>
             ))}
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
-            <button 
+            <button
               onClick={goToDashboard}
               className="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
@@ -192,7 +195,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <button 
+            <button
               onClick={toggleMenu}
               className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -208,32 +211,31 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
           {/* Right side - User controls */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            
+
             {isSignedIn && (
               <button
                 onClick={triggerSiteTour}
-                className={`flex items-center justify-center p-2 transition-colors duration-300 rounded-full ${
-                  isTourActive 
-                    ? 'bg-blue-600 text-white shadow-md' 
-                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-800'
-                }`}
+                className={`flex items-center justify-center p-2 transition-colors duration-300 rounded-full ${isTourActive
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-800'
+                  }`}
                 aria-label={isTourActive ? "Stop site tour" : "Take site tour"}
                 title={isTourActive ? "Stop site tour" : "Take site tour"}
               >
                 <HelpCircle className="w-5 h-5" />
               </button>
             )}
-            
+
             {isSignedIn ? (
               <>
                 {creditVisibility && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg shadow-sm"
                   >
                     <CreditCard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="font-medium">Credits:</span> 
+                    <span className="font-medium">Credits:</span>
                     {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : creditBalance}
                   </motion.div>
                 )}
@@ -243,7 +245,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                 </div>
               </>
             ) : (
-              <Link 
+              <Link
                 to="/signin"
                 className="flex items-center px-4 py-2 rounded-lg bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
               >
@@ -272,14 +274,14 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
                     key={link.name}
                     to={link.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center p-2 rounded-lg ${
-                      isActive(link.path)
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
+                    className={`flex items-center p-2 rounded-lg ${isActive(link.path)
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
                   >
                     <link.icon className="w-5 h-5 mr-3" />
                     {link.name}
+                    {link.name.charAt(0) !== "E" && <sup className='bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-400 dark:to-orange-400 mb-2 font-bold text-white text-[10px] rounded-full p-2'>Pro</sup>}
                   </Link>
                 ))}
                 <button

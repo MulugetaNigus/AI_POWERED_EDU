@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Loader2, CreditCard } from 'lucide-react';
+import { Sun, Moon, Loader2, CreditCard, Home } from 'lucide-react'; // Added Home icon
 import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import Quiz from './components/Quiz';
@@ -63,7 +63,13 @@ function AppContent() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+        {/* Mobile Home Button */}
+        {/* <a href="/" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" aria-label="Go to Home">
+          <Home className="w-6 h-6" />
+        </a> */}
+        {/* Mobile Menu Button */}
         <button
           onClick={() => document.body.classList.toggle('sidebar-open')}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
@@ -82,6 +88,7 @@ function AppContent() {
             />
           </svg>
         </button>
+        {/* Mobile Theme Toggle */}
         <button
           onClick={toggleTheme}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
@@ -111,17 +118,23 @@ function AppContent() {
       <main className="flex-1 overflow-auto">
         <div className="mx-auto">
           <header className="flex items-center justify-between p-6 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {activeTab === 'learn'
-                  ? `${selectedSubject} - ${selectedGrade}`
-                  : 'Progress Tracking'}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {activeTab === 'learn'
-                  ? 'Interactive learning session with AI assistance'
-                  : 'Track your learning progress'}
-              </p>
+            <div className="flex items-center gap-4"> {/* Group Home button and title */}
+              {/* Desktop Home Button */}
+              {/* <a href="/" className="hidden md:block p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" aria-label="Go to Home">
+                <Home className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              </a> */}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {activeTab === 'learn'
+                    ? `${selectedSubject} - ${selectedGrade}`
+                    : 'Progress Tracking'}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {activeTab === 'learn'
+                    ? 'Interactive learning session with AI assistance'
+                    : 'Track your learning progress'}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="hidden md:flex space-x-2">

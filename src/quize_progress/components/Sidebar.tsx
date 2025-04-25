@@ -11,6 +11,7 @@ import {
   Calculator,
   Microscope,
   Languages,
+  ArrowLeft, // Import ArrowLeft
 } from "lucide-react";
 import axios from "axios";
 
@@ -112,10 +113,11 @@ export default function Sidebar({
   return (
     <div className="w-full h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 overflow-y-auto">
       <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-          <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          Learning Path
-        </h2>
+        {/* Link to Home Page */}
+        <a href="/dashboard" className="flex items-center gap-2 text-xl font-bold mb-4 mt-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+          <ArrowLeft className="w-5 h-5" /> {/* Add ArrowLeft icon */}
+          <span>Learning Path</span>
+        </a>
         <div className="space-y-2">
           {Object.entries(groupedCourses).map(
             ([grade, gradeSubjects]) =>
