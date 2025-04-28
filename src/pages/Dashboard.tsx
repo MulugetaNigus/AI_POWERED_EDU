@@ -139,7 +139,7 @@ export default function Dashboard() {
     const user_current_grade = JSON.parse(
       localStorage.getItem("user") as string
     );
-    setuser_current_grade(user_current_grade.user_grade_level);
+    setuser_current_grade(user_current_grade.user_grade_level || 6);
   }, [])
 
 
