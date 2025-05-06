@@ -6,6 +6,8 @@ import {
   AlertTriangle,
   RefreshCw,
   Loader2,
+  Lock,
+  Crown,
 } from "lucide-react";
 import { useProgressStore } from "./store/progressStore";
 import {
@@ -26,6 +28,7 @@ import {
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useUser } from '@clerk/clerk-react';
+import { SubscriptionPlan, hasFeatureAccess } from "../../utils/subscriptionUtils";
 
 interface QuizProps {
   subject: string;
@@ -54,21 +57,48 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const [isRetrying, setIsRetrying] = useState(false);
   const [showChapterModal, setShowChapterModal] = useState(false);
   const [waitUntillFeedback, setWaitUntilFeedback] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [renderNewCreditValue, setRenderNewCreditValue] = useState(false);
   const [userEmail, setuserEmail] = useState<string | undefined>("");
   const [UserCurrentCredit, setUserCurrentCredit] = useState(0);
   const [userID, setuserID] = useState("");
+  const [userCurrentPlan, setUserCurrentPlan] = useState<string>("free");
+  const [showDetailedAnalytics, setShowDetailedAnalytics] = useState(false);
 
-  // get the user email from the clerk by distructuring
-  const { user } = useUser();
+  const { isSignedIn, user } = useUser();
 
+  // Convert userCurrentPlan to the correct type for feature checks
+  const userPlanType = userCurrentPlan as SubscriptionPlan;
+
+  // Check feature access
+  const canAccessDetailedAnalytics = hasFeatureAccess(userPlanType, 'detailed-quiz-analytics');
 
   useEffect(() => {
     getCurrentUserId();
     console.log("current user email:", user?.emailAddresses[0].emailAddress);
   }, [])
 
+  useEffect(() => {
+    // Fetch user's current plan
+    const fetchUserPlan = async () => {
+      if (isSignedIn && user) {
+        try {
+          const userEmail = user.emailAddresses[0]?.emailAddress;
+          const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
+          const userData = response.data;
+          const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
+
+          if (currentUserData && currentUserData.plan) {
+            setUserCurrentPlan(currentUserData.plan);
+          }
+        } catch (error) {
+          console.error("Error fetching user plan:", error);
+        }
+      }
+    };
+
+    fetchUserPlan();
+  }, [isSignedIn, user])
 
   // get current user id
   const getCurrentUserId = () => {
@@ -111,17 +141,43 @@ export default function Quiz({ subject, grade }: QuizProps) {
       setShowChapterModal(false);
 
       // Update user credits after successful quiz generation
-      // const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-      if (userEmail && result.questions) {
+      if (userEmail && result.questions && userID) {
         try {
-          const response = await axios.put(`http://localhost:8888/api/v1/onboard/credit/${userID}`);
+          // Determine credit cost based on difficulty level
+          let creditCost = 0;
+          
+          switch(difficulty.toLowerCase()) {
+            case 'easy':
+              creditCost = 75; // Basic difficulty costs less
+              break;
+            case 'medium':
+              creditCost = 125; // Medium difficulty
+              break;
+            case 'hard':
+              creditCost = 200; // Hard difficulty costs more
+              break;
+            default:
+              creditCost = 100; // Default cost
+          }
+          
+          // Additional cost based on user's plan
+          if (canAccessDetailedAnalytics) {
+            // Premium users get more detailed analytics, which costs more
+            creditCost += 50;
+          }
+          
+          const response = await axios.put(
+            `http://localhost:8888/api/v1/onboard/credit/${userID}`,
+            { tokensUsed: creditCost }
+          );
+          console.log("Quiz generation credits deducted:", creditCost);
           console.log("Updated credits:", response.data.remainingCredits);
           setRenderNewCreditValue(true);
         } catch (err) {
           console.log("Error updating credits:", err);
         }
       } else {
-        console.log("something went wrong with updating a user credit !")
+        console.log("Something went wrong with updating user credit!");
       }
     } catch (err) {
       const errorMessage =
@@ -348,66 +404,62 @@ export default function Quiz({ subject, grade }: QuizProps) {
         </button>
       )}
 
-      {waitUntillFeedback && (
-        <Dialog
-          open={open}
-          onClose={() => setOpen(false)}
-          className="relative z-10"
-        >
-          <DialogBackdrop
-            transition
-            className="fixed inset-0 bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
-          />
+      {showExplanation && currentQuestion === questions.length - 1 && (
+        <div className="mt-6 space-y-4">
+          <button
+            onClick={() => {
+              // Logic to show results
+            }}
+            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Show Results
+          </button>
 
-          <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-              <DialogPanel
-                transition
-                className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all"
-              >
-                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                      <DialogTitle
-                        as="h3"
-                        className="text-base font-semibold text-gray-900"
-                      >
-                        Generating Personalized Feedback...
-                      </DialogTitle>
-                      <div className="mt-2">
-                        {waitUntillFeedback ? (
-                          <p className="flex items-center text-gray-600">
-                            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                            Please wait while we generate your personalized
-                            feedback
-                          </p>
-                        ) : (
-                          <p className="text-gray-600">
-                            Personalized feedback generated successfully
-                          </p>
-                        )}
-                      </div>
-                    </div>
+          {/* Detailed Analytics Button with Access Control */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                if (canAccessDetailedAnalytics) {
+                  setShowDetailedAnalytics(true);
+                  // Logic to show detailed analytics
+                } else {
+                  // Redirect to subscription page
+                  window.location.href = '/subscription';
+                }
+              }}
+              className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors"
+            >
+              View Detailed Analytics
+              {!canAccessDetailedAnalytics && (
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Lock className="w-4 h-4 text-white" />
+                </span>
+              )}
+              {userCurrentPlan === "premium" && (
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Crown className="w-4 h-4 text-amber-300" />
+                </span>
+              )}
+            </button>
+
+            {/* Tooltip for premium feature */}
+            {!canAccessDetailedAnalytics && (
+              <div className="absolute z-10 w-64 p-3 mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200 pointer-events-none">
+                <div className="flex items-start space-x-3">
+                  <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                    <Crown className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Premium Feature</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                      Upgrade to Premium to access detailed quiz analytics and personalized learning insights.
+                    </p>
                   </div>
                 </div>
-                {/* <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                  <button
-                    disabled={waitUntillFeedback}
-                    type="button"
-                    data-autofocus
-                    onClick={() => {
-                      setOpen(false);
-                      setWaitUntilFeedback(false); // Reset feedback wait state if necessary
-                    }}
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                  >
-                    Finish
-                  </button>
-                </div> */}
-              </DialogPanel>
-            </div>
+              </div>
+            )}
           </div>
-        </Dialog>
+        </div>
       )}
       <ToastContainer
         draggable
@@ -418,4 +470,3 @@ export default function Quiz({ subject, grade }: QuizProps) {
     </div>
   );
 }
-

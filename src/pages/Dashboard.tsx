@@ -23,6 +23,10 @@ import {
   SidebarClose,
   SidebarOpen,
   Plus,
+  Lock,
+  Crown,
+  CreditCard,
+  Sparkles,
 } from "lucide-react";
 
 import { motion } from 'framer-motion';
@@ -42,6 +46,7 @@ import SubscriptionModal from "../components/SubscriptionModal";
 // cleck importations
 import { UserButton, useUser } from '@clerk/clerk-react';
 import PDFPreview from "../components/PDFPreview";
+import { SubscriptionPlan, hasFeatureAccess } from "../utils/subscriptionUtils";
 
 interface ChatHistory {
   grade: number;
@@ -73,10 +78,15 @@ interface CourseData {
   updatedAt: string;
 }
 
+interface Message {
+  text: string;
+  isAI: boolean;
+}
+
 export default function Dashboard() {
 
   // default dashboard msg at the top
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       text: "Hello! I'm your AI tutor. Please select a grade and subject to begin learning!",
       isAI: true,
@@ -114,7 +124,10 @@ export default function Dashboard() {
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [responseMetadata, setResponseMetadata] = useState<{
     requestTime: string;
-    model?: string;
+    responseTime: string;
+    duration: number;
+    grade: number;
+    subject: string;
   } | null>(null);
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
@@ -142,16 +155,36 @@ export default function Dashboard() {
     setuser_current_grade(user_current_grade.user_grade_level || 6);
   }, [])
 
+  // Convert userCurrentPlan to the correct type for feature checks
+  const userPlanType = (userCurrentPlan || 'free') as SubscriptionPlan;
+  
+  // Check feature access
+  const canAccessQuiz = hasFeatureAccess(userPlanType, 'quiz-summaries');
+  const canAccessDetailedAnalytics = hasFeatureAccess(userPlanType, 'detailed-quiz-analytics');
+  const canAccessBasicImageAnalysis = hasFeatureAccess(userPlanType, 'basic-image-analysis');
+  const canAccessEnhancedImageAnalysis = hasFeatureAccess(userPlanType, 'enhanced-image-analysis');
+  const canAccessAdvancedImageAnalysis = hasFeatureAccess(userPlanType, 'advanced-image-analysis');
 
+  // Add useEffect to update feature access when plan changes
+  useEffect(() => {
+    console.log("Current plan type for access checks:", userPlanType);
+    console.log("Image analysis access:", {
+      basic: canAccessBasicImageAnalysis,
+      enhanced: canAccessEnhancedImageAnalysis,
+      advanced: canAccessAdvancedImageAnalysis
+    });
+    // This will re-evaluate all the feature access variables when userCurrentPlan changes
+  }, [userCurrentPlan]);
 
   // handle to get the user info
   useEffect(() => {
-
     // to get the username when the page load
     setCurrentUsername(user?.emailAddresses[0].emailAddress as string);
 
-    // invok this function to get the current user id
-    getCurrentUserId();
+    // invoke this function to get the current user id and plan
+    if (user?.emailAddresses[0].emailAddress) {
+      getCurrentUserId();
+    }
 
     // get the history from localstorage and set for "setOChatHistory" when the page start in this useEffect hook
     const user_History = JSON.parse(
@@ -164,7 +197,7 @@ export default function Dashboard() {
       setuserProfile(JSON.parse(userData));
     }
     console.log("selected course now live:", selectedCourse?.course)
-  }, [input, selectedCourse?.course]);
+  }, [user?.emailAddresses[0].emailAddress]); // Only re-run when user email changes
 
   // get current user id
   const getCurrentUserId = () => {
@@ -180,7 +213,11 @@ export default function Dashboard() {
 
         // Filter the user data to find the current user's credit
         const currentUserData = userData.find((user: { email: string; }) => user.email === email);
-        setuserCurrentPlan(currentUserData.plan);
+        
+        // Convert plan name to lowercase to match the expected format in subscriptionUtils
+        const planName = currentUserData?.plan?.toLowerCase() || 'free';
+        setuserCurrentPlan(planName);
+        console.log("dashboard plan: ", planName);
         console.log("dashboard credit: ", currentUserData?.credit); // Use optional chaining
 
         if (currentUserData) {
@@ -246,93 +283,54 @@ export default function Dashboard() {
     return tokens.length;
   }
 
-  const handleSend = async (e: React.FormEvent) => {
-    console.log("Current user credit: ", userCurrentCredit);
-    e.preventDefault();
+  const handleSendMessage = async () => {
     if (input.trim() && selectedCourse) {
-      const userMessage = `${input}`;
-      setMessages([...messages, { text: userMessage, isAI: false }]);
+      const userMessage: Message = { text: input, isAI: false };
+      setMessages((prev) => [...prev, userMessage]);
       setInput("");
       setIsLoading(true);
-      setReinput(input);
-
-      // Reset response time and metadata
-      setResponseTime(null);
-      setResponseMetadata(null);
-
-      // Record start time
-      const startTime = Date.now();
-
-      if (Number(userCurrentCredit) <= 0) {
-        setShowSubscriptionModal(true);
-        setIsLoading(false);
-        return;
-      }
-
+      
       try {
+        // Record the start time
+        const startTime = new Date();
+        
         const response = await axios.post(
-          "http://localhost:9000/api/tuned-model/generate",
+          "http://localhost:8888/api/v1/chat",
           {
-            subject: selectedCourse?.course,
-            question: input,
-            grade: user_gradeLevel,
+            prompt: input,
+            grade: selectedCourse.grade,
+            subject: selectedCourse.course,
+            email: userEmail,
           }
         );
-
-        // Calculate response time
-        const endTime = Date.now();
-        const responseTimeMs = endTime - startTime;
-        setResponseTime(responseTimeMs);
-
-        const aiResponse = response.data.answer;
-        console.log(aiResponse);
-
-        if (aiResponse) {
-          const chatHistoryData = {
-            email: currentUsername,
-            id: uuidv4(),
-            subject: selectedCourse.course,
-            prompt: input,
-            data: aiResponse,
-            timestamp: new Date().toISOString(),
-          };
-          let drophistory =
-            JSON.parse(localStorage.getItem("chatHistory") as string) || [];
-          drophistory.push(chatHistoryData);
-          localStorage.setItem("chatHistory", JSON.stringify(drophistory));
-        }
-
-        // Calculate tokens for request and response
-        const requestTokens = countTokens(input);
-        const responseTokens = countTokens(aiResponse);
-        // const totalTokens = requestTokens + responseTokens;
-        // MAKE ZERO FOT THE USER REQ TOKEN CAUSE THAT IS MORE COMSUMING
-        const totalTokens = 0 + responseTokens;
-
-        // Set response metadata
+        
+        // Record the end time and calculate the duration
+        const endTime = new Date();
+        const duration = (endTime.getTime() - startTime.getTime()) / 1000; // in seconds
+        setResponseTime(duration);
         setResponseMetadata({
-          requestTime: new Date().toLocaleTimeString(),
-          model: response.data.model || "AI Tutor"
+          requestTime: startTime.toISOString(),
+          responseTime: endTime.toISOString(),
+          duration: duration,
+          grade: selectedCourse.grade,
+          subject: selectedCourse.course
         });
-
-        // Deduct credits based on total tokens
-        await axios
-          .put(`http://localhost:8888/api/v1/onboard/credit/${userID}`, {
-            tokensUsed: totalTokens,
-          })
-          .then((result) => {
-            console.log(result.data.remainingCredits);
-            setUserCurrentCredit(result.data.remainingCredits);
-            setRenderNewCreditValue((prev) => !prev);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-
-        setMessages((prev) => [
-          ...prev,
-          { text: aiResponse, isAI: true },
-        ]);
+        
+        const aiMessage: Message = { text: response.data.message, isAI: true };
+        setMessages((prev) => [...prev, aiMessage]);
+        
+        // Save chat history to localStorage
+        const newChatHistory = {
+          grade: selectedCourse.grade,
+          subject: selectedCourse.course,
+          messages: [...messages, userMessage, aiMessage],
+        };
+        
+        localStorage.setItem(
+          "chatHistory",
+          JSON.stringify(newChatHistory)
+        );
+        
         if (!showIcons) {
           setShowIcons(true);
         }
@@ -348,14 +346,11 @@ export default function Dashboard() {
       } finally {
         setIsLoading(false);
       }
-    } else {
-      setIsLoading(false);
     }
   };
 
-  // handle the chat history
-
-  const handleChatHistory = (his) => {
+  // Function to handle saving chat history
+  const handleSaveHistory = (his: chatH) => {
     // here i just want to set the chat history data to the user input state and the response state, his prop has the data of the chat history like propmts, responses and timestamps
     setInput(his.prompt);
     setMessages([
@@ -373,7 +368,7 @@ export default function Dashboard() {
   };
 
   // handle to delete the chat history
-  const handleDeleteChatHistory = (his) => {
+  const handleDeleteChatHistory = (his: chatH) => {
     try {
       const userPermission = window.confirm(
         "Are you sure you want to delete this chat history?"
@@ -395,7 +390,7 @@ export default function Dashboard() {
     }
   };
 
-  const handlePDFMessage = (message: { text: string; isAI: boolean }) => {
+  const handlePDFMessage = (message: Message) => {
     setMessages((prev) => [...prev, message]);
   };
 
@@ -418,7 +413,7 @@ export default function Dashboard() {
         prompt = text;
     }
     setInput(prompt);
-    handleSend(new Event('submit') as any);
+    handleSendMessage();
   };
 
   const handleCourseSelect = (grade: number, course: string) => {
@@ -465,12 +460,31 @@ export default function Dashboard() {
   };
 
   const handleImageAnalysis = (analysis: string) => {
+    let processedAnalysis = analysis;
+    
+    // Limit analysis detail based on subscription tier
+    if (!canAccessAdvancedImageAnalysis) {
+      // For free and standard users, limit the analysis detail
+      const lines = analysis.split('\n');
+      if (lines.length > 8) {
+        // Keep first 8 lines for basic/standard users
+        processedAnalysis = lines.slice(0, 8).join('\n') + 
+          '\n\n[Upgrade to Premium for complete detailed analysis]';
+      }
+    }
+    
+    // Add the analysis to the chat
     setMessages((prev) => [
       ...prev,
       { text: "Here's what I see in the image:", isAI: true },
-      { text: analysis, isAI: true },
+      { text: processedAnalysis, isAI: true },
     ]);
     setShowImageUpload(false);
+  };
+
+  const handleImageUploadClick = () => {
+    // All users can access image analysis, but with different capabilities
+    setShowImageUpload(true);
   };
 
   // sample payment test
@@ -552,6 +566,54 @@ export default function Dashboard() {
         <div className="flex h-[calc(100vh-4rem)]">
           {/* Sidebar */}
           <div className="w-64 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col shadow-lg">
+            {/* Subscription Status & Upgrade Button */}
+            <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</span>
+                </div>
+                <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${userCurrentPlan === "free" 
+                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200" 
+                  : userCurrentPlan === "standard" 
+                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200" 
+                    : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
+                  {userCurrentPlan === "free" ? "Free" : userCurrentPlan === "standard" ? "Standard" : "Premium"}
+                </div>
+              </div>
+              
+              {/* Credits Display */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-gray-500 dark:text-gray-400">AI Credits</span>
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{userCurrentCredit} credits</span>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
+                <div 
+                  className={`h-1.5 rounded-full ${userCurrentPlan === "free" 
+                    ? "bg-blue-500" 
+                    : userCurrentPlan === "standard" 
+                      ? "bg-gradient-to-r from-purple-500 to-blue-500" 
+                      : "bg-gradient-to-r from-amber-500 to-orange-500"}`}
+                  style={{ width: `${Math.min(100, (Number(userCurrentCredit) / (userCurrentPlan === "free" ? 2500 : userCurrentPlan === "standard" ? 5000 : 10000)) * 100)}%` }}
+                ></div>
+              </div>
+              
+              {/* Upgrade Button - Only show for free and standard users */}
+              {userCurrentPlan !== "premium" && (
+                <Link 
+                  to="/subscription"
+                  className={`w-full py-2 px-4 flex items-center justify-center space-x-2 rounded-lg text-sm font-medium text-white ${userCurrentPlan === "free" 
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" 
+                    : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"}`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Upgrade to {userCurrentPlan === "free" ? "Standard" : "Premium"}</span>
+                </Link>
+              )}
+            </div>
+            
             {/* Grade Levels and Courses Section */}
             <div className="flex-1 p-4 overflow-y-auto">
               <h2 className="flex gap-2 items-center text-base font-semibold text-gray-800 dark:text-white mb-4">
@@ -609,14 +671,63 @@ export default function Dashboard() {
                 )}
 
                 {/* Quiz and Progress Link */}
-                <Link
-                  to={userCurrentPlan === "free" ? "/subscription" : "/quize-and-progress"}
-                  className="flex items-center justify-center w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5"
-                >
-                  <p className="text-sm font-medium">Take a Quiz</p>
-                  <Rocket className="ml-2 w-4 h-4 mr-2" />
-                  {userCurrentPlan === "free" && <sup className='bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-400 dark:to-orange-400 mb-2 font-bold text-white text-[10px] rounded-full p-2'>Pro</sup>}
-                </Link>
+                <div className="relative group">
+                  <Link
+                    to={canAccessQuiz ? "/quize-and-progress" : "/subscription"}
+                    className="flex items-center justify-center w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5"
+                  >
+                    <p className="text-sm font-medium">Take a Quiz</p>
+                    <Rocket className="ml-2 w-4 h-4" />
+                    {!canAccessQuiz && (
+                      <span className="absolute -right-2 -top-2">
+                        <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center shadow-sm">
+                          <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                        </div>
+                      </span>
+                    )}
+                    {userCurrentPlan === "standard" && (
+                      <span className="absolute -right-2 -top-2">
+                        <div className="h-5 w-5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                          <Crown className="w-3 h-3 text-white" />
+                        </div>
+                      </span>
+                    )}
+                    {userCurrentPlan === "premium" && (
+                      <span className="absolute -right-2 -top-2">
+                        <div className="h-5 w-5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
+                          <Crown className="w-3 h-3 text-white" />
+                        </div>
+                      </span>
+                    )}
+                  </Link>
+                  
+                  {/* Pro feature tooltip that appears on hover */}
+                  {!canAccessQuiz && (
+                    <div className="absolute z-50 w-64 p-3 mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
+                      <div className="flex items-start space-x-3">
+                        <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                          <Crown className="w-5 h-5 text-amber-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white">Premium Feature</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            Upgrade to Standard or Premium to unlock quizzes and track your learning progress.
+                          </p>
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.location.href = '/subscription';
+                            }}
+                            className="mt-2 px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                          >
+                            Upgrade Now
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
                   <button
@@ -653,10 +764,10 @@ export default function Dashboard() {
                         his?.email === currentUsername && (
                           <div
                             key={his?.timestamp}
-                            className="group relative rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                            className="group relative rounded-md overflow-hidden shadow-sm"
                           >
                             <button
-                              onClick={() => handleChatHistory(his)}
+                              onClick={() => handleSaveHistory(his)}
                               className="w-full flex items-center justify-between gap-2 p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                               <p className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
@@ -808,8 +919,8 @@ export default function Dashboard() {
 
               {/* Image Upload Modal */}
               {showImageUpload && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-xl">
+                <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-200">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-xl border border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Upload an Image
@@ -832,7 +943,10 @@ export default function Dashboard() {
 
               {/* Input Area */}
               <form
-                onSubmit={handleSend}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
+                }}
                 className="border-t border-gray-200/50 dark:border-gray-700/50 p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
               >
                 <div className="relative flex flex-col w-full max-w-4xl mx-autoo">
@@ -844,7 +958,7 @@ export default function Dashboard() {
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
-                          handleSend(e);
+                          handleSendMessage();
                         }
                       }}
                       placeholder={
@@ -862,11 +976,11 @@ export default function Dashboard() {
                       {/* Image upload button */}
                       <button
                         type="button"
-                        onClick={() => setShowImageUpload(!showImageUpload)}
-                        className="p-2.5 text-gray-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        title="Upload image"
+                        onClick={handleImageUploadClick}
+                        className="relative p-2 rounded-full text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 dark:hover:text-blue-400 transition-colors"
+                        title="Upload Image"
                       >
-                        <ImageIcon className="h-5 w-5" />
+                        <ImageIcon className="w-5 h-5" />
                       </button>
 
                       {/* New chat button */}

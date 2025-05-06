@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Check, X, CreditCard, Zap, Shield, FileText, ArrowRight, Star, HelpCircle, AlertCircle, Crown } from 'lucide-react';
+import { Loader2, Check, X, CreditCard, Zap, ArrowRight, HelpCircle, AlertCircle, Crown } from 'lucide-react';
 import axios from 'axios';
 import SuccessPayment from './SuccessPayment';
 import { useUser } from '@clerk/clerk-react';
@@ -19,55 +19,48 @@ interface Plan {
 interface SuccessPaymentProps {
   isOpen: boolean;
   onClose: () => void;
-  plan?: {
-    name: string;
-    price: number;
-    credits: number;
-  };
+  plan: Plan | null;
 }
 
 const plans: Plan[] = [
   {
-    id: 'starter',
-    name: 'Starter',
-    price: 75,
+    id: 'free',
+    name: 'Free',
+    price: 0,
     credits: 2500,
     features: [
-      '50 AI Credits',
-      'PDF Chat Support',
-      'Basic Analytics',
-      'Email Support',
+      '2500 AI Credits',
+      'Access to Exam Section',
+      'Basic Chat Assistance',
+      'Basic Image Analysis',
       'Single Device Access'
     ]
   },
   {
-    id: 'basic',
-    name: 'Pro',
-    price: 120,
+    id: 'standard',
+    name: 'Standard',
+    price: 99,
     credits: 5000,
     isPopular: true,
     features: [
-      '100 AI Credits',
-      'Advanced PDF Chat',
-      'Detailed Analytics',
-      'Priority Support',
-      'Multiple Device Access',
-      'Exam Practice Questions'
+      '5000 AI Credits',
+      'Tuned Chat Modes',
+      'Enhanced Image Analysis',
+      'Quiz Summaries & Feedback',
+      'Community Access'
     ]
   },
   {
     id: 'premium',
-    name: 'Elite',
-    price: 300,
-    credits: 7500,
+    name: 'Premium',
+    price: 249,
+    credits: 10000,
     features: [
-      '500 AI Credits',
-      'Premium PDF Analysis',
-      'Advanced Analytics Dashboard',
-      '24/7 Priority Support',
-      'Unlimited Device Access',
-      'Unlimited Practice Questions',
-      'Personalized Study Plans'
+      '10000 AI Credits',
+      'Advanced Image Analysis',
+      'Detailed Quiz Analytics',
+      'All Educational Resources',
+      'Priority Support'
     ]
   }
 ];
@@ -82,6 +75,7 @@ export default function Subscription() {
   const [cycle, setCycle] = useState<'monthly' | 'annual'>('monthly');
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [showFeatureTooltip, setShowFeatureTooltip] = useState<{ [key: string]: boolean }>({});
+  const [currentUserPlan, setCurrentUserPlan] = useState<string | null>(null);
 
   const { isSignedIn, user } = useUser();
 
@@ -97,6 +91,7 @@ export default function Subscription() {
   useEffect(() => {
     if (userID) {
       localStorage.setItem("CURRENTUSERIDFORPAYMENT", JSON.stringify(userID));
+      fetchCurrentUserPlan(userID);
     }
   }, [userID]);
 
@@ -121,6 +116,20 @@ export default function Subscription() {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
+    }
+  };
+
+  const fetchCurrentUserPlan = async (userID: string) => {
+    try {
+      const response = await axios.get(`http://localhost:8888/api/v1/onboard/${userID}`);
+      const userData = response.data;
+      // Convert plan name to lowercase to match the expected format in subscriptionUtils
+      const planName = userData.plan?.toLowerCase() || 'free';
+      setCurrentUserPlan(planName);
+      console.log("Subscription - User plan:", planName);
+    } catch (error) {
+      console.error("Error fetching user plan:", error);
+      setCurrentUserPlan('free'); // Default to free if there's an error
     }
   };
 
@@ -195,7 +204,7 @@ export default function Subscription() {
   };
 
   const planColors = {
-    starter: {
+    free: {
       light: 'from-blue-500 to-blue-600',
       dark: 'from-blue-600 to-blue-700',
       badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
@@ -203,7 +212,7 @@ export default function Subscription() {
       border: 'border-blue-200 dark:border-blue-800',
       shadow: 'shadow-blue-500/20 dark:shadow-blue-900/20'
     },
-    basic: {
+    standard: {
       light: 'from-purple-500 to-blue-500',
       dark: 'from-purple-600 to-blue-600',
       badge: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200',
@@ -222,12 +231,15 @@ export default function Subscription() {
   };
 
   const featureTooltips: { [key: string]: string } = {
-    'PDF Chat Support': 'Upload your PDF documents and ask questions directly about the content.',
-    'Advanced PDF Chat': 'Enhanced PDF analysis with better context understanding and detailed insights.',
-    'Premium PDF Analysis': 'Top-tier PDF parsing with deep learning insights and comprehensive explanations.',
-    'Basic Analytics': 'Track your usage and learning progress with simple charts and reports.',
-    'Detailed Analytics': 'Advanced insights into your learning patterns with personalized recommendations.',
-    'Advanced Analytics Dashboard': 'Comprehensive analytics suite with predictive insights and performance tracking.'
+    'Basic Chat Assistance': 'Get help with your studies through our AI chat assistant with standard capabilities.',
+    'Tuned Chat Modes': 'Access specialized chat modes optimized for different learning styles and subjects.',
+    'Quiz Summaries & Feedback': 'Receive personalized summaries and feedback after completing quizzes.',
+    'Community Access': 'Connect with other students and join study groups to enhance your learning experience.',
+    'Advanced Image Analysis': 'Upload images to get expert-level analysis and educational insights.',
+    'Detailed Quiz Analytics': 'Get comprehensive analytics and in-depth feedback on your quiz performance.',
+    'All Educational Resources': 'Unlimited access to our complete library of educational resources and materials.',
+    'Basic Image Analysis': 'Upload images to get basic analysis and educational insights.',
+    'Enhanced Image Analysis': 'Upload images to get enhanced analysis and educational insights.'
   };
 
   return (
@@ -447,26 +459,35 @@ export default function Subscription() {
 
                 {/* Button section - now in a separate div at the bottom with mt-auto */}
                 <div className="mt-auto pt-8">
-                  {/* CTA Button - Enhanced with better hover effects */}
-                  <motion.button
-                    onClick={() => handleSubscribe(plan)}
-                    disabled={loading[plan.id]}
-                    className={`w-full py-3 px-4 rounded-lg font-medium text-white 
-                      flex items-center justify-center ${loading[plan.id] ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg'} 
-                      bg-gradient-to-r ${planColors[plan.id as keyof typeof planColors].light} hover:${planColors[plan.id as keyof typeof planColors].dark}
-                      ${planColors[plan.id as keyof typeof planColors].shadow} transition-all duration-300`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {loading[plan.id] ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        <span>Select {plan.name}</span>
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </motion.button>
+                  {plan.id === 'free' ? (
+                    <div className="w-full py-3 px-4 rounded-lg font-medium text-center bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                      Current Plan
+                    </div>
+                  ) : plan.id === currentUserPlan ? (
+                    <div className={`w-full py-3 px-4 rounded-lg font-medium text-center bg-gradient-to-r ${planColors[plan.id as keyof typeof planColors].light} text-white`}>
+                      Current Plan
+                    </div>
+                  ) : (
+                    <motion.button
+                      onClick={() => handleSubscribe(plan)}
+                      disabled={loading[plan.id]}
+                      className={`w-full py-3 px-4 rounded-lg font-medium text-white 
+                        flex items-center justify-center ${loading[plan.id] ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg'} 
+                        bg-gradient-to-r ${planColors[plan.id as keyof typeof planColors].light} hover:${planColors[plan.id as keyof typeof planColors].dark}
+                        ${planColors[plan.id as keyof typeof planColors].shadow} transition-all duration-300`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {loading[plan.id] ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <span>Select {plan.name}</span>
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </motion.button>
+                  )}
 
                   {/* Guarantee badge */}
                   {/* <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
@@ -483,4 +504,3 @@ export default function Subscription() {
     </div>
   );
 }
-

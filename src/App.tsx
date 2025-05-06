@@ -68,27 +68,27 @@ function App() {
             placement: 'center' as const
         },
         {
-            target: 'header a[href="/"]',
+            target: '.flex.items-center.space-x-2.group.cursor-pointer',
             content: 'Click here anytime to return to the homepage.',
             placement: 'bottom' as const
         },
         {
-            target: 'header a[href="/exam"]',
+            target: '.hidden.md\\:flex.items-center.space-x-8 > div:nth-child(1)',
             content: 'Access practice exams and assessments here.',
             placement: 'bottom' as const
         },
         {
-            target: 'header a[href="/community"]',
+            target: '.hidden.md\\:flex.items-center.space-x-8 > div:nth-child(2)',
             content: 'Connect with other students and join study groups.',
             placement: 'bottom' as const
         },
         {
-            target: 'header a[href="/resources"]',
+            target: '.hidden.md\\:flex.items-center.space-x-8 > div:nth-child(3)',
             content: 'Find learning materials and helpful resources.',
             placement: 'bottom' as const
         },
         {
-            target: 'header a[href="/dashboard"]',
+            target: '.hidden.md\\:flex.items-center.space-x-8 > button',
             content: 'Access AI-powered learning assistance tailored to your needs.',
             placement: 'bottom' as const
         },
@@ -96,6 +96,11 @@ function App() {
             target: '.user-profile',
             content: 'Manage your profile and account settings here.',
             placement: 'bottom-end' as const
+        },
+        {
+            target: 'button[title="Take site tour"]',
+            content: 'Click this button anytime to restart this tour.',
+            placement: 'bottom' as const
         },
         {
             target: '.ChatBot',
