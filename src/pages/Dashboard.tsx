@@ -3,6 +3,7 @@ import {
   Send,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   LogOut,
   Loader2,
   Volume2,
@@ -129,6 +130,7 @@ export default function Dashboard() {
     grade: number;
     subject: string;
   } | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
   const creditVisibility: boolean = true;
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -559,67 +561,98 @@ export default function Dashboard() {
     }
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <>
       <Header creditVisibility={creditVisibility} RerenderToUpdateCredit={renderNewCreditValue} />
       <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="flex h-[calc(100vh-4rem)]">
           {/* Sidebar */}
-          <div className="w-64 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col shadow-lg">
+          <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col shadow-lg transition-all duration-300 ease-in-out relative`}>
             {/* Subscription Status & Upgrade Button */}
-            <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <CreditCard className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</span>
-                </div>
-                <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${userCurrentPlan === "free" 
-                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200" 
-                  : userCurrentPlan === "standard" 
-                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200" 
-                    : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
-                  {userCurrentPlan === "free" ? "Free" : userCurrentPlan === "standard" ? "Standard" : "Premium"}
-                </div>
-              </div>
-              
-              {/* Credits Display */}
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-gray-500 dark:text-gray-400">AI Credits</span>
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{userCurrentCredit} credits</span>
-              </div>
-              
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
-                <div 
-                  className={`h-1.5 rounded-full ${userCurrentPlan === "free" 
-                    ? "bg-blue-500" 
+            <div className={`${isSidebarCollapsed ? 'px-2 py-4' : 'p-4'} border-b border-gray-200/50 dark:border-gray-700/50`}>
+              {!isSidebarCollapsed ? (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</span>
+                    </div>
+                    <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${userCurrentPlan === "free" 
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200" 
+                      : userCurrentPlan === "standard" 
+                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200" 
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
+                      {userCurrentPlan === "free" ? "Free" : userCurrentPlan === "standard" ? "Standard" : "Premium"}
+                    </div>
+                  </div>
+                  
+                  {/* Credits Display */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">AI Credits</span>
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{userCurrentCredit} credits</span>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
+                    <div 
+                      className={`h-1.5 rounded-full ${userCurrentPlan === "free" 
+                        ? "bg-blue-500" 
+                        : userCurrentPlan === "standard" 
+                          ? "bg-gradient-to-r from-purple-500 to-blue-500" 
+                          : "bg-gradient-to-r from-amber-500 to-orange-500"}`}
+                      style={{ width: `${Math.min(100, (Number(userCurrentCredit) / (userCurrentPlan === "free" ? 2500 : userCurrentPlan === "standard" ? 5000 : 10000)) * 100)}%` }}
+                    ></div>
+                  </div>
+                  
+                  {/* Upgrade Button - Only show for free and standard users */}
+                  {userCurrentPlan !== "premium" && (
+                    <Link 
+                      to="/subscription"
+                      className={`w-full py-2 px-4 flex items-center justify-center space-x-2 rounded-lg text-sm font-medium text-white ${userCurrentPlan === "free" 
+                        ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" 
+                        : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"}`}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Upgrade to {userCurrentPlan === "free" ? "Standard" : "Premium"}</span>
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${userCurrentPlan === "free" 
+                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200" 
                     : userCurrentPlan === "standard" 
-                      ? "bg-gradient-to-r from-purple-500 to-blue-500" 
-                      : "bg-gradient-to-r from-amber-500 to-orange-500"}`}
-                  style={{ width: `${Math.min(100, (Number(userCurrentCredit) / (userCurrentPlan === "free" ? 2500 : userCurrentPlan === "standard" ? 5000 : 10000)) * 100)}%` }}
-                ></div>
-              </div>
-              
-              {/* Upgrade Button - Only show for free and standard users */}
-              {userCurrentPlan !== "premium" && (
-                <Link 
-                  to="/subscription"
-                  className={`w-full py-2 px-4 flex items-center justify-center space-x-2 rounded-lg text-sm font-medium text-white ${userCurrentPlan === "free" 
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" 
-                    : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"}`}
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Upgrade to {userCurrentPlan === "free" ? "Standard" : "Premium"}</span>
-                </Link>
+                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200" 
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
+                    {userCurrentPlan === "free" ? (
+                      <CreditCard className="w-5 h-5" />
+                    ) : (
+                      <Crown className="w-5 h-5" />
+                    )}
+                  </div>
+                  {userCurrentPlan !== "premium" && (
+                    <Link 
+                      to="/subscription"
+                      className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
+                      title="Upgrade Plan"
+                    >
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
             
             {/* Grade Levels and Courses Section */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              <h2 className="flex gap-2 items-center text-base font-semibold text-gray-800 dark:text-white mb-4">
+            <div className={`flex-1 ${isSidebarCollapsed ? 'px-2 py-4' : 'p-4'} overflow-y-auto`}>
+              <div className={`flex gap-2 items-center text-base font-semibold text-gray-800 dark:text-white mb-4 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
                 <Layers3 className="w-5 h-5 text-blue-500" />
-                Grade Levels
-              </h2>
+                {!isSidebarCollapsed && <span>Grade Levels</span>}
+              </div>
               <div className="space-y-2">
                 {grades.map(
                   (g) =>
@@ -631,18 +664,24 @@ export default function Dashboard() {
                               expandedGrade === g.level ? null : g.level
                             )
                           }
-                          className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200`}
                         >
-                          <span className="font-medium text-sm text-gray-900 dark:text-white">
-                            Grade {g.level.replace('grade', '')}
-                          </span>
-                          {expandedGrade === g.level ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                          {isSidebarCollapsed ? (
+                            <span className="font-medium text-sm text-gray-900 dark:text-white">G{g.level.replace('grade', '')}</span>
                           ) : (
-                            <ChevronRight className="h-4 w-4 text-gray-500" />
+                            <>
+                              <span className="font-medium text-sm text-gray-900 dark:text-white">
+                                Grade {g.level.replace('grade', '')}
+                              </span>
+                              {expandedGrade === g.level ? (
+                                <ChevronDown className="h-4 w-4 text-gray-500" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                              )}
+                            </>
                           )}
                         </button>
-                        {expandedGrade === g.level && (
+                        {expandedGrade === g.level && !isSidebarCollapsed && (
                           <div className="pl-3 py-1 bg-gray-50/50 dark:bg-gray-800/50">
                             {g.courses.map((course) => (
                               <button
@@ -674,10 +713,16 @@ export default function Dashboard() {
                 <div className="relative group">
                   <Link
                     to={canAccessQuiz ? "/quize-and-progress" : "/subscription"}
-                    className="flex items-center justify-center w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5"
+                    className={`flex items-center justify-center ${isSidebarCollapsed ? 'w-12 h-12 mx-auto rounded-full' : 'w-full h-12 rounded-lg'} bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5`}
                   >
-                    <p className="text-sm font-medium">Take a Quiz</p>
-                    <Rocket className="ml-2 w-4 h-4" />
+                    {isSidebarCollapsed ? (
+                      <Rocket className="w-5 h-5" />
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium">Take a Quiz</p>
+                        <Rocket className="ml-2 w-4 h-4" />
+                      </>
+                    )}
                     {!canAccessQuiz && (
                       <span className="absolute -right-2 -top-2">
                         <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center shadow-sm">
@@ -702,7 +747,7 @@ export default function Dashboard() {
                   </Link>
                   
                   {/* Pro feature tooltip that appears on hover */}
-                  {!canAccessQuiz && (
+                  {!canAccessQuiz && !isSidebarCollapsed && (
                     <div className="absolute z-50 w-64 p-3 mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
                       <div className="flex items-start space-x-3">
                         <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-full">
@@ -729,100 +774,135 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-                  <button
-                    onClick={() => setShowChatHistory(!showChatHistory)}
-                    className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FolderClock className="h-5 w-5 text-blue-500" />
-                      <h2 className="text-base font-semibold text-gray-800 dark:text-white">
-                        Chat History
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRefreshChatHistory();
-                        }}
-                        className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      >
-                        <RotateCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                      {showChatHistory ? (
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-gray-500" />
-                      )}
-                    </div>
-                  </button>
-
-                  {showChatHistory && (
-                    <div className="mt-2 space-y-1.5">
-                      {OchatHistory?.map((his, index) => (
-                        his?.email === currentUsername && (
-                          <div
-                            key={his?.timestamp}
-                            className="group relative rounded-md overflow-hidden shadow-sm"
-                          >
-                            <button
-                              onClick={() => handleSaveHistory(his)}
-                              className="w-full flex items-center justify-between gap-2 p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            >
-                              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
-                                {index + 1}. {his?.data.slice(0, 20)}...
-                              </p>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteChatHistory(his);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all duration-200"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                              </button>
-                            </button>
-                          </div>
-                        )
-                      ))}
-
-                      {OchatHistory?.length === 0 && (
-                        <div className="flex items-center justify-center w-full h-12 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200/50 dark:border-gray-700/50">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">No chat history found</p>
-                          <BadgeAlert className="w-4 h-4 ml-2 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* User Profile Section */}
-            <div className="p-3 border-t border-gray-200/50 dark:border-gray-700/50">
-              <div className="flex items-center justify-between gap-2">
-                {isSignedIn && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <button onClick={handleLogout}>
-                        <UserButton />
-                      </button>
-                      <div className={`relative ${!isUsernameVisible ? 'blur-sm' : ''}`}>
-                        <span className="text-xs text-gray-700 dark:text-gray-300">{currentUsername}</span>
-                        <button
-                          className="absolute -right-5 top-0 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                          onClick={toggleUsernameVisibility}
-                        >
-                          {isUsernameVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        </button>
+                {/* Chat History Section - Only show in expanded mode */}
+                {!isSidebarCollapsed && (
+                  <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+                    <button
+                      onClick={() => setShowChatHistory(!showChatHistory)}
+                      className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FolderClock className="h-5 w-5 text-blue-500" />
+                        <h2 className="text-base font-semibold text-gray-800 dark:text-white">
+                          Chat History
+                        </h2>
                       </div>
-                    </div>
-                  </>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRefreshChatHistory();
+                          }}
+                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                        >
+                          <RotateCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        {showChatHistory ? (
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        )}
+                      </div>
+                    </button>
+
+                    {showChatHistory && (
+                      <div className="mt-2 space-y-1.5">
+                        {OchatHistory?.map((his, index) => (
+                          his?.email === currentUsername && (
+                            <div
+                              key={his?.timestamp}
+                              className="group relative rounded-md overflow-hidden shadow-sm"
+                            >
+                              <button
+                                onClick={() => handleSaveHistory(his)}
+                                className="w-full flex items-center justify-between gap-2 p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
+                                  {index + 1}. {his?.data.slice(0, 20)}...
+                                </p>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteChatHistory(his);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all duration-200"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-400" />
+                                </button>
+                              </button>
+                            </div>
+                          )
+                        ))}
+
+                        {OchatHistory?.length === 0 && (
+                          <div className="flex items-center justify-center w-full h-12 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200/50 dark:border-gray-700/50">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">No chat history found</p>
+                            <BadgeAlert className="w-4 h-4 ml-2 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
+
+            {/* User Profile Section - Show differently based on sidebar state */}
+            {!isSidebarCollapsed ? (
+              <div className="p-3 border-t border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex items-center justify-between gap-2">
+                  {isSignedIn && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <button onClick={handleLogout}>
+                          <UserButton />
+                        </button>
+                        <div className={`relative ${!isUsernameVisible ? 'blur-sm' : ''}`}>
+                          <span className="text-xs text-gray-700 dark:text-gray-300">{currentUsername}</span>
+                          <button
+                            className="absolute -right-5 top-0 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                            onClick={toggleUsernameVisibility}
+                          >
+                            {isUsernameVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-2 border-t border-gray-200/50 dark:border-gray-700/50 flex justify-center">
+                <button 
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Log Out"
+                >
+                  <LogOut className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+              </div>
+            )}
+
+            {/* Sidebar Toggle Button */}
+            <button
+              onClick={toggleSidebar}
+              className="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg flex items-center justify-center transition-all duration-200"
+            >
+              {isSidebarCollapsed ? (
+                <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              )}
+            </button>
           </div>
+
+          {/* Minimize/Maximize Sidebar Button */}
+          <button
+            onClick={toggleSidebar}
+            className="absolute -left-10 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-3 rounded-l-xl border border-r-0 border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {isSidebarCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          </button>
 
           {/* Main Chat Area */}
           <div className="flex-1 flex">
@@ -862,21 +942,21 @@ export default function Dashboard() {
                             <button
                               onClick={() => handleSpeak(message.text.replace(/[#*]{1,3}/g, ""))}
                               onDoubleClick={() => handleStopSpeak()}
-                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
                               title="Listen or double click to stop"
                             >
                               <Volume2 className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             </button>
                             <button
                               onClick={() => handleCopyText(message.text)}
-                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
                               title="Copy"
                             >
                               <Copy className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             </button>
                             <button
                               onClick={() => handleRegenerateResponse()}
-                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
                               title="Regenerate"
                             >
                               <RefreshCw className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
