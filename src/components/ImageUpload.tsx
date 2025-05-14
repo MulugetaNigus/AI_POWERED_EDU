@@ -49,7 +49,7 @@ export default function ImageUpload({
             if (isSignedIn && user) {
                 try {
                     const userEmail = user.emailAddresses[0]?.emailAddress;
-                    const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
+                    const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/onboard?email=${userEmail}`);
                     const userData = response.data;
                     const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
 
@@ -214,7 +214,7 @@ export default function ImageUpload({
             if (userID) {
                 try {
                     const response = await axios.put(
-                        `http://localhost:8888/api/v1/onboard/credit/${userID}`,
+                        `https://extreamx-backend.onrender.com/api/v1/onboard/credit/${userID}`,
                         { tokensUsed: creditCost }
                     );
                     console.log("Image analysis credits deducted:", creditCost);

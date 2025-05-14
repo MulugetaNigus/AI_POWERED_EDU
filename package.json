@@ -26,6 +26,7 @@
     "firebase": "^11.0.1",
     "framer-motion": "^11.11.17",
     "fyda-auth-by-mullerking": "^1.0.1",
+    "gpt-tokenizer": "^2.9.0",
     "jwt-decode": "^4.0.0",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.344.0",

@@ -84,7 +84,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
       if (isSignedIn && user) {
         try {
           const userEmail = user.emailAddresses[0]?.emailAddress;
-          const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
+          const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/onboard?email=${userEmail}`);
           const userData = response.data;
           const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
 
@@ -104,7 +104,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
   const getCurrentUserId = () => {
     setuserEmail(user?.emailAddresses[0].emailAddress);
     axios
-      .get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`)
+      .get(`https://extreamx-backend.onrender.com/api/v1/onboard?email=${userEmail}`)
       .then((response) => {
         const userData = response.data;
         console.log(userData[0].credit);
@@ -167,7 +167,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
           }
           
           const response = await axios.put(
-            `http://localhost:8888/api/v1/onboard/credit/${userID}`,
+            `https://extreamx-backend.onrender.com/api/v1/onboard/credit/${userID}`,
             { tokensUsed: creditCost }
           );
           console.log("Quiz generation credits deducted:", creditCost);
@@ -229,7 +229,7 @@ export default function Quiz({ subject, grade }: QuizProps) {
         );
 
         // Axios post request to send feedback info to the server
-        await axios.post("http://localhost:8888/api/v1/enhancement", {
+        await axios.post("https://extreamx-backend.onrender.com/api/v1/enhancement", {
           email: userEmail + "-" + uuidv4(),
           recommendations: personalizedFeedback.recommendations,
           strengths: personalizedFeedback.strengths,

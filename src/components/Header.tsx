@@ -72,7 +72,7 @@ export default function Header({ creditVisibility, RerenderToUpdateCredit }: boo
 
       setIsLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${userEmail}`);
+        const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/onboard?email=${userEmail}`);
         const userData = response.data;
         const currentUserData = userData.find((user: { email: string; }) => user.email === userEmail);
         

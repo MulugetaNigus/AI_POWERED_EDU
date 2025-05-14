@@ -31,7 +31,7 @@ export default function Footer() {
     setSubscriptionStatus('');
     
     try {
-      const response = await fetch('http://localhost:8888/api/v1/newsletter/subscribe', {
+      const response = await fetch('https://extreamx-backend.onrender.com/api/v1/newsletter/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

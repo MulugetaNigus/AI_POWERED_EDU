@@ -113,7 +113,7 @@ function App() {
         const fetchOnboardingData = async () => {
             if (isSignedIn && user) {
                 try {
-                    const response = await axios.get("http://localhost:8888/api/v1/onboard");
+                    const response = await axios.get("https://extreamx-backend.onrender.com/api/v1/onboard");
                     const onboardingData = response.data;
                     const userEmail = user.emailAddresses[0]?.emailAddress;
 

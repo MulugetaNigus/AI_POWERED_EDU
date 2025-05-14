@@ -87,7 +87,7 @@ const MyPost: React.FC<MyPostProps> = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get('http://localhost:8888/api/v1/getPost'); // Fetch all posts
+        const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getPost'); // Fetch all posts
         const allPosts = response.data;
         const userEmail = user?.emailAddresses[0]?.emailAddress;
 
@@ -132,7 +132,7 @@ const MyPost: React.FC<MyPostProps> = () => {
       if (!currentPost) return;
 
       // Make the backend call
-      const response = await axios.post(`http://localhost:8888/api/v1/updateLikes/${postId}`, {
+      const response = await axios.post(`https://extreamx-backend.onrender.com/api/v1/updateLikes/${postId}`, {
         increment: 1,
         currentLikes: currentPost.likes // Send current likes count to backend
       });
@@ -159,7 +159,7 @@ const MyPost: React.FC<MyPostProps> = () => {
     } catch (err) {
       console.error('Error updating likes:', err);
       // Refresh the posts to get the correct state
-      const refreshResponse = await axios.get('http://localhost:8888/api/v1/getPost');
+      const refreshResponse = await axios.get('https://extreamx-backend.onrender.com/api/v1/getPost');
       setPosts(refreshResponse.data);
     } finally {
       setPendingLikes(prev => {
@@ -195,7 +195,7 @@ const MyPost: React.FC<MyPostProps> = () => {
             className="px-3 py-1 bg-red-500 text-white rounded-md"
             onClick={async () => {
               try {
-                await axios.delete(`http://localhost:8888/api/v1/deletePost/${postId}`);
+                await axios.delete(`https://extreamx-backend.onrender.com/api/v1/deletePost/${postId}`);
                 setPosts(posts.filter(post => post._id !== postId));
                 toast.success('Post deleted successfully');
               } catch (error) {

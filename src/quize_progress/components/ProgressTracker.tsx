@@ -65,7 +65,7 @@ export default function ProgressTracker() {
     setBarChartLoading(true);
     setFocusAreasLoading(true);
     await axios
-      .get("http://localhost:8888/api/v1/enhancement")
+      .get("https://extreamx-backend.onrender.com/api/v1/enhancement")
       .then((response) => {
         const cleanedFeedback = response.data.map(feedback => {
           const fullEmail = feedback.email;
@@ -111,7 +111,7 @@ export default function ProgressTracker() {
   const handleDelete = async (id: string) => {
     setDeleteLoading(prev => ({ ...prev, [id]: true }));
     await axios
-      .delete(`http://localhost:8888/api/v1/deleteEnhancement/${id}`)
+      .delete(`https://extreamx-backend.onrender.com/api/v1/deleteEnhancement/${id}`)
       .then((response) => {
         console.log(response.data);
         fetchData();

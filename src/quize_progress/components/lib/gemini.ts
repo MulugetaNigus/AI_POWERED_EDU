@@ -2,7 +2,7 @@ import axios from 'axios';
 // import { useState } from 'react';
 
 // const API_URL = 'http://127.0.0.1:8000';
-const API_URL = 'http://localhost:9000';
+const API_URL = 'https://tuned-models.onrender.com';
 // const API_URL = 'https://python-gemini-doc-backend.onrender.com';
 // const [selectedSubject, setselectedSubject] = useState("");
 

@@ -10,7 +10,9 @@ interface MarkdownDisplayProps {
 const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ markdownText }) => {
   // Convert Markdown to HTML
   const getMarkdownText = (text: string) => {
-    return { __html: marked(text) }; // Use dangerouslySetInnerHTML to render HTML
+    // Handle undefined or null input by providing a default empty string
+    const safeText = text || '';
+    return { __html: marked(safeText) }; // Use dangerouslySetInnerHTML to render HTML
   };
 
   return (

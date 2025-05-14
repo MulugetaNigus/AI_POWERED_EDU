@@ -70,7 +70,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
       const fetchUserData = async () => {
         try {
           // Fetch groups
-          const groupsResponse = await axios.get('http://localhost:8888/api/v1/getGroup');
+          const groupsResponse = await axios.get('https://extreamx-backend.onrender.com/api/v1/getGroup');
           // Filter for approved groups where the user is a member or creator
           const filteredGroups = groupsResponse.data.filter((group: Group) => 
             group.approval && (
@@ -81,7 +81,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ loading = false }) => {
           setUserGroups(filteredGroups);
           
           // Fetch posts
-          const postsResponse = await axios.get('http://localhost:8888/api/v1/getPost');
+          const postsResponse = await axios.get('https://extreamx-backend.onrender.com/api/v1/getPost');
           // Filter for approved posts by the current user
           const filteredPosts = postsResponse.data.filter((post: Post) => 
             post.approved && post.userID === currentUserEmail

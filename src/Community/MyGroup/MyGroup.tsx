@@ -55,7 +55,7 @@ const MyGroup: React.FC = () => {
     const fetchGroups = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8888/api/v1/getGroup');
+            const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getGroup');
             const allGroups = response.data;
             const userEmail = user?.emailAddresses[0]?.emailAddress;
             
@@ -97,7 +97,7 @@ const MyGroup: React.FC = () => {
     const handleDeleteGroup = async (groupId: string, groupName: string) => {
         if (window.confirm(`Are you sure you want to delete "${groupName}"? This action cannot be undone.`)) {
             try {
-                const response = await axios.delete(`http://localhost:8888/api/v1/delete-group/${groupId}`);
+                const response = await axios.delete(`https://extreamx-backend.onrender.com/api/v1/delete-group/${groupId}`);
                 
                 if (response.status === 200) {
                     // Remove the deleted group from the list
@@ -119,7 +119,7 @@ const MyGroup: React.FC = () => {
         localStorage.setItem('joiningGroups', JSON.stringify([...joiningGroupIds, groupId]));
 
         try {
-            const response = await axios.post('http://localhost:8888/api/v1/add-member', {
+            const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/add-member', {
                 groupId: groupId,
                 memberEmail: userEmail
             });
@@ -147,7 +147,7 @@ const MyGroup: React.FC = () => {
 
     const handleUpdateGroup = async (groupData: UpdateGroupData) => {
         try {
-            const response = await axios.put(`http://localhost:8888/api/v1/edit-group/${selectedGroup?._id}`, groupData);
+            const response = await axios.put(`https://extreamx-backend.onrender.com/api/v1/edit-group/${selectedGroup?._id}`, groupData);
             
             if (response.status === 200) {
                 // Update the groups list with the updated group

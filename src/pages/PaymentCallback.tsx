@@ -36,7 +36,7 @@ const PaymentCallback = () => {
         }
 
         // Verify payment with backend
-        const response = await axios.get(`http://localhost:8888/api/v1/verify/${tx_ref}`);
+        const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/verify/${tx_ref}`);
 
         if (response.data.status === 'success') {
           if (!userID) {
@@ -49,7 +49,7 @@ const PaymentCallback = () => {
 
             // Update credits using stored values
             const creditResponse = await axios.put(
-              `http://localhost:8888/api/v1/onboard/credit/${userID}/${pendingPayment.credits}`
+              `https://extreamx-backend.onrender.com/api/v1/onboard/credit/${userID}/${pendingPayment.credits}`
             );
 
             if (creditResponse.data) {

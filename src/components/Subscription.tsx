@@ -108,7 +108,7 @@ export default function Subscription() {
 
   const fetchUserID = async (currentUserEmail: string) => {
     try {
-      const response = await axios.get(`http://localhost:8888/api/v1/onboard?email=${currentUserEmail}`);
+      const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/onboard?email=${currentUserEmail}`);
       const userData = response.data;
       const currentUserData = userData.find((user: { email: string; }) => user.email === currentUserEmail);
       if (currentUserData) {
@@ -121,7 +121,7 @@ export default function Subscription() {
 
   const fetchCurrentUserPlan = async (userID: string) => {
     try {
-      const response = await axios.get(`http://localhost:8888/api/v1/onboard/${userID}`);
+      const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/onboard/${userID}`);
       const userData = response.data;
       // Convert plan name to lowercase to match the expected format in subscriptionUtils
       const planName = userData.plan?.toLowerCase() || 'free';
@@ -142,7 +142,7 @@ export default function Subscription() {
       const tx_ref = `sub_${plan.id}_${Date.now()}`;
       const callbackUrl = `${window.location.origin}/payment-callback?tx_ref=${tx_ref}`;
 
-      const response = await axios.post('http://localhost:8888/api/v1/initialize',
+      const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/initialize',
         {
           amount: (cycle === 'annual' ? plan.price * 10 * 0.85 : plan.price).toString(),
           currency: "ETB",
@@ -166,7 +166,7 @@ export default function Subscription() {
         }));
         try {
           const res = await axios.put(
-            'http://localhost:8888/api/v1/onboard',
+            'https://extreamx-backend.onrender.com/api/v1/onboard',
             { email: email, plan: plan.name },
             {
               headers: {

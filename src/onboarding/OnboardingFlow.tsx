@@ -136,7 +136,7 @@ export default function OnboardingFlow() {
     };
     console.log(userInfo);
     await axios
-      .post("http://localhost:8888/api/v1/onboard", userInfo)
+      .post("https://extreamx-backend.onrender.com/api/v1/onboard", userInfo)
       .then(async (result) => {
         setsaveOnBoardingLoading(false);
         console.log(result);

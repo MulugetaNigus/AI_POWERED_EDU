@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
+import { calculateTokenUsage } from "../utils/TokenCalculator";
+import { toast } from "react-hot-toast";
 import {
   Send,
   ChevronDown,
@@ -45,9 +47,41 @@ import Header from "../components/Header";
 import { v4 as uuidv4 } from "uuid";
 import SubscriptionModal from "../components/SubscriptionModal";
 // cleck importations
-import { UserButton, useUser } from '@clerk/clerk-react';
+import { UserButton, useUser, useClerk } from '@clerk/clerk-react';
 import PDFPreview from "../components/PDFPreview";
 import { SubscriptionPlan, hasFeatureAccess } from "../utils/subscriptionUtils";
+
+// Helper function to load and parse chat history robustly
+const loadChatHistoryFromLocalStorage = (): chatH[] => {
+  const chatHistoryFromStorage = localStorage.getItem("chatHistory");
+  let loadedHistory: chatH[] = [];
+  if (chatHistoryFromStorage) {
+    try {
+      const parsed = JSON.parse(chatHistoryFromStorage);
+      if (Array.isArray(parsed)) {
+        // Filter for objects that somewhat resemble chatH items (e.g., have a timestamp)
+        loadedHistory = parsed.filter(item =>
+          typeof item === 'object' &&
+          item !== null &&
+          typeof item.timestamp === 'string' &&
+          typeof item.data === 'string' &&
+          typeof item.prompt === 'string'
+        );
+        // If filtering removed items, it implies some data was not as expected.
+        if (loadedHistory.length !== parsed.length) {
+          console.warn("Some items in stored chat history were not valid chatH objects and were filtered out.");
+        }
+      } else {
+        console.warn("Chat history in localStorage was not an array. Clearing malformed data.");
+        localStorage.removeItem("chatHistory");
+      }
+    } catch (e) {
+      console.error("Failed to parse chat history from localStorage. Clearing malformed data.", e);
+      localStorage.removeItem("chatHistory");
+    }
+  }
+  return loadedHistory;
+};
 
 interface ChatHistory {
   grade: number;
@@ -145,7 +179,8 @@ export default function Dashboard() {
   // const userCurrentCreditRef = useRef<string>("");
 
   // clerk config
-  const { isSignedIn, user, signOut } = useUser();
+  const { isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
   // console.log("may be this is the username: ", user?.emailAddresses[0].emailAddress);
 
   // fetch the users grade using useEffect from localStorage
@@ -159,7 +194,7 @@ export default function Dashboard() {
 
   // Convert userCurrentPlan to the correct type for feature checks
   const userPlanType = (userCurrentPlan || 'free') as SubscriptionPlan;
-  
+
   // Check feature access
   const canAccessQuiz = hasFeatureAccess(userPlanType, 'quiz-summaries');
   const canAccessDetailedAnalytics = hasFeatureAccess(userPlanType, 'detailed-quiz-analytics');
@@ -189,10 +224,7 @@ export default function Dashboard() {
     }
 
     // get the history from localstorage and set for "setOChatHistory" when the page start in this useEffect hook
-    const user_History = JSON.parse(
-      localStorage.getItem("chatHistory") as string
-    );
-    setOChatHistory(user_History);
+    setOChatHistory(loadChatHistoryFromLocalStorage());
     // console.log(user_History);
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -209,13 +241,13 @@ export default function Dashboard() {
     console.log("user email: " + email);
 
     axios
-      .get(`http://localhost:8888/api/v1/onboard?email=${email}`)
+      .get(`https://extreamx-backend.onrender.com/api/v1/onboard?email=${email}`)
       .then((response) => {
         const userData = response.data;
 
         // Filter the user data to find the current user's credit
         const currentUserData = userData.find((user: { email: string; }) => user.email === email);
-        
+
         // Convert plan name to lowercase to match the expected format in subscriptionUtils
         const planName = currentUserData?.plan?.toLowerCase() || 'free';
         setuserCurrentPlan(planName);
@@ -238,7 +270,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get('http://localhost:8888/api/v1/getAllCourses');
+        const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getAllCourses');
         if (response.data.message === 'success') {
           setCourses(response.data.data);
         }
@@ -291,21 +323,34 @@ export default function Dashboard() {
       setMessages((prev) => [...prev, userMessage]);
       setInput("");
       setIsLoading(true);
-      
+
+      // test log to know the req things
+      console.log({
+        question: input,
+        grade: selectedCourse.grade,
+        subject: selectedCourse.course
+      })
+
       try {
         // Record the start time
         const startTime = new Date();
-        
+
         const response = await axios.post(
-          "http://localhost:8888/api/v1/chat",
+          "https://tuned-models.onrender.com/api/tuned-model/generate",
+          // "http://localhost:9000/api/tuned-model/generate",
           {
-            prompt: input,
+            question: input,
             grade: selectedCourse.grade,
-            subject: selectedCourse.course,
-            email: userEmail,
+            subject: selectedCourse.course
+            // email: userEmail,
           }
         );
-        
+
+        // Full API Response Status, Headers, Data
+        console.log("Full API Response Status:", response.status);
+        console.log("Full API Response Headers:", response.headers);
+        console.log("Full API Response Data:", response.data);
+
         // Record the end time and calculate the duration
         const endTime = new Date();
         const duration = (endTime.getTime() - startTime.getTime()) / 1000; // in seconds
@@ -317,22 +362,80 @@ export default function Dashboard() {
           grade: selectedCourse.grade,
           subject: selectedCourse.course
         });
-        
-        const aiMessage: Message = { text: response.data.message, isAI: true };
-        setMessages((prev) => [...prev, aiMessage]);
-        
-        // Save chat history to localStorage
-        const newChatHistory = {
-          grade: selectedCourse.grade,
+
+        const aiMessage: Message = { text: response.data.answer, isAI: true };
+
+        // Calculate token usage for this interaction
+        const tokenUsage = calculateTokenUsage(userMessage.text, aiMessage.text);
+        console.log('Token Usage:', tokenUsage);
+
+        // Check if user has enough credits
+        const currentCredits = parseInt(userCurrentCredit);
+        if (currentCredits < tokenUsage.totalTokens) {
+          toast.error(`Not enough credits. Required: ${tokenUsage.totalTokens}, Available: ${currentCredits}`);
+          return;
+        }
+
+        // Update user's credit based on token usage
+        try {
+          if (!userID) {
+            console.error('MongoDB User ID not found');
+            return;
+          }
+
+          // We subtract tokens from credit (negative value)
+          const response = await axios.put(
+            `https://extreamx-backend.onrender.com/api/v1/onboard/credit/${userID}/${-tokenUsage.totalTokens}`
+          );
+
+          console.log('Credit update response:', response.data);
+          // Update the local state with new credit value
+          setUserCurrentCredit(response.data.remainingCredits.toString());
+          toast.success(`Tokens used: ${tokenUsage.totalTokens}. Remaining credits: ${response.data.remainingCredits}`);
+          setRenderNewCreditValue(response.data.remainingCredits);
+        } catch (creditError) {
+          console.error('Error updating credit:', creditError);
+          toast.error('Failed to update credit balance');
+        }
+
+        // --- Updated chat history saving logic ---
+        const newChatEntry: chatH = {
+          email: userEmail || (user?.emailAddresses[0].emailAddress as string) || "unknown_user",
+          id: Date.now(), // Changed from uuidv4() to Date.now() to match chatH.id type and fix lint error
           subject: selectedCourse.course,
-          messages: [...messages, userMessage, aiMessage],
+          prompt: userMessage.text, // userMessage contains the user's input for this turn
+          data: aiMessage.text,    // aiMessage contains the AI's response for this turn
+          timestamp: new Date().toISOString(),
         };
-        
-        localStorage.setItem(
-          "chatHistory",
-          JSON.stringify(newChatHistory)
-        );
-        
+
+        // Get current history array from localStorage
+        const currentHistoryStr = localStorage.getItem("chatHistory");
+        let currentHistory: chatH[] = [];
+        if (currentHistoryStr) {
+          try {
+            const parsed = JSON.parse(currentHistoryStr);
+            if (Array.isArray(parsed)) {
+              currentHistory = parsed;
+            } else {
+              // If it's not an array, log a warning and start fresh to avoid cascading errors.
+              console.warn("Chat history in localStorage was not an array. Discarding old data and starting fresh for chat history.");
+              // localStorage.removeItem("chatHistory"); // Optionally clear the malformed item
+            }
+          } catch (e) {
+            console.error("Failed to parse chat history from localStorage. Discarding old data and starting fresh for chat history.", e);
+            // localStorage.removeItem("chatHistory"); // Optionally clear the malformed item
+          }
+        }
+
+        const updatedHistory = [...currentHistory, newChatEntry];
+        localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
+
+        // Update the component's OchatHistory state directly so the UI reflects the change
+        setOChatHistory(updatedHistory);
+        // --- End of updated chat history saving logic ---
+
+        setMessages((prev) => [...prev, aiMessage]);
+
         if (!showIcons) {
           setShowIcons(true);
         }
@@ -364,9 +467,7 @@ export default function Dashboard() {
   // to handle refresh the chat area
   const handleRefreshChatHistory = () => {
     // i just want to fresh the chat history to detect the new one, instead of refreshing the page manually
-    setOChatHistory(
-      JSON.parse(localStorage.getItem("chatHistory") as string) || []
-    );
+    setOChatHistory(loadChatHistoryFromLocalStorage());
   };
 
   // handle to delete the chat history
@@ -376,14 +477,12 @@ export default function Dashboard() {
         "Are you sure you want to delete this chat history?"
       );
       if (userPermission) {
-        // here i want to remove the chat history data from the localstorage
-        let drophistory =
-          JSON.parse(localStorage.getItem("chatHistory") as string) || [];
-        drophistory = drophistory.filter(
-          (chat: any) => chat.timestamp !== his.timestamp
+        let currentHistory = loadChatHistoryFromLocalStorage();
+        const updatedHistory = currentHistory.filter(
+          (chat: chatH) => chat.timestamp !== his.timestamp
         );
-        localStorage.setItem("chatHistory", JSON.stringify(drophistory));
-        setOChatHistory(drophistory);
+        localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
+        setOChatHistory(updatedHistory);
       } else {
         null;
       }
@@ -463,18 +562,18 @@ export default function Dashboard() {
 
   const handleImageAnalysis = (analysis: string) => {
     let processedAnalysis = analysis;
-    
+
     // Limit analysis detail based on subscription tier
     if (!canAccessAdvancedImageAnalysis) {
       // For free and standard users, limit the analysis detail
       const lines = analysis.split('\n');
       if (lines.length > 8) {
         // Keep first 8 lines for basic/standard users
-        processedAnalysis = lines.slice(0, 8).join('\n') + 
+        processedAnalysis = lines.slice(0, 8).join('\n') +
           '\n\n[Upgrade to Premium for complete detailed analysis]';
       }
     }
-    
+
     // Add the analysis to the chat
     setMessages((prev) => [
       ...prev,
@@ -492,7 +591,7 @@ export default function Dashboard() {
   // sample payment test
   // const handlePayment = async () => {
   //   try {
-  //     const response = await axios.post('http://localhost:8888/api/v1/initialize',
+  //     const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/initialize',
   //       {
   //         amount: "5000",
   //         currency: "ETB",
@@ -581,39 +680,39 @@ export default function Dashboard() {
                       <CreditCard className="w-4 h-4 text-blue-500" />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</span>
                     </div>
-                    <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${userCurrentPlan === "free" 
-                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200" 
-                      : userCurrentPlan === "standard" 
-                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200" 
+                    <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${userCurrentPlan === "free"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                      : userCurrentPlan === "standard"
+                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200"
                         : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
                       {userCurrentPlan === "free" ? "Free" : userCurrentPlan === "standard" ? "Standard" : "Premium"}
                     </div>
                   </div>
-                  
+
                   {/* Credits Display */}
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs text-gray-500 dark:text-gray-400">AI Credits</span>
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{userCurrentCredit} credits</span>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
-                    <div 
-                      className={`h-1.5 rounded-full ${userCurrentPlan === "free" 
-                        ? "bg-blue-500" 
-                        : userCurrentPlan === "standard" 
-                          ? "bg-gradient-to-r from-purple-500 to-blue-500" 
+                    <div
+                      className={`h-1.5 rounded-full ${userCurrentPlan === "free"
+                        ? "bg-blue-500"
+                        : userCurrentPlan === "standard"
+                          ? "bg-gradient-to-r from-purple-500 to-blue-500"
                           : "bg-gradient-to-r from-amber-500 to-orange-500"}`}
                       style={{ width: `${Math.min(100, (Number(userCurrentCredit) / (userCurrentPlan === "free" ? 2500 : userCurrentPlan === "standard" ? 5000 : 10000)) * 100)}%` }}
                     ></div>
                   </div>
-                  
+
                   {/* Upgrade Button - Only show for free and standard users */}
                   {userCurrentPlan !== "premium" && (
-                    <Link 
+                    <Link
                       to="/subscription"
-                      className={`w-full py-2 px-4 flex items-center justify-center space-x-2 rounded-lg text-sm font-medium text-white ${userCurrentPlan === "free" 
-                        ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" 
+                      className={`w-full py-2 px-4 flex items-center justify-center space-x-2 rounded-lg text-sm font-medium text-white ${userCurrentPlan === "free"
+                        ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                         : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"}`}
                     >
                       <Sparkles className="w-4 h-4" />
@@ -623,19 +722,22 @@ export default function Dashboard() {
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${userCurrentPlan === "free" 
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200" 
-                    : userCurrentPlan === "standard" 
-                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200" 
-                      : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
-                    {userCurrentPlan === "free" ? (
-                      <CreditCard className="w-5 h-5" />
-                    ) : (
-                      <Crown className="w-5 h-5" />
-                    )}
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${userCurrentPlan === "free"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                      : userCurrentPlan === "standard"
+                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"}`}>
+                      {userCurrentPlan === "free" ? (
+                        <CreditCard className="w-5 h-5" />
+                      ) : (
+                        <Crown className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{userCurrentPlan}</div>
                   </div>
                   {userCurrentPlan !== "premium" && (
-                    <Link 
+                    <Link
                       to="/subscription"
                       className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
                       title="Upgrade Plan"
@@ -646,7 +748,7 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            
+
             {/* Grade Levels and Courses Section */}
             <div className={`flex-1 ${isSidebarCollapsed ? 'px-2 py-4' : 'p-4'} overflow-y-auto`}>
               <div className={`flex gap-2 items-center text-base font-semibold text-gray-800 dark:text-white mb-4 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
@@ -690,7 +792,7 @@ export default function Dashboard() {
                                   handleCourseSelect(g.level, course.name);
                                   console.log(course.name);
                                 }}
-                                className={`w-full flex items-center space-x-2 p-2 text-left rounded-md transition-all duration-200 ${selectedCourse?.grade === g.level &&
+                                className={`w-full flex items-center justify-between gap-2 p-2 text-left rounded-md transition-all duration-200 ${selectedCourse?.grade === g.level &&
                                   selectedCourse?.course === course.name
                                   ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm"
                                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -745,7 +847,7 @@ export default function Dashboard() {
                       </span>
                     )}
                   </Link>
-                  
+
                   {/* Pro feature tooltip that appears on hover */}
                   {!canAccessQuiz && !isSidebarCollapsed && (
                     <div className="absolute z-50 w-64 p-3 mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
@@ -758,7 +860,7 @@ export default function Dashboard() {
                           <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             Upgrade to Standard or Premium to unlock quizzes and track your learning progress.
                           </p>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -805,9 +907,9 @@ export default function Dashboard() {
                       </div>
                     </button>
 
-                    {showChatHistory && (
+                    {showChatHistory && Array.isArray(OchatHistory) && (
                       <div className="mt-2 space-y-1.5">
-                        {OchatHistory?.map((his, index) => (
+                        {OchatHistory.map((his, index) => (
                           his?.email === currentUsername && (
                             <div
                               key={his?.timestamp}
@@ -818,7 +920,7 @@ export default function Dashboard() {
                                 className="w-full flex items-center justify-between gap-2 p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <p className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
-                                  {index + 1}. {his?.data.slice(0, 20)}...
+                                  {index + 1}. {(his?.data || '').slice(0, 20)}...
                                 </p>
                                 <button
                                   onClick={(e) => {
@@ -873,7 +975,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="p-2 border-t border-gray-200/50 dark:border-gray-700/50 flex justify-center">
-                <button 
+                <button
                   onClick={handleLogout}
                   className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   title="Log Out"

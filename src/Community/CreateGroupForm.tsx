@@ -62,7 +62,7 @@ const CreateGroupForm: React.FC = () => {
 
 
         try {
-            const response = await axios.post('http://localhost:8888/api/v1/upload', {
+            const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/upload', {
                 groupName: formData.groupName,
                 groupDescription: formData.groupDescription,
                 groupMember: "0",

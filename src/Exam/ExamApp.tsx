@@ -23,7 +23,7 @@ const ExamApp: React.FC = () => {
     const fetchQuestions = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:8888/api/v1/getAllExamQuestions');
+            const response = await fetch('https://extreamx-backend.onrender.com/api/v1/getAllExamQuestions');
             const data = await response.json();
             
             const filteredQuestions = data.filter((q: ExamQuestion) => 

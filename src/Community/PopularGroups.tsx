@@ -23,7 +23,7 @@ const PopularGroups: React.FC = () => {
     useEffect(() => {
         const fetchGroups = async () => {
             try {
-                const response = await axios.get('http://localhost:8888/api/v1/getGroup');
+                const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getGroup');
                 const sortedGroups = response.data
                     .sort((a: Group, b: Group) => (b.members?.length || 0) - (a.members?.length || 0))
                     .slice(0, 5);

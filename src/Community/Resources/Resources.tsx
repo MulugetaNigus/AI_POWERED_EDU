@@ -134,7 +134,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, onResourceUplo
             formData.append('description', `${subject} - Grade ${grade}`);
             formData.append('userID', user?.emailAddresses[0]?.emailAddress || 'unknown-user');
 
-            const response = await axios.post('http://localhost:8888/api/v1/uploadResource', formData);
+            const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/uploadResource', formData);
 
             if (response.status === 200) {
                 toast.success("Resource uploaded successfully!", { theme: theme === 'light' ? 'light' : 'dark' });
@@ -327,7 +327,7 @@ const Resources: React.FC = () => {
     const fetchResources = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8888/api/v1/getResources');
+            const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getResources');
             setResources(response.data);
         } catch (error) {
             console.error("Error fetching resources:", error);
@@ -350,7 +350,7 @@ const Resources: React.FC = () => {
         setDownloadingId(resource._id);
         try {
             const response = await axios.get(
-                `http://localhost:8888/api/v1/resource/${resource.id}`,
+                `https://extreamx-backend.onrender.com/api/v1/resource/${resource.id}`,
                 { responseType: 'blob' }
             );
 

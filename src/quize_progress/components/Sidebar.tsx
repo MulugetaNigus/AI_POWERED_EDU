@@ -69,7 +69,7 @@ export default function Sidebar({
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:8888/api/v1/getAllCourses');
+        const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getAllCourses');
         if (response.data.message === 'success') {
           setCourses(response.data.data);
         }

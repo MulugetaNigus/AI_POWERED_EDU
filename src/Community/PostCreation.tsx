@@ -74,7 +74,7 @@ const PostCreation: React.FC = () => {
     
     try {
       // Update the endpoint to support file uploads if needed
-      const result = await axios.post("http://localhost:8888/api/v1/createPost", formData, {
+      const result = await axios.post("https://extreamx-backend.onrender.com/api/v1/createPost", formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

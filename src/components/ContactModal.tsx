@@ -24,7 +24,7 @@ const ContactModal = ({ isOpen, onClose }) => {
         message,
       };
       await axios
-        .post("http://localhost:8888/api/v1/contact", user_cred)
+        .post("https://extreamx-backend.onrender.com/api/v1/contact", user_cred)
         .then((result) => {
           console.log(result);
           // Show a success notification

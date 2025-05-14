@@ -8,7 +8,7 @@ import { useUser } from "@clerk/clerk-react";
 import { formatDistanceToNow, format } from "date-fns";
 
 // Configuration
-const BASE_URL = "http://localhost:8888";
+const BASE_URL = "https://extreamx-backend.onrender.com";
 const API_URL = `${BASE_URL}/api/v1`;
 
 interface Post {

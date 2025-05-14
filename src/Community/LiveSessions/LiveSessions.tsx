@@ -181,7 +181,7 @@ const LiveSessions: React.FC = () => {
     const handleCreateMeeting = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8888/api/v1/meetings', {
+            const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/meetings', {
                 ...newMeeting,
                 host: user?.emailAddresses[0].emailAddress,
                 participants: []
@@ -198,7 +198,7 @@ const LiveSessions: React.FC = () => {
 
     const handleJoinMeeting = async (meetingId: string) => {
         try {
-            const response = await axios.post(`http://localhost:8888/api/v1/meetings/${meetingId}/join`, {
+            const response = await axios.post(`https://extreamx-backend.onrender.com/api/v1/meetings/${meetingId}/join`, {
                 email: user?.emailAddresses[0].emailAddress
             });
             

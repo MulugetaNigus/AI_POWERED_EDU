@@ -57,7 +57,7 @@ const Chat: React.FC = () => {
         const fetchGroups = async () => {
             setLoading(true);
             try {
-                const response = await axios.get('http://localhost:8888/api/v1/getGroup');
+                const response = await axios.get('https://extreamx-backend.onrender.com/api/v1/getGroup');
                 const allGroups = response.data;
                 const userEmail = user?.emailAddresses[0]?.emailAddress;
 
@@ -120,7 +120,7 @@ const Chat: React.FC = () => {
                     formData.append('file', selectedFile);
                     originalFileName = selectedFile.name; 
                     
-                    const uploadResponse = await axios.post('http://localhost:8888/api/v1/upload-file', formData, {
+                    const uploadResponse = await axios.post('https://extreamx-backend.onrender.com/api/v1/upload-file', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
                         }
@@ -135,7 +135,7 @@ const Chat: React.FC = () => {
                 }
 
                 const messageContent = newMessage.trim() || (selectedFile ? selectedFile.name : 'Shared a file');
-                const response = await axios.post('http://localhost:8888/api/v1/sendChat', {
+                const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/sendChat', {
                     content: messageContent,
                     userID: userEmail,
                     groupID: groupId,
@@ -229,7 +229,7 @@ const Chat: React.FC = () => {
         setLoadingMessages(true);
         setMessages([]); 
         try {
-            const response = await axios.get(`http://localhost:8888/api/v1/getGroupID?groupID=${group.groupName}`);
+            const response = await axios.get(`https://extreamx-backend.onrender.com/api/v1/getGroupID?groupID=${group.groupName}`);
             if (response.status === 200) {
                 const fetchedMessages = response.data;
                 setMessages(fetchedMessages);
@@ -267,7 +267,7 @@ const Chat: React.FC = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:8888/api/v1/remove-member', {
+            const response = await axios.post('https://extreamx-backend.onrender.com/api/v1/remove-member', {
                 groupID: groupId,
                 email: userEmail
             }, {
@@ -308,7 +308,7 @@ const Chat: React.FC = () => {
     const handleReport = async (reason: string, details: string) => {
         setIsSubmittingReport(true);
         try {
-            await axios.post('http://localhost:8888/api/v1/reportSpam', {
+            await axios.post('https://extreamx-backend.onrender.com/api/v1/reportSpam', {
                 spamMessage: selectedMessage?.content,
                 reason: reason,
                 description: details,
