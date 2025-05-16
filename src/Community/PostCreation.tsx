@@ -51,41 +51,41 @@ const PostCreation: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postContent.trim()) {
-      toast.error("Post content cannot be empty!");
+      toast.error('Post content cannot be empty!');
       return;
     }
-    
+
     setloadingState(true);
-    
-    // Create FormData to handle file uploads
+
     const formData = new FormData();
     formData.append('userID', user?.emailAddresses[0].emailAddress || '');
     formData.append('title', postTitle);
     formData.append('content', postContent);
     formData.append('likes', '0');
     formData.append('visibility', visibilityOption);
-    formData.append('tags', JSON.stringify(tags));
     formData.append('approved', 'false');
-    
-    // Add images if any
-    postImages.forEach(image => {
+    formData.append('tags', JSON.stringify(tags));
+
+    postImages.forEach((image) => {
       formData.append('images', image);
     });
-    
+
     try {
-      // Update the endpoint to support file uploads if needed
-      const result = await axios.post("https://extreamx-backend.onrender.com/api/v1/createPost", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      const result = await axios.post(
+        'https://extreamx-backend.onrender.com/api/v1/createPost',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         }
-      });
-      
-      console.log(result);
+      );
+
       setloadingState(false);
-      toast.success("Successfully Posted!", {
-        position: "top-center",
+      toast.success('Successfully Posted!', {
+        position: 'top-right',
       });
-      
+
       // Reset form
       setPostContent('');
       setPostTitle('');
@@ -94,11 +94,13 @@ const PostCreation: React.FC = () => {
       setImagePreviewUrls([]);
       setVisibilityOption('public');
       setIsPreviewMode(false);
-    } catch (err) {
+    } catch (err: any) {
       setloadingState(false);
       seterror(true);
-      console.log(err);
-      toast.error("Failed to create post. Please try again.");
+      console.error('Error:', err);
+      toast.error(
+        err.response?.data?.message || 'Failed to create post. Please try again.'
+      );
     }
   };
 
@@ -112,15 +114,15 @@ const PostCreation: React.FC = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      
+
       // Limit to 4 images
       if (postImages.length + filesArray.length > 4) {
         toast.warning("You can upload maximum 4 images");
         return;
       }
-      
+
       setPostImages(prevImages => [...prevImages, ...filesArray]);
-      
+
       // Create preview URLs
       const newImageUrls = filesArray.map(file => URL.createObjectURL(file));
       setImagePreviewUrls(prevUrls => [...prevUrls, ...newImageUrls]);
@@ -130,7 +132,7 @@ const PostCreation: React.FC = () => {
   // Remove image from preview
   const removeImage = (index: number) => {
     setPostImages(prevImages => prevImages.filter((_, i) => i !== index));
-    
+
     // Revoke object URL to avoid memory leaks
     URL.revokeObjectURL(imagePreviewUrls[index]);
     setImagePreviewUrls(prevUrls => prevUrls.filter((_, i) => i !== index));
@@ -155,7 +157,7 @@ const PostCreation: React.FC = () => {
     toolbar: [
       [{ 'header': [1, 2, false] }],
       ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
       ['link'],
       ['clean']
     ],
@@ -177,14 +179,14 @@ const PostCreation: React.FC = () => {
       {expandPostForm ? (
         <>
           <div className='flex items-center justify-between'>
-            <button 
-              onClick={() => setexpandPostForm(false)} 
+            <button
+              onClick={() => setexpandPostForm(false)}
               className='flex items-center justify-center gap-2 bg-blue-600 p-2 rounded-lg text-white mb-2'
             >
               <X className="w-5 h-5" />
               Close Form
             </button>
-            
+
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -196,21 +198,21 @@ const PostCreation: React.FC = () => {
               </button>
             </div>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="dark:text-white dark:bg-gray-800 bg-white shadow border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
             {/* Header with user info and visibility */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 {user?.imageUrl && (
-                  <img 
-                    src={user.imageUrl} 
-                    alt="User" 
+                  <img
+                    src={user.imageUrl}
+                    alt="User"
                     className="w-10 h-10 rounded-full"
                   />
                 )}
                 <div>
                   <p className="font-medium">{user?.fullName || user?.emailAddresses[0].emailAddress}</p>
-                  
+
                   {/* Visibility selector */}
                   <div className="relative">
                     <button
@@ -222,7 +224,7 @@ const PostCreation: React.FC = () => {
                       {selectedVisibility?.name}
                       <ChevronDown className="w-3 h-3" />
                     </button>
-                    
+
                     {showVisibilityOptions && (
                       <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md shadow-lg z-10">
                         {visibilityOptions.map(option => (
@@ -245,7 +247,7 @@ const PostCreation: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Title input */}
             <input
               type="text"
@@ -254,37 +256,37 @@ const PostCreation: React.FC = () => {
               value={postTitle}
               onChange={(e) => setPostTitle(e.target.value)}
             />
-            
+
             {isPreviewMode ? (
               // Preview mode
               <div className="mt-4">
                 {postTitle && <h2 className="text-xl font-bold mb-2">{postTitle}</h2>}
-                <div 
-                  className="prose dark:prose-invert max-w-none" 
-                  dangerouslySetInnerHTML={{ __html: postContent }} 
+                <div
+                  className="prose dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: postContent }}
                 />
-                
+
                 {/* Image previews in preview mode */}
                 {imagePreviewUrls.length > 0 && (
                   <div className="grid grid-cols-2 gap-2 mt-4">
                     {imagePreviewUrls.map((url, index) => (
                       <div key={index} className="relative">
-                        <img 
-                          src={url} 
-                          alt={`Preview ${index}`} 
+                        <img
+                          src={url}
+                          alt={`Preview ${index}`}
                           className="w-full h-auto rounded-lg object-cover"
                         />
                       </div>
                     ))}
                   </div>
                 )}
-                
+
                 {/* Tags in preview mode */}
                 {tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4">
                     {tags.map(tag => (
-                      <span 
-                        key={tag} 
+                      <span
+                        key={tag}
                         className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 rounded-full text-sm"
                       >
                         #{tag}
@@ -297,8 +299,8 @@ const PostCreation: React.FC = () => {
               // Edit mode
               <>
                 {/* Rich text editor */}
-                <ReactQuill 
-                  theme="snow" 
+                <ReactQuill
+                  theme="snow"
                   value={postContent}
                   onChange={setPostContent}
                   modules={modules}
@@ -306,7 +308,7 @@ const PostCreation: React.FC = () => {
                   placeholder="What's on your mind?"
                   className="mb-12 post-editor"
                 />
-                
+
                 {/* Character counter */}
                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-4 flex justify-end">
                   {charCount > 0 && (
@@ -315,22 +317,22 @@ const PostCreation: React.FC = () => {
                     </span>
                   )}
                 </div>
-                
+
                 {/* Error notifier */}
                 {error && (
                   <div className="my-2 border-2 border-red-200 bg-red-100 p-2 rounded-lg ">
                     <p className='text-red-600 small'>Something went wrong, please try again!</p>
                   </div>
                 )}
-                
+
                 {/* Image preview */}
                 {imagePreviewUrls.length > 0 && (
                   <div className="grid grid-cols-2 gap-2 mt-4">
                     {imagePreviewUrls.map((url, index) => (
                       <div key={index} className="relative group">
-                        <img 
-                          src={url} 
-                          alt={`Preview ${index}`} 
+                        <img
+                          src={url}
+                          alt={`Preview ${index}`}
                           className="w-full h-48 object-cover rounded-lg"
                         />
                         <button
@@ -344,7 +346,7 @@ const PostCreation: React.FC = () => {
                     ))}
                   </div>
                 )}
-                
+
                 {/* Action buttons for extra features */}
                 <div className="flex items-center gap-4 my-4 border-t border-b dark:border-gray-700 py-3">
                   {/* Image upload button */}
@@ -364,7 +366,7 @@ const PostCreation: React.FC = () => {
                       className="hidden"
                     />
                   </button>
-                  
+
                   {/* Emoji picker button */}
                   <div className="relative">
                     <button
@@ -375,7 +377,7 @@ const PostCreation: React.FC = () => {
                       <Smile className="w-5 h-5" />
                       <span className="text-sm">Emoji</span>
                     </button>
-                    
+
                     {showEmojiPicker && (
                       <div className="absolute z-10 bottom-10 left-0">
                         <EmojiPicker onEmojiClick={onEmojiClick} />
@@ -383,7 +385,7 @@ const PostCreation: React.FC = () => {
                     )}
                   </div>
                 </div>
-                
+
                 {/* Tags section */}
                 <div className='flex items-center justify-start gap-1'>
                   <Tags className='w-5 h-5' />
@@ -394,8 +396,8 @@ const PostCreation: React.FC = () => {
                     <p
                       key={tag}
                       className={`border-2 rounded-full px-3 py-1 font-normal cursor-pointer transition duration-200 ease-in-out
-                        ${tags.includes(tag) 
-                          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800' 
+                        ${tags.includes(tag)
+                          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
                       onClick={(e) => handleTags(e)}
                     >
@@ -405,7 +407,7 @@ const PostCreation: React.FC = () => {
                 </div>
               </>
             )}
-            
+
             {/* Submit button */}
             <div className="flex justify-end mt-6">
               <button
@@ -424,7 +426,7 @@ const PostCreation: React.FC = () => {
               </button>
             </div>
           </form>
-          
+
           <ToastContainer
             draggable
             pauseOnHover={true}
@@ -434,8 +436,8 @@ const PostCreation: React.FC = () => {
         </>
       ) : (
         <div className='flex items-center justify-start'>
-          <button 
-            onClick={() => setexpandPostForm(true)} 
+          <button
+            onClick={() => setexpandPostForm(true)}
             className='flex items-center justify-center gap-2 bg-blue-600 p-2.5 rounded-lg text-white mb-2 hover:bg-blue-700 transition duration-200'
           >
             <FileText className="w-5 h-5" />
@@ -443,7 +445,7 @@ const PostCreation: React.FC = () => {
           </button>
         </div>
       )}
-      
+
       {/* Add CSS for the rich text editor */}
       <style>
         {`
